@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Meuporg" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Meuporg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add library="sfml-graphics-d" />
+					<Add library="sfml-window-d" />
+					<Add library="sfml-system-d" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Meuporg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="sfml-graphics" />
+					<Add library="sfml-window" />
+					<Add library="sfml-system" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="C:/Program Files (x86)/CodeBlocks/SFML-2.0/include" />
+		</Compiler>
+		<Linker>
+			<Add library="mingw32" />
+			<Add library="user32" />
+			<Add library="gdi32" />
+			<Add library="winmm" />
+			<Add library="dxguid" />
+			<Add directory="C:/Program Files (x86)/CodeBlocks/SFML-2.0/lib" />
+		</Linker>
+		<Unit filename="include/ChoiceText.hpp" />
+		<Unit filename="include/Entity.hpp" />
+		<Unit filename="include/Game.hpp" />
+		<Unit filename="include/GenInfo.hpp" />
+		<Unit filename="include/Map.hpp" />
+		<Unit filename="include/Obstacle.hpp" />
+		<Unit filename="include/Player.hpp" />
+		<Unit filename="include/RawText.hpp" />
+		<Unit filename="include/Text.hpp" />
+		<Unit filename="include/Tree.hpp" />
+		<Unit filename="include/bag.hpp" />
+		<Unit filename="include/cell.hpp" />
+		<Unit filename="include/character.hpp" />
+		<Unit filename="include/item.hpp" />
+		<Unit filename="include/living.hpp" />
+		<Unit filename="include/lootbag.hpp" />
+		<Unit filename="include/loottable.hpp" />
+		<Unit filename="include/menu.hpp" />
+		<Unit filename="include/monster.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="src/ChoiceText.cpp" />
+		<Unit filename="src/Entity.cpp" />
+		<Unit filename="src/Game.cpp" />
+		<Unit filename="src/GenInfo.cpp" />
+		<Unit filename="src/Map.cpp" />
+		<Unit filename="src/Obstacle.cpp" />
+		<Unit filename="src/Player.cpp" />
+		<Unit filename="src/RawText.cpp" />
+		<Unit filename="src/Text.cpp" />
+		<Unit filename="src/Tree.cpp" />
+		<Unit filename="src/bag.cpp" />
+		<Unit filename="src/cell.cpp" />
+		<Unit filename="src/character.cpp" />
+		<Unit filename="src/item.cpp" />
+		<Unit filename="src/living.cpp" />
+		<Unit filename="src/lootbag.cpp" />
+		<Unit filename="src/loottable.cpp" />
+		<Unit filename="src/menu.cpp" />
+		<Unit filename="src/monster.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
