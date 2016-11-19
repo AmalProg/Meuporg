@@ -5,6 +5,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     c_Map = new Map(30, 25, app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
+    c_Player->takeItem(Item::key, 5);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -104,10 +105,13 @@ void Game::loop()
                     (*it)->setActivated(false); // on desactive l'escalier
                     Map * lastMap = c_Map;
                     c_Map->removeCharacter(c_Player); // on enlève player de la map actuelle
+                    c_Map->getCell(c_Player->getPosition().x, c_Player->getPosition().y)->stateTest();
+
                     c_Map = (*it)->getLinkedMap(); // on pointe la nouvelle map
 
                     if(c_Map == NULL)
                     {
+                        std::cout << "map null" << "\n";
                         c_Map = new Map(lastMap->getNbrColumn(), lastMap->getNbrLine(), app);
                         c_ActualLevel++;
                         genNextMap(c_Map, c_ActualLevel);

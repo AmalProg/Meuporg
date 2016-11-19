@@ -157,6 +157,7 @@ class Stairs : public Obstacle
 public:
     Stairs(Map * linkedMap, bool isRising, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Obstacle(pos, true, false, false, false, false), c_LinkedMap(linkedMap), c_IsActivated(false)
+    , c_IsRising(isRising)
     {
         c_EntityTypeId = STAIRS;
     }
@@ -173,7 +174,6 @@ public:
 
     bool isActivated() const { return c_IsActivated; }
     bool isRising() const { return c_IsRising; }
-
 
     void setActivated(bool a) { c_IsActivated = a; }
     void setLinkedMap(Map * map) { c_LinkedMap = map; }
