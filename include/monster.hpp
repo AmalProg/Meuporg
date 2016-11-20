@@ -48,7 +48,7 @@ class Sheep : public Monster
     public:
         Sheep(const std::string & name = "Sheep", AggroState aggroState = PASSIVE, uint16_t aggroDist = 3,
             float maxLife = 5, Direction dir = LEFT, const sf::Vector2f & pos = sf::Vector2f(0, 0),
-             const sf::Color & color = sf::Color::White, float speed = 1.2);
+             const sf::Color & color = sf::Color::White, float speed = 1.2, float delayAtkTime = 1.8);
 
         void attack(Map * m, Player * p);
 };
@@ -58,7 +58,7 @@ class Wolf : public Monster
     public:
         Wolf(const std::string & name = "Sheep", AggroState aggroState = AGGRESIVE, uint16_t aggroDist = 5,
             float maxLife = 10, Direction dir = LEFT, const sf::Vector2f & pos = sf::Vector2f(0, 0),
-             const sf::Color & color = sf::Color(50, 50, 50), float speed = 2.0);
+             const sf::Color & color = sf::Color(50, 50, 50), float speed = 2.0, float delayAtkTime = 1);
 
         void attack(Map * m, Player * p);
 };
