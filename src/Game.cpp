@@ -111,7 +111,6 @@ void Game::loop()
 
                     if(c_Map == NULL)
                     {
-                        std::cout << "map null" << "\n";
                         c_Map = new Map(lastMap->getNbrColumn(), lastMap->getNbrLine(), app);
                         c_ActualLevel++;
                         genNextMap(c_Map, c_ActualLevel);
@@ -164,6 +163,28 @@ void Game::loop()
             app.display();
         }
     }
+}
+
+void Game::save(const std::string & fileName)
+{
+    std::ofstream file(std::string("saves\\" + fileName).c_str(), std::ios_base::out | std::ios_base::trunc);
+    if(!file)
+    {
+        std::cerr << "ouverture du fichier impossible" << "\n";
+        return;
+    }
+
+    c_Map->save(file);
+
+    file << "Player" << "\n";
+    file << c_Player->getPosition().x << " " << c_Player->getPosition().y << " ";
+    file << c_Player->getName() << "\n";
+
+    file.close();
+}
+void Game::load(const std::string & fileName)
+{
+
 }
 
 void Game::genNextMap(Map * map, uint16_t lvl)
@@ -323,14 +344,14 @@ void Game::eventManage()
                     actionEventTest();
                 break;
 
+            case sf::Keyboard::J:
+                std::cout << "save" << "\n";
+                save("TestSave.txt");
+                break;
+
             case sf::Keyboard::E:
                 c_Menu.setShowingInventory();
             break;
-
-            std::cout << c_Player->getName() << " est en position ";
-            std::cout << "(" << c_Player->getPosition().x << ", " << c_Player->getPosition().y << ")";
-            std::cout << ", regarde dans la direction " << c_Player->getDirection() << std::endl;
-            std::cout << " et compte " << c_Player->getLife() << " / " << c_Player->getMaxLife() << " HP" << std::endl;
 
             default:
                 break;
