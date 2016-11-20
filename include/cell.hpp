@@ -26,8 +26,9 @@ public:
     void stateTest(); // doit être appelé à chaque tour de boucle
 
     Living * getLiving() const { return c_Living; }
-    const Obstacle * getCover() const { return c_Cover; }
-    const Obstacle * getFiller() const { return c_Filler; }
+    Obstacle * getCover() const { return c_Cover; }
+    Obstacle * getFiller() const { return c_Filler; }
+    Obstacle * getStairs() const { return c_Stairs; }
     const std::list< Obstacle * > & getObstacles() const { return c_Obstacles; }
     const std::list< LootBag * > & getLootBags() const { return c_LootBags; }
     uint16_t getC() const { return c; }
@@ -36,10 +37,8 @@ public:
     bool isEmpty() const { return c_IsEmpty; }
     bool isCovered() const { return c_IsCovered; }
     bool isFilled() const { return c_IsFilled; }
+    bool gotStairs() const { return c_GotStairs; }
     bool isWalkable() const { return c_Walkable; }
-
-private:
-    void addObstacle(Obstacle * o);
 
 private:
     Living * c_Living;
@@ -53,6 +52,7 @@ private:
     bool c_IsEmpty;
     bool c_IsCovered;
     bool c_IsFilled;
+    bool c_GotStairs;
     bool c_Walkable;
 };
 
