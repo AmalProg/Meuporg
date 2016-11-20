@@ -86,7 +86,6 @@ bool Map::addObstacle(Obstacle * o,  uint16_t c, uint16_t l)
 }
 void Map::removeObstacle(const Obstacle * o, uint16_t c, uint16_t l)
 {
-    c_Map[c][l]->removeObstacle(o);
     std::list< Obstacle * >::iterator it = std::find(c_Obstacles.begin(), c_Obstacles.end(), o);
     c_Obstacles.erase(it);
 }
@@ -169,10 +168,15 @@ void Map::draw()
 
     if(c_Map.begin() != c_Map.end()) // si la map est definit
     {
+        sf::Font font;
+        font.loadFromFile("arial.ttf");
+
         for(uint16_t i = 0; i < c_Map.size(); i++)
         {
             for(uint16_t j = 0; j < c_Map[i].size(); j++)
             {
+                c_Map[i][j]->stateTest();
+
                 backG.setPosition(CELLSIZE * i, CELLSIZE * j);
                 lineR.setPosition(CELLSIZE * i + (CELLSIZE-1), CELLSIZE * j);
                 lineB.setPosition(CELLSIZE * i, CELLSIZE * j + (CELLSIZE-1));
@@ -180,11 +184,13 @@ void Map::draw()
                 app.draw(lineR);
                 app.draw(lineB); // et les bords
 
-                std::list< Obstacle * > os = c_Map[i][j]->getObstacles();
-                for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
-                {
-                    (*it)->draw(app, CELLSIZE);
-                }
+                if(c_Map[i][j]->isCovered())
+                    c_Map[i][j]->getCover()->draw(app, CELLSIZE);
+                if(c_Map[i][j]->gotStairs())
+                    c_Map[i][j]->getStairs()->draw(app, CELLSIZE);
+                if(c_Map[i][j]->isFilled())
+                    c_Map[i][j]->getFiller()->draw(app, CELLSIZE);
+
                 std::list< LootBag * > lBs = c_Map[i][j]->getLootBags();
                 for(std::list< LootBag * >::iterator it = lBs.begin(); it != lBs.end(); ++it)
                 {
@@ -194,6 +200,15 @@ void Map::draw()
                 {
                     c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
                 }
+
+                sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
+                t.setPosition(c_Map[i][j]->getC() * c_CellSize + 10, c_Map[i][j]->getL() * c_CellSize + 10);
+                t.setColor(sf::Color::Red);
+                sf::Text t2(nbrToString(c_Map[i][j]->getL()), font, 10);
+                t2.setPosition(c_Map[i][j]->getC() * c_CellSize +20, c_Map[i][j]->getL() * c_CellSize+20);
+                t2.setColor(sf::Color::Red);
+                app.draw(t);
+                app.draw(t2);
             }
         }
     }
@@ -242,7 +257,6 @@ void Map::generateMap(const GenInfo & genInfos)
         }
     }
     standardize(ROCK, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
-    standardize(WATER, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
 
     while(true)
     { // place un escalier protégé par un porte fermée a clef
@@ -283,6 +297,58 @@ void Map::generateMap(const GenInfo & genInfos)
             }while(nbrTry < nbrTryMax && occurencesNbr < maxOccu);
         }
     }
+}
+
+void Map::save(std::ofstream & file)
+{
+    file << "obstacles" << "\n";
+    file << getNbrColumn() << " " << getNbrLine() << "\n";
+    for(uint16_t j = 0; j < getNbrLine(); j++)
+    {
+        for(uint16_t i = 0; i < getNbrColumn(); i++)
+        {
+            std::list< Obstacle* > os = getCell(i, j)->getObstacles();
+            for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
+                file << (*it)->getEntityTypeId() << " ";
+            file << "\\ ";
+        }
+        file << "\n";
+    }
+
+    file << "Monsters" << "\n";
+    for(std::list< Monster * >::iterator it = c_Monsters.begin(); it != c_Monsters.end(); ++it)
+    {
+        file << (*it)->getEntityTypeId() << "\n";
+        file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
+        file << (*it)->getName() << " " << (*it)->getLife() << "\n";
+    }
+    file << "Characters" << "\n";
+    for(std::list< Character * >::iterator it = c_Characters.begin(); it != c_Characters.end(); ++it)
+    {
+        if((*it)->getEntityTypeId() == PLAYER)
+            continue;
+
+        file << (*it)->getEntityTypeId() << "\n";
+        file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
+        file << (*it)->getName() << " " << (*it)->getLife() << "\n";
+    }
+    file << "LootBags" << "\n";
+    for(std::list< LootBag * >::iterator it = c_LootBags.begin(); it != c_LootBags.end(); ++it)
+    {
+        file << (*it)->getEntityTypeId() << "\n";
+        file << (*it)->getPosition().x << " " << (*it)->getPosition().y << "\n";
+        for(uint16_t i = 0; i < (*it)->getNbrItems(); i++)
+        {
+
+            file << (*it)->getItem(i)->getItemId() << " " << (*it)->getNbrOfItem(i) << "\n";
+        }
+        file << (*it)->getBalance() << "\n";
+    }
+}
+
+void Map::load(std::ofstream & file)
+{
+
 }
 
 void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
@@ -339,7 +405,6 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
     uint16_t l = cell->getL();
 
     cell->stateTest();
-
     switch(id)
     {
     case ROCK:
@@ -432,7 +497,7 @@ void Map::standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i target
     { // on standardize sur les colonnes et lines données en paramêtre
         for(uint16_t j = mapCalculLine.x; j <= mapCalculLine.y; j++)
         {
-            idMap[i][j] = false;
+            idMap[i][j] = false; // initialisation à false
             neighbourMap[i][j] = 8 - 3 * (i == 0 || i == getNbrColumn()-1) - 3 * (j == 0 || j == getNbrLine()-1)
             + 1 * ((i == 0 && j == 0) || (i == getNbrColumn()-1 && j == getNbrLine()-1) || (i == 0 && j == getNbrLine()-1) || (i == getNbrColumn()-1 && j == 0));
 

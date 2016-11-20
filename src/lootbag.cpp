@@ -1,11 +1,11 @@
 #include "lootbag.hpp"
 
-LootBag::LootBag(const sf::Vector2f & position) : Bag(0), Entity(position)
+LootBag::LootBag(const sf::Vector2f & position) : Bag(0), Entity(LOOTBAG, position)
 {
     c_Shape.setFillColor(sf::Color(30, 30, 30));
 }
 LootBag::LootBag(const std::vector< BagCell > & items, const sf::Vector2f & position) : Bag(items.size()),
-Entity(position)
+Entity(LOOTBAG, position)
 {
     c_Items = items;
 

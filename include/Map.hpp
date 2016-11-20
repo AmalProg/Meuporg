@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <SFML/Graphics.hpp>
 #include <math.h>
 #include <list>
@@ -42,6 +43,8 @@ class Map
         void draw();
 
         void generateMap(const GenInfo & genInfos);
+        void save(std::ofstream & file);
+        void load(std::ofstream & file);
 
         void moveLiving(Living * p, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
         void setFocus(Living * p);

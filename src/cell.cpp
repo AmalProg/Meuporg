@@ -1,8 +1,8 @@
 #include "cell.hpp"
 
 Cell::Cell(uint16_t col, uint16_t lin)
- : c_Living(NULL), c_Cover(NULL), c_Filler(NULL), c_Stairs(NULL), c(col), l(lin),  c_IsEmpty(true), c_Walkable(true)
- , c_IsFilled(false), c_IsCovered(false), c_GotStairs(false)
+ : c_Living(NULL), c_Cover(NULL), c_Filler(NULL), c_Stairs(NULL), c(col), l(lin),  c_IsEmpty(true)
+ , c_IsCovered(false), c_IsFilled(false), c_GotStairs(false), c_Walkable(true)
 {
 }
 

@@ -4,12 +4,12 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-enum EntityTypeId{GRASS = 0, ROCK, DOOR, LOCKEDDOOR, STAIRS, WATER, SAND, CHARACTER, SHEEP, WOLF};
+enum EntityTypeId{GRASS = 0, ROCK, DOOR, LOCKEDDOOR, STAIRS, WATER, SAND, LOOTBAG, CHARACTER, SHEEP, WOLF, PLAYER};
 
 class Entity
 {
     public:
-        Entity(const sf::Vector2f & pos);
+        Entity(EntityTypeId typeId, const sf::Vector2f & pos);
         ~Entity() {};
 
         void setPosition(uint16_t i, uint16_t j) {c_Position = sf::Vector2f(i, j);}

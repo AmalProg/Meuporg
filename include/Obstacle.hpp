@@ -14,7 +14,7 @@ class Map;
 class Obstacle : public Entity
 {
     public:
-        Obstacle(const sf::Vector2f & pos = sf::Vector2f(0, 0), bool walkable = false, bool visionBlocking = true,
+        Obstacle(EntityTypeId typeId, const sf::Vector2f & pos = sf::Vector2f(0, 0), bool walkable = false, bool visionBlocking = true,
                  bool attackBlocking = false, bool filler = false, bool cover = false);
         virtual ~Obstacle() {};
 
@@ -47,9 +47,8 @@ class Obstacle : public Entity
 class Grass : public Obstacle
 {
 public:
-    Grass(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(pos, true, false, false, false, true)
+    Grass(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(GRASS, pos, true, false, false, false, true)
     {
-        c_EntityTypeId = GRASS;
         c_Shape.setFillColor(sf::Color::Green);
     }
 
@@ -64,12 +63,9 @@ public:
 class Rock : public Obstacle
 {
 public:
-    Rock(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(pos, false, true, true, true, false)
+    Rock(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(ROCK, pos, false, true, true, true, false)
     {
-        c_EntityTypeId = ROCK;
         c_Shape.setFillColor(sf::Color(120, 120 ,120));
-        c_Shape.move(5, 5);
-        c_Shape.scale(0.8, 0.8);
     }
 
     virtual void speakAction(Map * mape, Player * p)
@@ -83,10 +79,9 @@ public:
 class Door : public Obstacle
 {
 public:
-    Door(bool isOpen = false, const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(pos, isOpen, true, false, true, false)
+    Door(bool isOpen = false, EntityTypeId typeId = DOOR, const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(typeId, pos, isOpen, true, false, true, false)
     , c_IsOpen(isOpen)
     {
-        c_EntityTypeId = DOOR;
         if(c_IsOpen)
         {
             c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
@@ -131,9 +126,8 @@ private:
 class LockedDoor : public Door
 {
 public:
-    LockedDoor(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Door(false, pos), c_IsLocked(true)
+    LockedDoor(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Door(false, LOCKEDDOOR, pos), c_IsLocked(true)
     {
-        c_EntityTypeId = LOCKEDDOOR;
     }
 
     virtual void speakAction(Map * mape, Player * p);
@@ -156,10 +150,9 @@ class Stairs : public Obstacle
 {
 public:
     Stairs(Map * linkedMap, bool isRising, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(pos, true, false, false, false, false), c_LinkedMap(linkedMap), c_IsActivated(false)
+    : Obstacle(STAIRS, pos, true, false, false, false, false), c_LinkedMap(linkedMap), c_IsActivated(false)
     , c_IsRising(isRising)
     {
-        c_EntityTypeId = STAIRS;
     }
 
     virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
@@ -190,9 +183,8 @@ private:
 class Water : public Obstacle
 {
 public:
-    Water(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(pos, false, false, true, false, true)
+    Water(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(WATER, pos, false, false, true, false, true)
     {
-        c_EntityTypeId = WATER;
         c_Shape.setFillColor(sf::Color(0, 0, 175));
     }
 
@@ -207,9 +199,8 @@ public:
 class Sand : public Obstacle
 {
 public:
-    Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(pos, true, false, false, false, true)
+    Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SAND, pos, true, false, false, false, true)
     {
-        c_EntityTypeId = SAND;
         c_Shape.setFillColor(sf::Color(180, 180, 40));
     }
 

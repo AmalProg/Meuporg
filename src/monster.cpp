@@ -1,8 +1,8 @@
 #include "monster.hpp"
 
-Monster::Monster(const std::string & name, AggroState aggroState, uint16_t aggroDist, float maxLife,
+Monster::Monster(EntityTypeId typeId, const std::string & name, AggroState aggroState, uint16_t aggroDist, float maxLife,
                  Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
-: Living(name, maxLife, dir, pos, speed), c_AggroState(aggroState), c_AggroDist(aggroDist), c_IsInAggro(false)
+: Living(typeId, name, maxLife, dir, pos, speed), c_AggroState(aggroState), c_AggroDist(aggroDist), c_IsInAggro(false)
 , c_DelayAtkTime(delayAtkTime)
 {
     c_Shape.setFillColor(color);
@@ -60,7 +60,7 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
 
 Sheep::Sheep(const std::string & name, AggroState aggroState, uint16_t aggroDist, float maxLife,
       Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
-: Monster(name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
+: Monster(SHEEP, name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
 {
     c_LootTable.addItem(Item::crap, 2, 80);
     c_Loots = c_LootTable.getLoots();
@@ -81,7 +81,7 @@ void Sheep::attack(Map * m, Player * p)
 
 Wolf::Wolf(const std::string & name, AggroState aggroState, uint16_t aggroDist, float maxLife,
       Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
-: Monster(name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
+: Monster(WOLF, name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
 {
     c_LootTable.addItem(Item::teeth, 1, 30);
     c_Loots = c_LootTable.getLoots();

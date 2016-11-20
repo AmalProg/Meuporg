@@ -10,7 +10,7 @@ class Item;
 class Character : public Living
 {
     public:
-        Character(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, const sf::Vector2f & pos = sf::Vector2f(0, 0),
+        Character(EntityTypeId typeId = CHARACTER, const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, const sf::Vector2f & pos = sf::Vector2f(0, 0),
                   float speed = 6.0);
         virtual ~Character();
 

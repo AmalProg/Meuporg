@@ -1,8 +1,8 @@
 #include "character.hpp"
 
-Character::Character(const std::string & name, float maxLife, Direction dir, const sf::Vector2f & pos,
+Character::Character(EntityTypeId typeId, const std::string & name, float maxLife, Direction dir, const sf::Vector2f & pos,
                      float speed)
- : Living(name, maxLife, dir, pos, speed)
+ : Living(typeId, name, maxLife, dir, pos, speed)
 {
     c_Bag = new Bag;
 }

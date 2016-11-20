@@ -1,8 +1,8 @@
 #include "Obstacle.hpp"
 
-Obstacle::Obstacle(const sf::Vector2f & pos, bool walkable, bool visionBlocking, bool attackBlocking
+Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable, bool visionBlocking, bool attackBlocking
                    , bool filler, bool cover)
- : Entity(pos), c_Walkable(walkable), c_VisionBlocking(visionBlocking), c_AttackBlocking(attackBlocking)
+ : Entity(typeId, pos), c_Walkable(walkable), c_VisionBlocking(visionBlocking), c_AttackBlocking(attackBlocking)
  ,  c_IsFiller(filler), c_IsCover(cover)
 {
     c_Shape.setFillColor(sf::Color::Black);

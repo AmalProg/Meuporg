@@ -1,7 +1,7 @@
 #include "Player.hpp"
 
 Player::Player(const std::string & name, float maxLife, Direction dir, const sf::Vector2f & pos)
- : Character(name, maxLife, dir, pos)
+ : Character(PLAYER, name, maxLife, dir, pos)
 {
     c_Shape.setFillColor(sf::Color(0, 120, 0));
     c_Speed = 20;

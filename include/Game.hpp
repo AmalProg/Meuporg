@@ -2,6 +2,7 @@
 #define GAME_HPP
 
 #include <iostream>
+#include <fstream>
 #include <SFML/Graphics.hpp>
 #include <math.h>
 #include "Map.hpp"
@@ -26,6 +27,9 @@ class Game
         ~Game();
 
         void loop();
+
+        void save(const std::string & fileName);
+        void load(const std::string & fileName);
 
         //void setPlayer(Player * p) {c_Player = p;}
         bool movePlayer(Player * p, Direction d);

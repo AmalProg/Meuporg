@@ -13,7 +13,7 @@ enum Direction{UP = 0, RIGHT, DOWN, LEFT};
 class Living : public Entity
 {
     public:
-        Living(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN,
+        Living(EntityTypeId typeId, const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN,
                const sf::Vector2f & pos = sf::Vector2f(0, 0), float speed = 1.5);
         virtual ~Living();
 

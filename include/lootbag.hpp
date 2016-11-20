@@ -11,7 +11,7 @@ class LootBag : public Bag, public Entity
     public:
         LootBag(const sf::Vector2f & position = sf::Vector2f(0, 0));
         LootBag(const std::vector< BagCell > & items, const sf::Vector2f & position = sf::Vector2f(0, 0));
-        ~LootBag();
+        virtual ~LootBag();
 
         virtual bool addItem(const Item * item, uint16_t nbr);
         virtual void removeItem(uint16_t i, uint16_t nbr);

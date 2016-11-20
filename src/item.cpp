@@ -14,8 +14,8 @@ ItemInfos::ItemInfos(ItemType t, uint16_t maxUR, uint16_t minUR)
 {
 }
 
-Item::Item(const std::string & name, bool isUsable, const ItemInfos & infos )
-: c_Name(name), c_Infos(infos), c_IsUsable(isUsable)
+Item::Item(ItemId itemId, const std::string & name, bool isUsable, const ItemInfos & infos )
+: c_ItemId(itemId), c_Name(name), c_Infos(infos), c_IsUsable(isUsable)
 {
 }
 

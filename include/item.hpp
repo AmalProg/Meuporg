@@ -56,10 +56,12 @@ class Teeth;
 class Key;
 class Crap;
 
+enum ItemId {HEALPOTION = 0, WOODENSWORD, STONESWORD, LONGSWORD, GRENADE, TEETH, KEY, CRAP};
+
 class Item
 {
     public:
-        Item(const std::string & name = "unknow", bool isUsable = true, const ItemInfos & infos = ItemInfos());
+        Item(ItemId itemId, const std::string & name = "unknow", bool isUsable = true, const ItemInfos & infos = ItemInfos());
         virtual ~Item() {};
 
         void draw(sf::RenderWindow * app) {};
@@ -67,6 +69,7 @@ class Item
         void setItemInfos(const ItemInfos & infos) { c_Infos = infos; }
         void setIsUsable(bool isUsable) { c_IsUsable = isUsable; }
 
+        ItemId getItemId() const { return c_ItemId; }
         const std::string & getName() const { return c_Name; }
         const ItemInfos & getInfos() const {return c_Infos;}
         virtual std::list< Cell * > getTargetableCells(const Map * m, const Living * liv, uint16_t c, uint16_t l) const;
@@ -82,6 +85,7 @@ class Item
         static Crap * crap;
 
     protected:
+        ItemId c_ItemId;
         std::string c_Name;
         ItemInfos c_Infos;
         bool c_IsUsable;
@@ -89,13 +93,13 @@ class Item
 
 class HealPotion : public Item {
     public:
-        HealPotion() : Item("Heal Potion", true, ItemInfos(CONSUMABLE, 1, 0)) {
+        HealPotion() : Item(HEALPOTION, "Heal Potion", true, ItemInfos(CONSUMABLE, 1, 0)) {
             c_Infos.addEffect(EffectStats(HEAL, 5, 0, 0)); }
 };
 
 class WoodenSword : public Item {
     public:
-        WoodenSword() : Item("WoodenSword", true, ItemInfos(EQUIPMENT, 1, 1)) {
+        WoodenSword() : Item(WOODENSWORD, "WoodenSword", true, ItemInfos(EQUIPMENT, 1, 1)) {
             c_Infos.addEffect(EffectStats(DAMAGE, 5, 0, 0)); }
 
         std::list< Cell * > getTargetableCells(const Map * m, const Living * liv, uint16_t c, uint16_t l) const;
@@ -103,36 +107,36 @@ class WoodenSword : public Item {
 
 class StoneSword : public Item {
     public:
-        StoneSword() : Item("StoneSword", true, ItemInfos(EQUIPMENT, 1, 1)) {
+        StoneSword() : Item(STONESWORD, "StoneSword", true, ItemInfos(EQUIPMENT, 1, 1)) {
             c_Infos.addEffect(EffectStats(DAMAGE, 10, 0, 0)); }
 };
 
 class LongSword : public Item {
     public:
-        LongSword() : Item("LongSword", true, ItemInfos(EQUIPMENT, 2, 1)) {
+        LongSword() : Item(LONGSWORD, "LongSword", true, ItemInfos(EQUIPMENT, 2, 1)) {
             c_Infos.addEffect(EffectStats(DAMAGE, 20, 0, 0)); }
 };
 
 class Grenade : public Item {
     public:
-        Grenade() : Item("Grenade", true, ItemInfos(CONSUMABLE, 3, 0)) {
+        Grenade() : Item(GRENADE, "Grenade", true, ItemInfos(CONSUMABLE, 3, 0)) {
             c_Infos.addEffect(EffectStats(DAMAGE, 10, 2, 0)); }
 };
 
 class Teeth : public Item {
     public:
-        Teeth() : Item("Teeth", false, ItemType(TOOL)) {
+        Teeth() : Item(TEETH, "Teeth", false, ItemType(TOOL)) {
             c_Infos.addEffect(EffectStats(HEAL, 0, 0, 0)); }
 };
 
 class Key : public Item {
     public:
-        Key() : Item("Key", false, ItemType(TOOL)) {}
+        Key() : Item(KEY, "Key", false, ItemType(TOOL)) {}
 };
 
 class Crap : public Item {
     public:
-        Crap() : Item("Crap", false, ItemType(TOOL)) {}
+        Crap() : Item(CRAP, "Crap", false, ItemType(TOOL)) {}
 };
 
 #endif // ITEM_HPP
