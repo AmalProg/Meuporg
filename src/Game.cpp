@@ -178,7 +178,19 @@ void Game::save(const std::string & fileName)
 
     file << "Player" << "\n";
     file << c_Player->getPosition().x << " " << c_Player->getPosition().y << " ";
-    file << c_Player->getName() << "\n";
+    file << c_Player->getName() << " " << c_Player->getLife() << " " << c_Player->getMaxLife() << " " << c_Player->getDirection() << " ";
+    file << c_Player->getSpeed() << "\n";
+    file << c_Player->getBag()->getNbrItems() << "\n";
+    for(uint16_t i = 0; i < c_Player->getBag()->getNbrItems(); i++)
+    {
+        file << c_Player->getBag()->getItem(i)->getItemId() << " " << c_Player->getBag()->getNbrOfItem(i) << "\n";
+    }
+    file << c_Player->getBag()->getBalance() << "\n";
+    file << NBRSLOT << "\n";
+    for(uint16_t i = 0; i < NBRSLOT; i++)
+    {
+        file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
+    }
 
     file.close();
 }
@@ -300,7 +312,8 @@ void Game::deathManage()
     {
         if((*it)->isDead())
         {
-            LootBag * lB = new LootBag((*it)->getLoots(), (*it)->getPosition());
+            LootBag * lB = (*it)->getLoots();
+            lB->setPosition((*it)->getPosition());
             if(lB->getNbrItems() != 0)
             {
                 c_Map->addLootBag(lB, (*it)->getPosition().x, (*it)->getPosition().y);

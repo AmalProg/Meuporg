@@ -320,7 +320,15 @@ void Map::save(std::ofstream & file)
     {
         file << (*it)->getEntityTypeId() << "\n";
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
-        file << (*it)->getName() << " " << (*it)->getLife() << "\n";
+        file << (*it)->getName() << " " << (*it)->getLife() << " " << (*it)->getMaxLife() << " " << (*it)->getDirection() << " ";
+        file << (*it)->getAggroState() << " " << (*it)->getAggroDist() << " " << (*it)->getLastAggroTime().asSeconds() << " ";
+        file << (*it)->getDelayAtkTime() << " " << (*it)->getLastAtkTime().asSeconds() << "\n";
+        file << (*it)->getLoots()->getNbrItems() << "\n";
+        for(uint16_t i = 0; i < (*it)->getLoots()->getNbrItems(); i++)
+        {
+            file << (*it)->getLoots()->getItem(i)->getItemId() << " " << (*it)->getLoots()->getNbrOfItem(i) << "\n";
+        }
+        file << (*it)->getLoots()->getBalance() << "\n";
     }
     file << "Characters" << "\n";
     for(std::list< Character * >::iterator it = c_Characters.begin(); it != c_Characters.end(); ++it)
@@ -330,16 +338,23 @@ void Map::save(std::ofstream & file)
 
         file << (*it)->getEntityTypeId() << "\n";
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
-        file << (*it)->getName() << " " << (*it)->getLife() << "\n";
+        file << (*it)->getName() << " " << (*it)->getLife() << " " << (*it)->getMaxLife() << " " << (*it)->getDirection() << " ";
+        file << (*it)->getSpeed() << "\n";
+        file << (*it)->getBag()->getNbrItems() << "\n";
+        for(uint16_t i = 0; i < (*it)->getBag()->getNbrItems(); i++)
+        {
+            file << (*it)->getBag()->getItem(i)->getItemId() << " " << (*it)->getBag()->getNbrOfItem(i) << "\n";
+        }
+        file << (*it)->getBag()->getBalance() << "\n";
     }
     file << "LootBags" << "\n";
     for(std::list< LootBag * >::iterator it = c_LootBags.begin(); it != c_LootBags.end(); ++it)
     {
         file << (*it)->getEntityTypeId() << "\n";
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << "\n";
+        file << (*it)->getNbrItems() << "\n";
         for(uint16_t i = 0; i < (*it)->getNbrItems(); i++)
         {
-
             file << (*it)->getItem(i)->getItemId() << " " << (*it)->getNbrOfItem(i) << "\n";
         }
         file << (*it)->getBalance() << "\n";
