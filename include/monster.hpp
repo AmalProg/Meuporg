@@ -28,7 +28,12 @@ class Monster : public Living
 
         AggroState getAggroState() const { return c_AggroState; }
         uint16_t getAggroDist() const { return c_AggroDist; }
-        const std::vector< BagCell > & getLoots() const { return c_Loots; }
+        bool isInAggro() const { return c_IsInAggro; }
+        const sf::Time & getLastAggroTime() const { return c_LastAggroTime.getElapsedTime(); }
+        float getDelayAtkTime() const { return c_DelayAtkTime; }
+        const sf::Time & getLastAtkTime() const { return c_LastAtkTime.getElapsedTime(); }
+        const LootTable & getLootTable() const { return c_LootTable; }
+        LootBag * getLoots() const { return c_Loots; }
 
     protected:
         AggroState c_AggroState;
@@ -40,7 +45,7 @@ class Monster : public Living
         float c_DelayAtkTime;
 
         LootTable c_LootTable;
-        std::vector< BagCell > c_Loots;
+        LootBag * c_Loots;
 };
 
 class Sheep : public Monster

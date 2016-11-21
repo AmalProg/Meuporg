@@ -12,7 +12,7 @@ Monster::Monster(EntityTypeId typeId, const std::string & name, AggroState aggro
 void Monster::setLootTable(const LootTable & lootTable)
 {
     c_LootTable = lootTable;
-    c_Loots = c_LootTable.getLoots();
+    c_Loots = new LootBag(c_LootTable.getLoots());
 }
 
 void Monster::speakAction(){}
@@ -34,8 +34,8 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
 
     if(isMoveable()) // gestion du déplacmeent
     {
-        if(c_IsInAggro)
-        {
+        if(c_IsInAggro && c_AggroState == AGGRESIVE)
+        {// si en en aggro et en mode aggresif
             std::vector< Cell * > path = m->getPath(myCell, pCell, false, false, 1);
 
             if(path.size() != 0 && path[0]->isWalkable())
@@ -63,7 +63,7 @@ Sheep::Sheep(const std::string & name, AggroState aggroState, uint16_t aggroDist
 : Monster(SHEEP, name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
 {
     c_LootTable.addItem(Item::crap, 2, 80);
-    c_Loots = c_LootTable.getLoots();
+    c_Loots = new LootBag(c_LootTable.getLoots());
 }
 
 void Sheep::attack(Map * m, Player * p)
@@ -84,7 +84,7 @@ Wolf::Wolf(const std::string & name, AggroState aggroState, uint16_t aggroDist, 
 : Monster(WOLF, name, aggroState, aggroDist, maxLife, dir, pos, color, speed, delayAtkTime)
 {
     c_LootTable.addItem(Item::teeth, 1, 30);
-    c_Loots = c_LootTable.getLoots();
+    c_Loots = new LootBag(c_LootTable.getLoots());
 }
 
 void Wolf::attack(Map * m, Player * p)
