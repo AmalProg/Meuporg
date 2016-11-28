@@ -9,6 +9,11 @@ std::string nbrToString(float nbr)
 
 int16_t CELLSIZE = 45;
 
+Map::Map(sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
+{
+    c_View.setCenter(sf::Vector2f(0, 0));
+    c_View.setSize(app.getSize().x, app.getSize().y);
+}
 Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
 {
     for(uint16_t i = 0; i < c; i++) // créer une map de cases vide

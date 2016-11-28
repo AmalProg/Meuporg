@@ -27,6 +27,7 @@ typedef struct PathCell
 class Map
 {
     public:
+        Map(sf::RenderWindow & a);
         Map(uint16_t c, uint16_t l, sf::RenderWindow & a);
         ~Map();
 
