@@ -368,7 +368,44 @@ void Map::save(std::ofstream & file)
 
 void Map::load(std::ofstream & file)
 {
+if(!c_Map.empty())
+        std::cerr << "Une map est déjà chargé, nous ne pouvons pas en charger une autre par dessus" << "\n";
 
+    std::string type;
+
+    do {
+        file >> type;
+         file << "Obstacles" << "\n";
+    file << getNbrColumn() << " " << getNbrLine() << "\n";
+    for(uint16_t j = 0; j < getNbrLine(); j++)
+    {
+        for(uint16_t i = 0; i < getNbrColumn(); i++)
+        {
+            std::list< Obstacle* > os = getCell(i, j)->getObstacles();
+            for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
+                file << (*it)->getEntityTypeId() << " ";
+            file << "\\ ";
+        }
+        file << "\n";
+    }
+
+        if(type == "Obstacles")
+        {
+            uint16_t c, l;
+            file >> c >> l; // nbrOfCol, nbrOfLin
+            for(uint16_t j = 0; j < l; j++)
+            {
+                c_Map.push_back(std::vector < Cell *>());
+                for(uint16_t i = 0; i < c; i++)
+                {
+                    Cell * cell = new Cell(i, j);
+
+
+                    c_Map[i].push_back(cell);
+                }
+            }
+        }
+    while(file.eof());
 }
 
 void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
