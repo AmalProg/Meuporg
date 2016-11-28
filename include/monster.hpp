@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "lootbag.hpp"
 #include "item.hpp"
 #include "loottable.hpp"
 #include "Player.hpp"
