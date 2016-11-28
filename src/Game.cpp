@@ -192,6 +192,12 @@ void Game::save(const std::string & fileName)
         file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
     }
 
+    for(uint16_t i = 0; i < c_Maps.size(); i++)
+    {
+        if(c_Maps[i] != c_Map)
+            c_Maps[i]->save(file);
+    }
+
     file.close();
 }
 void Game::load(const std::string & fileName)
