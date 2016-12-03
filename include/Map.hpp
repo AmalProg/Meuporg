@@ -43,9 +43,9 @@ class Map
         void removeLootBag(const LootBag * lB, uint16_t c, uint16_t l);
         void draw();
 
-        void generateMap(const GenInfo & genInfos);
+        void generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL);
         void save(std::ofstream & file);
-        void load(std::ofstream & file);
+        void load(std::ifstream & file);
 
         void moveLiving(Living * p, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
         void setFocus(Living * p);

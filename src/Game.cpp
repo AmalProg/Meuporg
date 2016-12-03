@@ -2,12 +2,28 @@
 
 Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
 {
-    c_Map = new Map(30, 25, app);
+    c_Map = new Map(app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::key, 5);
 
-    GenInfo genInfo;
+    std::ifstream file(std::string("saves\\TestSave.txt").c_str(), std::ios_base::in);
+    if(file)
+    {
+        std::cout << "chargement de la map enregistrée" << "\n";
+        c_Map->load(file);
+    }
+
+    uint16_t x = 0, y = 0;
+    do
+    { // place le player aleatoirement sur la map
+        x = rand() % c_Map->getNbrColumn();
+        y = rand() % c_Map->getNbrLine();
+        c_Map->getCell(x, y)->stateTest();
+    }while(!c_Map->addCharacter(c_Player, x, y));
+    c_Map->setFocus(c_Player);
+
+    /*GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
     genInfo.addObstacleInfos(ROCK, 2.5, 5);
@@ -41,7 +57,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
             c_Map->addLootBag(basicBag, x, y);
             break;
         }
-    }
+    }*/
 
     c_ShortCutKeys[0] = sf::Keyboard::Num1;
     c_ShortCutKeys[1] = sf::Keyboard::Num2;
@@ -216,7 +232,7 @@ void Game::genNextMap(Map * map, uint16_t lvl)
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
-    c_Map->generateMap(genInfo);
+    c_Map->generateMap(genInfo, 25, 30);
 
     uint16_t x, y;
 

@@ -219,8 +219,15 @@ void Map::draw()
     }
 }
 
-void Map::generateMap(const GenInfo & genInfos)
+void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
 {
+    for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
+    { // colonnes
+        c_Map.push_back(std::vector < Cell *>());
+        for(uint16_t j = 0; j < nbrL; j++) // lignes
+            c_Map[i].push_back(new Cell(i, j));
+    }
+
     std::vector< EntityInfo > ObsInfos = genInfos.getObstaclesInfos();
     for(std::vector< EntityInfo >::iterator it = ObsInfos.begin();
             it != ObsInfos.end(); it++)
@@ -306,16 +313,17 @@ void Map::generateMap(const GenInfo & genInfos)
 
 void Map::save(std::ofstream & file)
 {
-    file << "obstacles" << "\n";
+    file << "Obstacles" << "\n";
     file << getNbrColumn() << " " << getNbrLine() << "\n";
-    for(uint16_t j = 0; j < getNbrLine(); j++)
+    for(uint16_t i = 0; i < getNbrColumn(); i++)
     {
-        for(uint16_t i = 0; i < getNbrColumn(); i++)
+        for(uint16_t j = 0; j < getNbrLine(); j++)
         {
+
             std::list< Obstacle* > os = getCell(i, j)->getObstacles();
+            file << os.size() << " ";
             for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
                 file << (*it)->getEntityTypeId() << " ";
-            file << "\\ ";
         }
         file << "\n";
     }
@@ -366,46 +374,46 @@ void Map::save(std::ofstream & file)
     }
 }
 
-void Map::load(std::ofstream & file)
+void Map::load(std::ifstream & file)
 {
-if(!c_Map.empty())
+    if(!c_Map.empty())
         std::cerr << "Une map est déjà chargé, nous ne pouvons pas en charger une autre par dessus" << "\n";
 
     std::string type;
 
-    do {
-        file >> type;
-         file << "Obstacles" << "\n";
-    file << getNbrColumn() << " " << getNbrLine() << "\n";
-    for(uint16_t j = 0; j < getNbrLine(); j++)
+    do
     {
-        for(uint16_t i = 0; i < getNbrColumn(); i++)
-        {
-            std::list< Obstacle* > os = getCell(i, j)->getObstacles();
-            for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
-                file << (*it)->getEntityTypeId() << " ";
-            file << "\\ ";
-        }
-        file << "\n";
-    }
+        file >> type;
 
         if(type == "Obstacles")
         {
             uint16_t c, l;
             file >> c >> l; // nbrOfCol, nbrOfLin
-            for(uint16_t j = 0; j < l; j++)
-            {
+
+            for(uint16_t i = 0; i < c; i++) // créer une map de cases vide
+            { // colonnes
                 c_Map.push_back(std::vector < Cell *>());
+                for(uint16_t j = 0; j < l; j++) // lignes
+                    c_Map[i].push_back(new Cell(i, j));
+            }
+
+            for(uint16_t j = 0; j < l; j++)
+            { // lecture dans le sens contraire de la sauvegarde
                 for(uint16_t i = 0; i < c; i++)
                 {
-                    Cell * cell = new Cell(i, j);
-
-
-                    c_Map[i].push_back(cell);
+                    uint16_t nbrOs; // nbr d'obstacle sur la cell
+                    file >> nbrOs;
+                    uint16_t id;
+                    for(uint16_t k = 0; k < nbrOs; k++)
+                    {
+                        file >> id; // ajout de chaque obstacle
+                        addObstacleOnCell((EntityTypeId)id, getCell(i, j));
+                    }
                 }
             }
+            return;
         }
-    while(file.eof());
+    }while(file.eof());
 }
 
 void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
