@@ -1,6 +1,6 @@
 #include "bag.hpp"
 
-Bag::Bag(int nbrSlotsMax) : c_NbrSlotsMax(nbrSlotsMax), c_Balance(0)
+Bag::Bag(int nbrSlotsMax) : c_NbrSlotsMax(nbrSlotsMax)
 {
 
 }
