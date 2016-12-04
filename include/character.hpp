@@ -10,8 +10,8 @@ class Item;
 class Character : public Living
 {
     public:
-        Character(EntityTypeId typeId = CHARACTER, const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, const sf::Vector2f & pos = sf::Vector2f(0, 0),
-                  float speed = 6.0);
+        Character(EntityTypeId typeId = CHARACTER, const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 2,
+                  const sf::Vector2f & pos = sf::Vector2f(0, 0));
         virtual ~Character();
 
         bool takeItem(const Item * item, uint16_t nbr); // rammasse un 'nbr' d''item'

@@ -1,10 +1,9 @@
 #include "Player.hpp"
 
-Player::Player(const std::string & name, float maxLife, Direction dir, const sf::Vector2f & pos)
- : Character(PLAYER, name, maxLife, dir, pos)
+Player::Player(const std::string & name, float maxLife, Direction dir, float speed, const sf::Vector2f & pos)
+ : Character(PLAYER, name, maxLife, dir, speed, pos)
 {
     c_Shape.setFillColor(sf::Color(0, 120, 0));
-    c_Speed = 20;
 }
 
 void Player::setShortCut(uint16_t itemIndex, sf::Keyboard::Key key)
