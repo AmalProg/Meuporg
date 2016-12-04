@@ -7,21 +7,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::key, 5);
 
-    std::ifstream file(std::string("saves\\TestSave.txt").c_str(), std::ios_base::in);
-    if(file)
-    {
-        std::cout << "chargement de la map enregistrée" << "\n";
-        c_Map->load(file);
-    }
-
-    uint16_t x = 0, y = 0;
-    do
-    { // place le player aleatoirement sur la map
-        x = rand() % c_Map->getNbrColumn();
-        y = rand() % c_Map->getNbrLine();
-        c_Map->getCell(x, y)->stateTest();
-    }while(!c_Map->addCharacter(c_Player, x, y));
-    c_Map->setFocus(c_Player);
+    load("TestSave.txt");
 
     /*GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -32,7 +18,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
-    c_Map->generateMap(genInfo);
+    c_Map->generateMap(genInfo, 30, 25);
 
     uint16_t x = 0, y = 0;
     do
@@ -217,7 +203,50 @@ void Game::save(const std::string & fileName)
 }
 void Game::load(const std::string & fileName)
 {
+    std::ifstream file(std::string("saves\\" + fileName).c_str(), std::ios_base::in);
+    if(file)
+    {
+        std::cout << "chargement de la map enregistrée" << "\n";
+        c_Map->load(file);
+    }
 
+    std::string type;
+    do
+    {
+        file >> type;
+
+        if(type == "Player")
+        {
+            uint16_t c, l, life, totalLife, direction;
+            float speed;
+            std::string name;
+
+            file >> c >> l >> name >> life >> totalLife >> direction >> speed;
+            Player * player = new Player(name, totalLife, (Direction)direction, speed, sf::Vector2f(c, l));
+            player->takeDamages(totalLife - life);
+
+            uint16_t nbrItems;
+            file >> nbrItems;
+            for(uint16_t i = 0; i < nbrItems; i++)
+            {
+
+            }
+        }
+    /*file <<  << "\n";
+    file << c_Player->getPosition().x << " " << c_Player->getPosition().y << " ";
+    file << c_Player->getName() << " " << c_Player->getLife() << " " << c_Player->getMaxLife() << " " << c_Player->getDirection() << " ";
+    file << c_Player->getSpeed() << "\n";
+    file << c_Player->getBag()->getNbrItems() << "\n";
+    for(uint16_t i = 0; i < c_Player->getBag()->getNbrItems(); i++)
+    {
+        file << c_Player->getBag()->getItem(i)->getItemId() << " " << c_Player->getBag()->getNbrOfItem(i) << "\n";
+    }
+    file << NBRSLOT << "\n";
+    for(uint16_t i = 0; i < NBRSLOT; i++)
+    {
+        file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
+    }*/
+    }
 }
 
 void Game::genNextMap(Map * map, uint16_t lvl)

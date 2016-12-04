@@ -232,7 +232,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
     for(std::vector< EntityInfo >::iterator it = ObsInfos.begin();
             it != ObsInfos.end(); it++)
     {
-        EntityTypeId id = (*it).getEntityId();
+        EntityTypeId id = (*it).getEntityTypeId();
         float maxOccu = (*it).getInfo("maxOccu");
         float expand = (*it).getInfo("expand");
 
@@ -287,7 +287,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
     for(std::vector< EntityInfo >::iterator it = LivInfos.begin();
             it != LivInfos.end(); it++)
     {
-        EntityTypeId id = (*it).getEntityId();
+        EntityTypeId id = (*it).getEntityTypeId();
         float maxOccu = (*it).getInfo("maxOccu");
         float nbrGroup = (*it).getInfo("nbrGroup");
 
@@ -329,21 +329,23 @@ void Map::save(std::ofstream & file)
     }
 
     file << "Monsters" << "\n";
+    file << c_Monsters.size() << "\n";
     for(std::list< Monster * >::iterator it = c_Monsters.begin(); it != c_Monsters.end(); ++it)
     {
         file << (*it)->getEntityTypeId() << "\n";
-        file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
+        file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " " << (*it)->getSpeed() << " ";
         file << (*it)->getName() << " " << (*it)->getLife() << " " << (*it)->getMaxLife() << " " << (*it)->getDirection() << " ";
         file << (*it)->getAggroState() << " " << (*it)->getAggroDist() << " " << (*it)->getLastAggroTime().asSeconds() << " ";
         file << (*it)->getDelayAtkTime() << " " << (*it)->getLastAtkTime().asSeconds() << "\n";
-        file << (*it)->getLoots()->getNbrItems() << "\n";
-        for(uint16_t i = 0; i < (*it)->getLoots()->getNbrItems(); i++)
+        file << (*it)->getLootTable().getLootsInfos().size() << "\n";
+        for(std::list< lootInfos >::const_iterator it2 = (*it)->getLootTable().getLootsInfos().begin(); it2 != (*it)->getLootTable().getLootsInfos().end(); ++it2)
         {
-            file << (*it)->getLoots()->getItem(i)->getItemId() << " " << (*it)->getLoots()->getNbrOfItem(i) << "\n";
+            file << (*it2).item->getItemId() << " " << (*it2).nbr << " " << (*it2).prob << "\n";
         }
-        file << (*it)->getLoots()->getBalance() << "\n";
     }
+
     file << "Characters" << "\n";
+    file << c_Characters.size();
     for(std::list< Character * >::iterator it = c_Characters.begin(); it != c_Characters.end(); ++it)
     {
         if((*it)->getEntityTypeId() == PLAYER)
@@ -358,19 +360,18 @@ void Map::save(std::ofstream & file)
         {
             file << (*it)->getBag()->getItem(i)->getItemId() << " " << (*it)->getBag()->getNbrOfItem(i) << "\n";
         }
-        file << (*it)->getBag()->getBalance() << "\n";
     }
+
     file << "LootBags" << "\n";
+    file << c_LootBags.size() << "\n";
     for(std::list< LootBag * >::iterator it = c_LootBags.begin(); it != c_LootBags.end(); ++it)
     {
-        file << (*it)->getEntityTypeId() << "\n";
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << "\n";
         file << (*it)->getNbrItems() << "\n";
         for(uint16_t i = 0; i < (*it)->getNbrItems(); i++)
         {
             file << (*it)->getItem(i)->getItemId() << " " << (*it)->getNbrOfItem(i) << "\n";
         }
-        file << (*it)->getBalance() << "\n";
     }
 }
 
@@ -380,7 +381,6 @@ void Map::load(std::ifstream & file)
         std::cerr << "Une map est déjà chargé, nous ne pouvons pas en charger une autre par dessus" << "\n";
 
     std::string type;
-
     do
     {
         file >> type;
@@ -397,10 +397,11 @@ void Map::load(std::ifstream & file)
                     c_Map[i].push_back(new Cell(i, j));
             }
 
-            for(uint16_t j = 0; j < l; j++)
-            { // lecture dans le sens contraire de la sauvegarde
-                for(uint16_t i = 0; i < c; i++)
-                {
+            for(uint16_t i = 0; i < c; i++)
+            {
+                for(uint16_t j = 0; j < l; j++)
+                { // lecture dans le sens contraire de la sauvegarde
+
                     uint16_t nbrOs; // nbr d'obstacle sur la cell
                     file >> nbrOs;
                     uint16_t id;
@@ -411,9 +412,72 @@ void Map::load(std::ifstream & file)
                     }
                 }
             }
-            return;
         }
-    }while(file.eof());
+        if(type == "Monsters")
+        {
+            uint16_t nbrMon;
+            file >> nbrMon;
+            for(uint16_t i = 0; i < nbrMon; i++)
+            {
+                uint16_t id, c, l, life, totalLife, direction, aggroState, aggroDist;
+                float speed, lastAggroTime, lastAtkTime, delayAtkTime;
+                std::string name;
+
+                file >> id >> c >> l >> speed >> name >> life >> totalLife >> direction >> aggroState;
+                file >> aggroDist >> lastAggroTime >> delayAtkTime >> lastAtkTime;
+
+                Monster * monster;
+                switch(id)
+                {
+                    case SHEEP:
+                        monster = new Sheep(name, (AggroState)aggroState, aggroDist, totalLife, (Direction)direction,
+                                            sf::Vector2f(c, l), sf::Color::White, speed, delayAtkTime);
+                        break;
+
+                    case WOLF:
+                        monster = new Wolf(name, (AggroState)aggroState, aggroDist, totalLife, (Direction)direction,
+                                            sf::Vector2f(c, l), sf::Color(50, 50, 50), speed, delayAtkTime);
+                        break;
+                }
+                monster->takeDamages(totalLife - life);
+
+                uint16_t nbrItems;
+                file >> nbrItems;
+                uint16_t itemId, nbrOfItem, prob;
+                LootTable lootTable;
+                for(uint16_t j = 0; j < nbrItems; j++)
+                {
+                    file >> itemId >> nbrOfItem >> prob;
+                    lootTable.addItem(Item::getItemFromId((ItemId)itemId), nbrOfItem, prob);
+                }
+                monster->setLootTable(lootTable);
+
+                addMonster(monster, c, l);
+            }
+        }
+        if(type == "LootBags")
+        {
+            uint16_t nbrLB;
+            file >> nbrLB;
+            for(uint16_t i = 0; i < nbrLB; i++)
+            {
+                uint16_t c, l;
+                file >> c >> l;
+
+                uint16_t nbrItems;
+                file >> nbrItems;
+                uint16_t itemId, nbrOfItem;
+                LootBag * lootBag = new LootBag(sf::Vector2f(c, l));
+                for(uint16_t j = 0; j < nbrItems; j++)
+                {
+                    file >> itemId >> nbrOfItem;
+                    lootBag->addItem(Item::getItemFromId((ItemId)itemId), nbrOfItem);
+                }
+
+                addLootBag(lootBag, c, l);
+            }
+        }
+    }while(type != Player);
 }
 
 void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
