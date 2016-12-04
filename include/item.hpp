@@ -84,6 +84,8 @@ class Item
         static Key * key;
         static Crap * crap;
 
+        static Item * getItemFromId(ItemId id);
+
     protected:
         ItemId c_ItemId;
         std::string c_Name;

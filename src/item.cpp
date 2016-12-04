@@ -34,3 +34,34 @@ std::list< Cell * > WoodenSword::getTargetableCells(const Map * m, const Living 
 
     return cells;
 }
+
+Item * Item::getItemFromId(ItemId id)
+{
+    switch(id)
+    {
+        case HEALPOTION:
+            return Item::healPotion;
+            break;
+        case WOODENSWORD:
+            return Item::woodenSword;
+            break;
+        case STONESWORD:
+            return Item::stoneSword;
+            break;
+        case LONGSWORD:
+            return Item::longSword;
+            break;
+        case GRENADE:
+            return Item::grenade;
+            break;
+        case TEETH:
+            return Item::teeth;
+            break;
+        case KEY:
+            return Item::key;
+            break;
+        case CRAP:
+            return Item::crap;
+            break;
+    }
+}
