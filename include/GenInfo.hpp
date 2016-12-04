@@ -12,7 +12,7 @@ class EntityInfo
         void addInfo(const std::string & name, float value)
         { c_Infos[name] = value; }
 
-        EntityTypeId getEntityId() const { return c_Id; }
+        EntityTypeId getEntityTypeId() const { return c_Id; }
         float getInfo(const std::string & name) { return c_Infos[name]; }
 
     private:
