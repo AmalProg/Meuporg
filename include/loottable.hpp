@@ -21,6 +21,7 @@ class LootTable
 
         void addItem(const Item * item, uint16_t nbr, float prob);
 
+        std::list< lootInfos > getLootsInfos() const { return c_Loots; }
         std::vector< BagCell > getLoots() const;
 
     private:
