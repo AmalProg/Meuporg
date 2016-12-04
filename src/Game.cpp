@@ -201,7 +201,6 @@ void Game::save(const std::string & fileName)
     {
         file << c_Player->getBag()->getItem(i)->getItemId() << " " << c_Player->getBag()->getNbrOfItem(i) << "\n";
     }
-    file << c_Player->getBag()->getBalance() << "\n";
     file << NBRSLOT << "\n";
     for(uint16_t i = 0; i < NBRSLOT; i++)
     {
