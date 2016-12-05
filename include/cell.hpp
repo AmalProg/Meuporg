@@ -23,8 +23,6 @@ public:
     void addLootBag(LootBag * lB);
     void removeLootBag(const LootBag * lB);
 
-    void stateTest(); // doit être appelé à chaque tour de boucle
-
     Living * getLiving() const { return c_Living; }
     Obstacle * getCover() const { return c_Cover; }
     Obstacle * getFiller() const { return c_Filler; }
@@ -39,6 +37,9 @@ public:
     bool isFilled() const { return c_IsFilled; }
     bool gotStairs() const { return c_GotStairs; }
     bool isWalkable() const { return c_Walkable; }
+
+private:
+    void stateTest(); // doit être appelé à chaque tour de boucle
 
 private:
     Living * c_Living;
