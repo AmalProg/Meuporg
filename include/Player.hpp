@@ -13,7 +13,7 @@ class Player : public Character
     public:
         Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 20, const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
-        void setShortCut(uint16_t itemIndex, sf::Keyboard::Key key);
+        void setShortCut(const Item * item, sf::Keyboard::Key key);
 
         const Item * getItemShortCut(sf::Keyboard::Key key);
         int16_t getItemIndexShortCut(sf::Keyboard::Key key);

@@ -6,11 +6,11 @@ Player::Player(const std::string & name, float maxLife, Direction dir, float spe
     c_Shape.setFillColor(sf::Color(0, 120, 0));
 }
 
-void Player::setShortCut(uint16_t itemIndex, sf::Keyboard::Key key)
+void Player::setShortCut(const Item * item, sf::Keyboard::Key key)
 {
-    if(itemIndex < c_Bag->getNbrItems())
+    if(c_Bag->findItem(item) >= 0)
     {
-        c_Shortcuts[key] = c_Bag->getItem(itemIndex);
+        c_Shortcuts[key] = item;
     }
 }
 
