@@ -35,7 +35,7 @@ std::list< Cell * > WoodenSword::getTargetableCells(const Map * m, const Living 
     return cells;
 }
 
-Item * Item::getItemFromId(ItemId id)
+const Item * Item::getItemFromId(ItemId id)
 {
     switch(id)
     {

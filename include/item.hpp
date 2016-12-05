@@ -84,7 +84,7 @@ class Item
         static Key * key;
         static Crap * crap;
 
-        static Item * getItemFromId(ItemId id);
+        static const Item * getItemFromId(ItemId id);
 
     protected:
         ItemId c_ItemId;
