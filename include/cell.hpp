@@ -38,7 +38,6 @@ public:
     bool gotStairs() const { return c_GotStairs; }
     bool isWalkable() const { return c_Walkable; }
 
-private:
     void stateTest(); // doit être appelé à chaque tour de boucle
 
 private:

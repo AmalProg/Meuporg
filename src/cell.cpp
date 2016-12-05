@@ -104,6 +104,9 @@ void Cell::removeLootBag(const LootBag * lB)
 
 void Cell::stateTest()
 {
+    c_Walkable = true;
+    c_IsEmpty = true;
+
     for(std::list< Obstacle * >::iterator it = c_Obstacles.begin(); it != c_Obstacles.end(); ++it)
     {
         c_IsEmpty = false;
