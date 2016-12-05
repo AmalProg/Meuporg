@@ -92,23 +92,7 @@ public:
         }
     }
 
-    virtual void speakAction(Map * mape, Player * p)
-    {
-        if(c_IsOpen)
-        {
-            c_Shape.setFillColor(sf::Color(200, 150 ,30));
-            c_IsOpen = false;
-            setWalkable(false);
-            std::cout << "Vous fermez la porte.\n";
-        }
-        else
-        {
-            c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
-            c_IsOpen = true;
-            setWalkable(true);
-            std::cout << "Vous ouvrez la porte.\n";
-        }
-    }; // activé si l'on essaye de "parler" a l'obstacle
+    virtual void speakAction(Map * mape, Player * p); // activé si l'on essaye de "parler" a l'obstacle
     virtual void touchAction(Map * mape, Player * p)
     {
         if(!c_IsOpen)
