@@ -103,6 +103,9 @@ public:
     virtual void walkAction(Map * mape, Player * p)
     {} // activé lorsqu'on marche sur l'obstacle
 
+    bool isOpen() const { return c_IsOpen; }
+    bool setOpen(bool isOpen) { c_IsOpen = isOpen; }
+
 private:
     bool c_IsOpen;
 };
@@ -110,7 +113,8 @@ private:
 class LockedDoor : public Door
 {
 public:
-    LockedDoor(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Door(false, LOCKEDDOOR, pos), c_IsLocked(true)
+    LockedDoor(bool isLocked = true, bool isOpen = false, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Door(isOpen, LOCKEDDOOR, pos), c_IsLocked(isLocked)
     {
     }
 
@@ -126,6 +130,10 @@ public:
     virtual void walkAction(Map * mape, Player * p)
     {} // activé lorsqu'on marche sur l'obstacle
 
+    bool isLocked() const { return c_IsLocked; }
+
+    void setLock(bool isLocked) { c_IsLocked = isLocked; }
+
 private:
     bool c_IsLocked;
 };
@@ -133,8 +141,8 @@ private:
 class Stairs : public Obstacle
 {
 public:
-    Stairs(Map * linkedMap, bool isRising, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(STAIRS, pos, true, false, false, false, false), c_LinkedMap(linkedMap), c_IsActivated(false)
+    Stairs(uint32_t linkedMapId = 0, bool isRising = true, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Obstacle(STAIRS, pos, true, false, false, false, false), c_LinkedMapId(linkedMapId), c_IsActivated(false)
     , c_IsRising(isRising)
     {
     }
@@ -151,14 +159,14 @@ public:
 
     bool isActivated() const { return c_IsActivated; }
     bool isRising() const { return c_IsRising; }
+    uint32_t getLinkedMapId() const { return c_LinkedMapId; }
 
     void setActivated(bool a) { c_IsActivated = a; }
-    void setLinkedMap(Map * map) { c_LinkedMap = map; }
-
-    Map * getLinkedMap() const { return c_LinkedMap; }
+    void setLinkedMapId(uint32_t mapId) { c_LinkedMapId = mapId; }
+    void setRising(bool isRising) { c_IsRising = isRising; }
 
 private:
-    Map * c_LinkedMap;
+    uint32_t c_LinkedMapId;
     bool c_IsActivated;
 
     bool c_IsRising;
