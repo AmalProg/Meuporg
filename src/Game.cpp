@@ -2,14 +2,14 @@
 
 Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
 {
-    c_Map = new Map(app);
+    load("TestSave.txt");
+
+    /*c_Map = new Map(app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::key, 5);
 
-    load("TestSave.txt");
-
-    /*GenInfo genInfo;
+    GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
     genInfo.addObstacleInfos(ROCK, 2.5, 5);
@@ -25,7 +25,6 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     { // place le player aleatoirement sur la map
         x = rand() % c_Map->getNbrColumn();
         y = rand() % c_Map->getNbrLine();
-        c_Map->getCell(x, y)->stateTest();
     }while(!c_Map->addCharacter(c_Player, x, y));
     c_Map->setFocus(c_Player);
 
@@ -37,7 +36,6 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     { // place le lootBag de base aleatoirement sur la map
         x = rand() % c_Map->getNbrColumn();
         y = rand() % c_Map->getNbrLine();
-        c_Map->getCell(x, y)->stateTest();
         if(c_Map->getCell(x, y)->isWalkable())
         {
             c_Map->addLootBag(basicBag, x, y);
@@ -51,7 +49,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     c_ShortCutKeys[3] = sf::Keyboard::Num4;
 
     c_RawText = RawText();
-    c_RawText.newText("Cherchez votre sac, il ne doit pas être très loin");
+    //c_RawText.newText("Cherchez votre sac, il ne doit pas être très loin");
 }
 Game::~Game()
 {
@@ -79,7 +77,7 @@ void Game::loop()
             sf::Keyboard::Key key;
             if((key = c_Menu.getKeyToShortCut()) != sf::Keyboard::Unknown) // gestion des raccourcis
             {
-                c_Player->setShortCut(c_Menu.getItemToShortCut(), key);
+                c_Player->setShortCut(c_Player->getItem(c_Menu.getItemToShortCut()), key);
             }
 
             BagCell itemToTake; itemToTake.item = NULL; itemToTake.nbr = 0;
@@ -106,17 +104,16 @@ void Game::loop()
                 {
                     (*it)->setActivated(false); // on desactive l'escalier
                     Map * lastMap = c_Map;
-                    c_Map->removeCharacter(c_Player); // on enlève player de la map actuelle
-                    c_Map->getCell(c_Player->getPosition().x, c_Player->getPosition().y)->stateTest();
+                    lastMap->removeCharacter(c_Player); // on enlève player de la map actuelle
+                    lastMap->setFocus(NULL);
 
-                    c_Map = (*it)->getLinkedMap(); // on pointe la nouvelle map
-
+                    c_Map = Map::getMapFromId((*it)->getLinkedMapId()); // on pointe la nouvelle map
                     if(c_Map == NULL)
                     {
-                        c_Map = new Map(lastMap->getNbrColumn(), lastMap->getNbrLine(), app);
+                        c_Map = new Map(app);
                         c_ActualLevel++;
-                        genNextMap(c_Map, c_ActualLevel);
-                        (*it)->setLinkedMap(c_Map);
+                        genNextMap(c_Map, lastMap, c_ActualLevel);
+                        (*it)->setLinkedMapId(c_Map->getMapId());
                         c_Maps.push_back(c_Map);
                     }
                     else if((*it)->isRising()) // on remonte d'un étage
@@ -126,7 +123,7 @@ void Game::loop()
 
                     for(std::list< Stairs * >::const_iterator it2 = c_Map->getStairss().begin(); it2 != c_Map->getStairss().end(); ++it2)
                     {
-                        if((*it2)->getLinkedMap() == lastMap)
+                        if((*it2)->getLinkedMapId() == lastMap->getMapId())
                         { // on arrive sur l'escalier qui va a l'étage ou l'on était
                             c_Map->addCharacter(c_Player, (*it2)->getPosition().x, (*it2)->getPosition().y);
                             c_Map->setFocus(c_Player);
@@ -146,10 +143,6 @@ void Game::loop()
                 eventManage();
                 deathManage();
                 realTimeEventManage();
-
-                for(uint16_t i = 0; i < c_Map->getNbrColumn(); i++)
-                    for(uint16_t j = 0; j < c_Map->getNbrLine(); j++)
-                        c_Map->getCell(i, j)->stateTest();
             }
         }
 
@@ -176,7 +169,14 @@ void Game::save(const std::string & fileName)
         return;
     }
 
-    c_Map->save(file);
+    file << "Maps" << "\n";
+    file << c_Maps.size() << "\n";
+    file << c_ActualLevel << "\n";
+    for(uint16_t i = 0; i < c_Maps.size(); i++)
+    {
+        file << c_Maps[i]->getMapId() << "\n";
+        c_Maps[i]->save(file);
+    }
 
     file << "Player" << "\n";
     file << c_Player->getPosition().x << " " << c_Player->getPosition().y << " ";
@@ -187,33 +187,49 @@ void Game::save(const std::string & fileName)
     {
         file << c_Player->getBag()->getItem(i)->getItemId() << " " << c_Player->getBag()->getNbrOfItem(i) << "\n";
     }
+
+    file << "ShortCuts" << "\n";
     file << NBRSLOT << "\n";
     for(uint16_t i = 0; i < NBRSLOT; i++)
     {
         file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
     }
 
-    for(uint16_t i = 0; i < c_Maps.size(); i++)
-    {
-        if(c_Maps[i] != c_Map)
-            c_Maps[i]->save(file);
-    }
-
+    file << "end";
     file.close();
 }
 void Game::load(const std::string & fileName)
 {
     std::ifstream file(std::string("saves\\" + fileName).c_str(), std::ios_base::in);
-    if(file)
+    if(!file)
     {
-        std::cout << "chargement de la map enregistrée" << "\n";
-        c_Map->load(file);
+        std::cout << "chargement de la map enregistrée impossible" << "\n";
+        return;
     }
 
     std::string type;
     do
     {
         file >> type;
+
+        if(type == "Maps")
+        {
+            uint16_t nbrMaps, actualLevel;
+            file >> nbrMaps >> actualLevel;
+            uint32_t mapId;
+            for(uint16_t i = 0; i < nbrMaps; i++)
+            {
+                file >> mapId;
+
+                Map * m = new Map(app);
+                m->setMapId(mapId);
+                m->load(file);
+                c_Maps.push_back(m);
+
+                if(i == actualLevel)
+                    c_Map = m;
+            }
+        }
 
         if(type == "Player")
         {
@@ -222,34 +238,37 @@ void Game::load(const std::string & fileName)
             std::string name;
 
             file >> c >> l >> name >> life >> totalLife >> direction >> speed;
-            Player * player = new Player(name, totalLife, (Direction)direction, speed, sf::Vector2f(c, l));
-            player->takeDamages(totalLife - life);
+            c_Player = new Player(name, totalLife, (Direction)direction, speed, sf::Vector2f(c, l));
+            c_Player->takeDamages(totalLife - life);
 
             uint16_t nbrItems;
             file >> nbrItems;
+            uint16_t itemId, nbrOfItem;
             for(uint16_t i = 0; i < nbrItems; i++)
             {
+                file >> itemId >> nbrOfItem;
+                c_Player->takeItem(Item::getItemFromId((ItemId)itemId), nbrOfItem);
+            }
+            c_Map->addCharacter(c_Player, c, l);
+            c_Map->setFocus(c_Player);
+        }
 
+        if(type == "ShortCuts")
+        {
+            uint16_t nbrShortCuts;
+            file >> nbrShortCuts;
+            for(uint16_t i = 0; i < nbrShortCuts; i++)
+            {
+                uint16_t key, itemId;
+                file >> key >> itemId;
+                c_ShortCutKeys[i] = (sf::Keyboard::Key)key;
+                c_Player->setShortCut(Item::getItemFromId((ItemId)itemId), (sf::Keyboard::Key)key);
             }
         }
-    /*file <<  << "\n";
-    file << c_Player->getPosition().x << " " << c_Player->getPosition().y << " ";
-    file << c_Player->getName() << " " << c_Player->getLife() << " " << c_Player->getMaxLife() << " " << c_Player->getDirection() << " ";
-    file << c_Player->getSpeed() << "\n";
-    file << c_Player->getBag()->getNbrItems() << "\n";
-    for(uint16_t i = 0; i < c_Player->getBag()->getNbrItems(); i++)
-    {
-        file << c_Player->getBag()->getItem(i)->getItemId() << " " << c_Player->getBag()->getNbrOfItem(i) << "\n";
-    }
-    file << NBRSLOT << "\n";
-    for(uint16_t i = 0; i < NBRSLOT; i++)
-    {
-        file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
-    }*/
-    }
+    }while(type != "end");
 }
 
-void Game::genNextMap(Map * map, uint16_t lvl)
+void Game::genNextMap(Map * map, Map * lastMap, uint16_t lvl)
 {
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -270,7 +289,7 @@ void Game::genNextMap(Map * map, uint16_t lvl)
         y = rand() % map->getNbrLine();
         if(map->getCell(x, y)->isWalkable())
         {
-            map->addStairs(new Stairs(c_Maps[lvl-1], true), x, y);
+            map->addStairs(new Stairs(lastMap->getMapId(), true), x, y);
             break;
         }
     }

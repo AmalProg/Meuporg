@@ -44,7 +44,7 @@ class Game
         void realTimeEventManage();
         void deathManage();
 
-        void genNextMap(Map * map, uint16_t lvl);
+        void genNextMap(Map * map, Map * lastMap, uint16_t lvl);
 
         void drawShortCuts();
 

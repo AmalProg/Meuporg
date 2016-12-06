@@ -1,5 +1,13 @@
 #include "Map.hpp"
 
+std::map< uint32_t, Map * > Map::mapsIds;
+Map * Map::getMapFromId(uint32_t mapId)
+{
+    if(Map::mapsIds[mapId])
+        return Map::mapsIds[mapId];
+    return NULL;
+}
+
 std::string nbrToString(float nbr)
 {
     std::ostringstream o;
@@ -13,6 +21,11 @@ Map::Map(sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
     c_View.setSize(app.getSize().x, app.getSize().y);
+
+    do{
+    c_MapId = rand() % 65535 + 1;
+    }while(Map::mapsIds[c_MapId]);
+    Map::mapsIds[c_MapId] = this;
 }
 Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
 {
@@ -25,6 +38,11 @@ Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a) : app(a), c_CellSize(CELL
 
     c_View.setCenter(sf::Vector2f(0, 0));
     c_View.setSize(app.getSize().x, app.getSize().y);
+
+    do{
+    c_MapId = rand() % 65535 + 1;
+    }while(Map::mapsIds[c_MapId]);
+    Map::mapsIds[c_MapId] == this;
 }
 Map::~Map()
 {
@@ -96,10 +114,10 @@ void Map::removeObstacle(const Obstacle * o, uint16_t c, uint16_t l)
 }
 bool Map::addStairs(Stairs * s,  uint16_t c, uint16_t l)
 {
-    if(c_Map[c][l]->isWalkable())
+    if(c_Map[c][l]->isWalkable() || c_Map[c][l]->getFiller()->getEntityTypeId() == LOCKEDDOOR)
     {
         s->setPosition(c, l);
-        c_Map[c][l]->setStairs(s); // on donne l'ID de l'obstacle
+        c_Map[c][l]->setStairs(s);
         c_Obstacles.push_back(s);
         c_Stairss.push_back(s);
 
@@ -120,7 +138,7 @@ bool Map::addMonster(Monster * m, uint16_t c, uint16_t l)
     }
     return false;
 }
-void Map::removeMonster(const Monster * m)
+void Map::removeMonster(Monster * m)
 {
     std::list< Monster * >::iterator it = std::find(c_Monsters.begin(), c_Monsters.end(), m);
     removeLiving(m->getPosition().x, m->getPosition().y);
@@ -139,11 +157,11 @@ bool Map::addCharacter(Character * cha, uint16_t c, uint16_t l)
     }
     return false;
 }
-void Map::removeCharacter(const Character * cha)
+void Map::removeCharacter(Character * cha)
 {
     std::list< Character * >::iterator it = std::find(c_Characters.begin(), c_Characters.end(), cha);
-    removeLiving(cha->getPosition().x, cha->getPosition().y);
     c_Characters.erase(it);
+    removeLiving(cha->getPosition().x, cha->getPosition().y);
 }
 bool Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
 {
@@ -166,10 +184,6 @@ void Map::draw()
 {
     static sf::RectangleShape backG(sf::Vector2f(CELLSIZE, CELLSIZE));
     backG.setFillColor(sf::Color::White);
-    static sf::RectangleShape lineR(sf::Vector2f(1, CELLSIZE));
-    lineR.setFillColor(sf::Color::Black);
-    static sf::RectangleShape lineB(sf::Vector2f(CELLSIZE, 1));
-    lineB.setFillColor(sf::Color::Black);
 
     if(c_Map.begin() != c_Map.end()) // si la map est definit
     {
@@ -180,14 +194,8 @@ void Map::draw()
         {
             for(uint16_t j = 0; j < c_Map[i].size(); j++)
             {
-                c_Map[i][j]->stateTest();
-
                 backG.setPosition(CELLSIZE * i, CELLSIZE * j);
-                lineR.setPosition(CELLSIZE * i + (CELLSIZE-1), CELLSIZE * j);
-                lineB.setPosition(CELLSIZE * i, CELLSIZE * j + (CELLSIZE-1));
                 app.draw(backG); // affiche le fond blanc d'une case
-                app.draw(lineR);
-                app.draw(lineB); // et les bords
 
                 if(c_Map[i][j]->isCovered())
                     c_Map[i][j]->getCover()->draw(app, CELLSIZE);
@@ -269,15 +277,15 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
         }
     }
     standardize(ROCK, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
+    standardize(WATER, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
 
     while(true)
     { // place un escalier protégé par un porte fermée a clef
         uint16_t x = rand() % getNbrColumn();
         uint16_t y = rand() % getNbrLine();
-        getCell(x, y)->stateTest();
         if(getCell(x, y)->isWalkable())
         {
-            addStairs(new Stairs(NULL, false), x, y);
+            addStairs(new Stairs(0, false), x, y);
             addObstacle(new LockedDoor, x, y);
             break;
         }
@@ -319,11 +327,26 @@ void Map::save(std::ofstream & file)
     {
         for(uint16_t j = 0; j < getNbrLine(); j++)
         {
-
-            std::list< Obstacle* > os = getCell(i, j)->getObstacles();
+            std::list< Obstacle * > os = getCell(i, j)->getObstacles();
             file << os.size() << " ";
             for(std::list< Obstacle * >::iterator it = os.begin(); it != os.end(); ++it)
+            {
                 file << (*it)->getEntityTypeId() << " ";
+                switch((*it)->getEntityTypeId())
+                {
+                    case LOCKEDDOOR:
+                        file << ((LockedDoor*)(*it))->isOpen() << " " << ((LockedDoor*)(*it))->isLocked() << " ";
+                        break;
+                    case DOOR:
+                        break;
+                    case STAIRS:
+                        file << ((Stairs*)(*it))->isRising() << " " << ((Stairs*)(*it))->getLinkedMapId() << " ";
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
         file << "\n";
     }
@@ -345,11 +368,14 @@ void Map::save(std::ofstream & file)
     }
 
     file << "Characters" << "\n";
-    file << c_Characters.size();
+    file << c_Characters.size() << "\n";
     for(std::list< Character * >::iterator it = c_Characters.begin(); it != c_Characters.end(); ++it)
     {
         if((*it)->getEntityTypeId() == PLAYER)
+        {
+            file << (*it)->getEntityTypeId() << "\n";
             continue;
+        }
 
         file << (*it)->getEntityTypeId() << "\n";
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " ";
@@ -373,6 +399,8 @@ void Map::save(std::ofstream & file)
             file << (*it)->getItem(i)->getItemId() << " " << (*it)->getNbrOfItem(i) << "\n";
         }
     }
+
+    file << "endMap" << "\n";
 }
 
 void Map::load(std::ifstream & file)
@@ -387,28 +415,55 @@ void Map::load(std::ifstream & file)
 
         if(type == "Obstacles")
         {
-            uint16_t c, l;
-            file >> c >> l; // nbrOfCol, nbrOfLin
+            uint16_t nbrC, nbrL;
+            file >> nbrC >> nbrL; // nbrOfCol, nbrOfLin
 
-            for(uint16_t i = 0; i < c; i++) // créer une map de cases vide
+            for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
             { // colonnes
                 c_Map.push_back(std::vector < Cell *>());
-                for(uint16_t j = 0; j < l; j++) // lignes
+                for(uint16_t j = 0; j < nbrL; j++) // lignes
                     c_Map[i].push_back(new Cell(i, j));
             }
 
-            for(uint16_t i = 0; i < c; i++)
+            for(uint16_t i = 0; i < nbrC; i++)
             {
-                for(uint16_t j = 0; j < l; j++)
+                for(uint16_t j = 0; j < nbrL; j++)
                 { // lecture dans le sens contraire de la sauvegarde
 
-                    uint16_t nbrOs; // nbr d'obstacle sur la cell
+                    uint16_t nbrOs; // nbr d'obstacles sur la cell
                     file >> nbrOs;
                     uint16_t id;
                     for(uint16_t k = 0; k < nbrOs; k++)
                     {
                         file >> id; // ajout de chaque obstacle
-                        addObstacleOnCell((EntityTypeId)id, getCell(i, j));
+
+                        switch(id)
+                        {
+                        case LOCKEDDOOR:
+                        {
+                            uint16_t open, locked;
+                            file >> open >> locked;
+                            LockedDoor * lockedDoor = new LockedDoor(locked, open);
+                            lockedDoor->setOpen(open);
+                            lockedDoor->setLock(locked);
+                            addObstacle(lockedDoor, i, j);
+                        }break;
+                        case DOOR:
+                            break;
+
+                        case STAIRS:
+                        {
+                            uint16_t rising;
+                            uint32_t linkedMapId;
+                            file >> rising >> linkedMapId;
+                            Stairs * stairs = new Stairs(linkedMapId, rising);
+                            addStairs(stairs, i, j);
+                        }break;
+
+                        default:
+                            addObstacleOnCell((EntityTypeId)id, getCell(i, j));
+                            break;
+                        }
                     }
                 }
             }
@@ -455,6 +510,35 @@ void Map::load(std::ifstream & file)
                 addMonster(monster, c, l);
             }
         }
+        if(type == "Characters")
+        {
+            uint16_t nbrCha;
+            file >> nbrCha;
+            for(uint16_t i = 0; i < nbrCha; i++)
+            {
+                uint16_t id, c, l, life, totalLife, direction;
+                float speed;
+                std::string name;
+
+                file >> id;
+                if(id == PLAYER)
+                    continue;
+
+                file >> c >> l >> name >> life >> totalLife >> direction >> speed;
+                Character * chara = new Character((EntityTypeId)id, name, totalLife, (Direction)direction, speed, sf::Vector2f(c, l));
+                chara->takeDamages(totalLife - life);
+
+                uint16_t nbrItems;
+                file >> nbrItems;
+                uint16_t itemId, nbrOfItem;
+                for(uint16_t j = 0; j < nbrItems; j++)
+                {
+                    file >> itemId >> nbrOfItem;
+                    chara->takeItem(Item::getItemFromId((ItemId)itemId), nbrOfItem);
+                }
+                addCharacter(chara, c, l);
+            }
+        }
         if(type == "LootBags")
         {
             uint16_t nbrLB;
@@ -477,7 +561,7 @@ void Map::load(std::ifstream & file)
                 addLootBag(lootBag, c, l);
             }
         }
-    }while(type != Player);
+    }while(type != "endMap");
 }
 
 void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
@@ -533,7 +617,6 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
     uint16_t c = cell->getC();
     uint16_t l = cell->getL();
 
-    cell->stateTest();
     switch(id)
     {
     case ROCK:
@@ -582,7 +665,6 @@ bool Map::addLivingOnCell(EntityTypeId id, Cell * cell)
 {
     uint16_t c = cell->getC();
     uint16_t l = cell->getL();
-    cell->stateTest();
 
     switch(id)
     {
@@ -683,7 +765,8 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
 void Map::setFocus(Living * p)
 {
     c_Focus = p;
-    moveMap();
+    if(p != NULL)
+        moveMap();
 }
 std::vector< Cell * > Map::getPath(const Cell * startC, const Cell * endC, bool skipLivings, bool fullMap, uint16_t maxMoreSteps) const
 {

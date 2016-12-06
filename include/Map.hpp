@@ -11,6 +11,7 @@
 #include "Living.hpp"
 class Obstacle;
 class Stairs;
+class LockedDoor;
 #include "monster.hpp"
 class Monster;
 #include "lootbag.hpp"
@@ -36,9 +37,9 @@ class Map
         void removeObstacle(const Obstacle * o, uint16_t c, uint16_t l);
         bool addStairs(Stairs * s,  uint16_t c, uint16_t l);
         bool addMonster(Monster * m, uint16_t c, uint16_t l);
-        void removeMonster(const Monster * m);
+        void removeMonster(Monster * m);
         bool addCharacter(Character * cha, uint16_t c, uint16_t l);
-        void removeCharacter(const Character * cha);
+        void removeCharacter(Character * cha);
         bool addLootBag(LootBag * lB,  uint16_t c, uint16_t l);
         void removeLootBag(const LootBag * lB, uint16_t c, uint16_t l);
         void draw();
@@ -80,6 +81,10 @@ class Map
         Cell * getUCell(const Cell * c) const;
         Cell * getDCell(const Cell * c) const;
 
+        void setMapId(uint32_t mapId) { Map::mapsIds.erase(c_MapId); c_MapId = mapId; Map::mapsIds[c_MapId] = this; }
+        uint32_t getMapId() const { return c_MapId; }
+        static Map * getMapFromId(uint32_t mapId);
+
     private:
         void removeLiving(uint16_t c, uint16_t l);
 
@@ -95,7 +100,7 @@ class Map
         void standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i targetColumns, sf::Vector2i targetLines);
 
     private:
-        std::vector< std::vector < Cell *> > c_Map; // Type et numero de chaque contenu
+        std::vector< std::vector < Cell *> > c_Map;
 
         std::list< Obstacle * > c_Obstacles;
         std::list< Stairs * > c_Stairss;
@@ -109,6 +114,9 @@ class Map
         sf::View c_View;
 
         float c_CellSize;
+
+        uint32_t c_MapId;
+        static std::map< uint32_t, Map * > mapsIds;
 };
 
 #endif // MAP_HPP
