@@ -2,9 +2,7 @@
 
 Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
 {
-    load("TestSave.txt");
-
-    /*c_Map = new Map(app);
+    c_Map = new Map(app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::key, 5);
@@ -12,10 +10,11 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
-    genInfo.addObstacleInfos(ROCK, 2.5, 5);
+    genInfo.addObstacleInfos(SOIL, 7.5, 1);
+    genInfo.addObstacleInfos(ROCK, 2.5, 2);
     genInfo.addObstacleInfos(ROCK, 4.75, 1);
-    genInfo.addObstacleInfos(ROCK, 1.5, 3);
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
+    genInfo.addObstacleInfos(FIRE, 1.5, 1);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
     c_Map->generateMap(genInfo, 30, 25);
@@ -41,7 +40,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
             c_Map->addLootBag(basicBag, x, y);
             break;
         }
-    }*/
+    }
 
     c_ShortCutKeys[0] = sf::Keyboard::Num1;
     c_ShortCutKeys[1] = sf::Keyboard::Num2;
@@ -143,6 +142,7 @@ void Game::loop()
                 eventManage();
                 deathManage();
                 realTimeEventManage();
+                walkEventTest();
             }
         }
 
@@ -389,8 +389,8 @@ void Game::deathManage()
             else
                 delete lB;
 
-
-            std::cout << (*it)->getName() << " est mort par " << (*it)->getKiller()->getName() << "\n";
+            if((*it)->getKiller() != NULL)
+                std::cout << (*it)->getName() << " est mort par " << (*it)->getKiller()->getName() << "\n";
 
             std::list< Monster * >::const_iterator tmpIt = it; --tmpIt;
             c_Map->removeMonster((*it));
@@ -452,29 +452,29 @@ void Game::eventManage()
         {
             if(c_Player->getDirection() != UP)
                 c_Player->setDirection(UP);
-            if(c_Player->isMoveable() && movePlayer(c_Player, UP))
-                walkEventTest();
+            if(c_Player->isMoveable())
+               movePlayer(c_Player, UP);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::S))
         {
             if(c_Player->getDirection() != DOWN)
                 c_Player->setDirection(DOWN);
-            if(c_Player->isMoveable() && movePlayer(c_Player, DOWN))
-                walkEventTest();
+            if(c_Player->isMoveable())
+                movePlayer(c_Player, DOWN);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::Q))
         {
             if(c_Player->getDirection() != LEFT)
                 c_Player->setDirection(LEFT);
-            if(c_Player->isMoveable() && movePlayer(c_Player, LEFT))
-                walkEventTest();
+            if(c_Player->isMoveable())
+                movePlayer(c_Player, LEFT);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::D))
         {
             if(c_Player->getDirection() != RIGHT)
                 c_Player->setDirection(RIGHT);
-            else if(c_Player->isMoveable() && movePlayer(c_Player, RIGHT))
-                walkEventTest();
+            if(c_Player->isMoveable())
+                movePlayer(c_Player, RIGHT);
         }
 
         for(uint16_t i = 0; i < NBRSLOT; ++i)
@@ -491,6 +491,10 @@ void Game::eventManage()
 void Game::realTimeEventManage()
 {
     for(std::list< Living * >::const_iterator it = c_Map->getLivings().begin(); it != c_Map->getLivings().end(); ++it)
+    {
+        (*it)->realTimeAction(c_Map, c_Player);
+    }
+    for(std::list< Obstacle * >::const_iterator it = c_Map->getObstacles().begin(); it != c_Map->getObstacles().end(); ++it)
     {
         (*it)->realTimeAction(c_Map, c_Player);
     }
@@ -552,10 +556,13 @@ void Game::rawTextEventManage()
 
 void Game::walkEventTest()
 {
-    for(std::list< Obstacle * >::const_iterator it = c_Map->getObstacles().begin(); it != c_Map->getObstacles().end(); ++it)
+    for(std::list< Living * >::const_iterator it = c_Map->getLivings().begin(); it != c_Map->getLivings().end(); ++it)
     {
-        if(c_Map->getCell((*it)->getPosition().x, (*it)->getPosition().y)->getLiving() == c_Player) // on ne gère les events que pour le vrai joueur
-            (*it)->walkAction(c_Map, c_Player);
+        Cell * cell = c_Map->getCell((*it)->getPosition()); // cell sur laquelle est le Living
+        for(std::list< Obstacle * >::const_iterator it2 = cell->getObstacles().begin(); it2 != cell->getObstacles().end(); ++it2)
+        {
+            (*it2)->walkAction(c_Map, (*it));
+        }
     }
 }
 
