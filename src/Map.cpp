@@ -17,17 +17,22 @@ std::string nbrToString(float nbr)
 
 int16_t CELLSIZE = 45;
 
-Map::Map(sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
+Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
-    do{
-    c_MapId = rand() % 65535 + 1;
-    }while(Map::mapsIds[c_MapId]);
-    Map::mapsIds[c_MapId] = this;
+    if(mapId == 0)
+    {
+        do{
+        c_MapId = rand() % 65535 + 1;
+        }while(Map::mapsIds[c_MapId]);
+    }
+    else
+        c_MapId = mapId;
+        Map::mapsIds[c_MapId] = this;
 }
-Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a) : app(a), c_CellSize(CELLSIZE)
+Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
 {
     for(uint16_t i = 0; i < c; i++) // créer une map de cases vide
     { // colonnes
@@ -39,10 +44,15 @@ Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a) : app(a), c_CellSize(CELL
     c_View.setCenter(sf::Vector2f(0, 0));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
-    do{
-    c_MapId = rand() % 65535 + 1;
-    }while(Map::mapsIds[c_MapId]);
-    Map::mapsIds[c_MapId] == this;
+    if(mapId == 0)
+    {
+        do{
+        c_MapId = rand() % 65535 + 1;
+        }while(Map::mapsIds[c_MapId]);
+    }
+    else
+        c_MapId = mapId;
+    Map::mapsIds[c_MapId] = this;
 }
 Map::~Map()
 {

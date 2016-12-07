@@ -28,8 +28,8 @@ typedef struct PathCell
 class Map
 {
     public:
-        Map(sf::RenderWindow & a);
-        Map(uint16_t c, uint16_t l, sf::RenderWindow & a);
+        Map(sf::RenderWindow & a, uint32_t mapId = 0);
+        Map(uint16_t c, uint16_t l, sf::RenderWindow & a, uint32_t mapId = 0);
         ~Map();
 
         void moveMap(); // déplace la map en fonction du focus sur la vue
@@ -81,7 +81,6 @@ class Map
         Cell * getUCell(const Cell * c) const;
         Cell * getDCell(const Cell * c) const;
 
-        void setMapId(uint32_t mapId) { Map::mapsIds.erase(c_MapId); c_MapId = mapId; Map::mapsIds[c_MapId] = this; }
         uint32_t getMapId() const { return c_MapId; }
         static Map * getMapFromId(uint32_t mapId);
 
