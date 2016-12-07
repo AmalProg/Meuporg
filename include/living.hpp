@@ -39,7 +39,6 @@ class Living : public Entity
         Direction getDirection() const {return c_Direction;}
         bool isMoveable();
         float getSpeed() const { return c_Speed; }
-        //uint64_t getID() const { return c_ID; }
 
     protected:
         std::string c_Name;
@@ -55,10 +54,6 @@ class Living : public Entity
         sf::Clock c_SpeedClock;
 
         sf::RectangleShape c_Shape;
-
-        uint64_t c_ID;
-    public:
-        static uint64_t ID;
 };
 
 #endif // LIVING_HPP
