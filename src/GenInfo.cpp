@@ -22,3 +22,11 @@ void GenInfo::addLivingInfos(EntityTypeId eTypeId, const uint16_t nbrGrouped, co
 
     c_LivingsInfos.push_back(infos);
 }
+
+void GenInfo::addStandardizeInfos(EntityTypeId eTypeId, const uint16_t switchFloorValue)
+{
+    EntityInfo infos(eTypeId);
+    infos.addInfo("switchValue", switchFloorValue);
+
+    c_StandardizeInfos.push_back(infos);
+}

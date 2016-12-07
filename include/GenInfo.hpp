@@ -27,13 +27,16 @@ class GenInfo
 
         void addObstacleInfos(EntityTypeId eTypeId, const float expandValue, const float maxOccurences);
         void addLivingInfos(EntityTypeId eTypeId, const uint16_t nbrGrouped, const float maxOccurences);
+        void addStandardizeInfos(EntityTypeId eTypeId, const uint16_t switchFloorValue);
 
         std::vector< EntityInfo > getObstaclesInfos() const { return c_ObstaclesInfos; }
         std::vector< EntityInfo > getLivingsInfos() const { return c_LivingsInfos; }
+        std::vector< EntityInfo > getStandardizeInfos() const { return c_StandardizeInfos; }
 
     private:
         std::vector< EntityInfo > c_ObstaclesInfos;
         std::vector< EntityInfo > c_LivingsInfos;
+        std::vector< EntityInfo > c_StandardizeInfos;
 };
 
 #endif // GENINFO_HPP

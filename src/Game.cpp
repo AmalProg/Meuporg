@@ -11,10 +11,15 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
     genInfo.addObstacleInfos(SOIL, 7.5, 1);
+    genInfo.addObstacleInfos(SAND, 3.25, 2);
     genInfo.addObstacleInfos(ROCK, 2.5, 2);
     genInfo.addObstacleInfos(ROCK, 4.75, 1);
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
     genInfo.addObstacleInfos(FIRE, 1.5, 1);
+    genInfo.addStandardizeInfos(WATER, 4);
+    genInfo.addStandardizeInfos(SAND, 5);
+    genInfo.addStandardizeInfos(SOIL, 5);
+    genInfo.addStandardizeInfos(ROCK, 5);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
     c_Map->generateMap(genInfo, 30, 25);
@@ -278,17 +283,13 @@ void Game::genNextMap(Map * map, Map * lastMap, uint16_t lvl)
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
-    c_Map->generateMap(genInfo, 25, 30);
+    map->generateMap(genInfo, 25, 30);
 
-    uint16_t x, y;
-
-    while(true)
-    { // place un escalier remontant à la map précédente
-        x = rand() % map->getNbrColumn();
-        y = rand() % map->getNbrLine();
-        if(map->getCell(x, y)->isWalkable())
+    for(std::list< Stairs * >::const_iterator it = map->getStairss().begin(); it != map->getStairss().end(); it++)
+    {
+        if((*it)->isRising())
         {
-            map->addStairs(new Stairs(lastMap->getMapId(), true), x, y);
+            (*it)->setLinkedMapId(lastMap->getMapId());
             break;
         }
     }
