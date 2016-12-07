@@ -34,6 +34,8 @@ class Obstacle : public Entity
         virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
         virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
         virtual void walkAction(Map * mape, Living * l) {} // activé lorsqu'on marche sur l'obstacle
+        virtual void firstStepAction(Map * mape, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
+        virtual void lastStepAction(Map * mape, Living * l) {} // activé lorsqu'on sort juste de la cell
 
     protected:
         sf::RectangleShape c_Shape;
@@ -70,6 +72,9 @@ public:
     {
         c_Shape.setFillColor(sf::Color(180, 180, 40));
     }
+
+    virtual void firstStepAction(Map * mape, Living * l) { l->setSpeed(l->getSpeed() * 0.5); }
+    virtual void lastStepAction(Map * mape, Living * l) { l->setSpeed(l->getSpeed() * 2); }
 };
 
 class Soil : public Obstacle
@@ -84,11 +89,11 @@ public:
 class Fire : public Obstacle
 {
 public:
-    Fire(float damageTickTime = 0.5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamageTickTime(damageTickTime)
+    Fire(float damageTickTime = 0.75, uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamageTickTime(damageTickTime),
+    c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
     {
         c_Shape.setFillColor(sf::Color(200, 100, 0));
-        c_FirstStateOfFire = true;
     }
 
     virtual void realTimeAction(Map * m, Player * p);
@@ -98,8 +103,11 @@ private:
     sf::Clock c_SwitchClock;
     bool c_FirstStateOfFire;
 
-    sf::Clock c_DamageTickClock;
+    static sf::Clock c_DamageTickClock;
     float c_DamageTickTime; // temps entre chaque tick de dégats
+    static bool c_Ticking;
+
+    uint16_t c_DamagePerTick;
 };
 
 class Rock : public Obstacle
@@ -153,10 +161,9 @@ public:
     {
     }
 
-    virtual void walkAction(Map * mape, Living * l)
+    virtual void firstStepAction(Map * mape, Living * l)
     {
-
-        if(l->getEntityTypeId() == PLAYER && c_Position.x == l->getPosition().x && c_Position.y == l->getPosition().y)
+        if(l->getEntityTypeId() == PLAYER)
             c_IsActivated = true;
         else
             c_IsActivated = false;
