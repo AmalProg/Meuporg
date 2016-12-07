@@ -221,8 +221,7 @@ void Game::load(const std::string & fileName)
             {
                 file >> mapId;
 
-                Map * m = new Map(app);
-                m->setMapId(mapId);
+                Map * m = new Map(app, mapId);
                 m->load(file);
                 c_Maps.push_back(m);
 
