@@ -24,7 +24,7 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
     Cell * pCell = m->getCell(p->getPosition().x, p->getPosition().y);
     Cell * myCell = m->getCell(c_Position.x, c_Position.y);
 
-    if(m->getCellDist(pCell, myCell) > 1 && m->getCellDist(pCell, myCell) <= c_AggroDist)
+    if(m->getCellDist(pCell, myCell) <= c_AggroDist)
     {
         c_IsInAggro = true;
         c_LastAggroTime.restart();
@@ -34,9 +34,9 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
 
     if(isMoveable()) // gestion du déplacmeent
     {
-        if(c_IsInAggro && c_AggroState == AGGRESIVE)
+        if(c_IsInAggro && c_AggroState == AGGRESIVE && m->getCellDist(pCell, myCell) > 1)
         {// si en en aggro et en mode aggresif
-            std::vector< Cell * > path = m->getPath(myCell, pCell, false, false, 1);
+            std::vector< Cell * > path = m-> (myCell, pCell, false, false, 1);
 
             if(path.size() != 0 && path[0]->isWalkable())
             {
@@ -52,6 +52,36 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                     m->moveLiving(this, path[0]->getC(), path[0]->getL());
                     c_LastAtkTime.restart(); // on attaque pas instantannément après un déplcaement
                 }
+            }
+        }
+        else if(!c_IsInAggro)
+        {
+            uint16_t moveProb = rand() % 101;
+            if(moveProb < 20) // 20% de chance de se déplacer
+            {
+                Direction dir = (Direction)(rand() % 4); // direction vers laquelle il veut se diriger
+                Cell * cell;// cell vers laquelle il veut se diriger
+                switch(dir)
+                {
+                case UP:
+                    if(c_Position.y > 0)
+                        cell = m->getUCell(myCell);
+                    break;
+                case DOWN:
+                    if(c_Position.y < m->getNbrLine()-1)
+                        cell = m->getDCell(myCell);
+                    break;
+                case LEFT:
+                    if(c_Position.x > 0)
+                        cell = m->getLCell(myCell);
+                    break;
+                case RIGHT:
+                    if(c_Position.x < m->getNbrColumn()-1)
+                        cell = m->getRCell(myCell);
+                    break;
+                }
+                if(cell != NULL && cell->isWalkable())
+                    m->moveLiving(this, cell->getC(), cell->getL());
             }
         }
     }
@@ -71,7 +101,7 @@ void Sheep::attack(Map * m, Player * p)
     Cell * pCell = m->getCell(p->getPosition().x, p->getPosition().y);
     Cell * myCell = m->getCell(c_Position.x, c_Position.y);
 
-    if(m->getCellDist(pCell, myCell) == 1 && c_LastAtkTime.getElapsedTime().asSeconds() >= c_DelayAtkTime) // gestion de l'attaque
+    if(c_AggroState == AGGRESIVE && m->getCellDist(pCell, myCell) == 1 && c_LastAtkTime.getElapsedTime().asSeconds() >= c_DelayAtkTime) // gestion de l'attaque
     {
         p->takeDamages(5);
         std::cout << c_Name << " made 5 damages done on " << p->getName() << "\n";
@@ -92,7 +122,7 @@ void Wolf::attack(Map * m, Player * p)
     Cell * pCell = m->getCell(p->getPosition().x, p->getPosition().y);
     Cell * myCell = m->getCell(c_Position.x, c_Position.y);
 
-    if(m->getCellDist(pCell, myCell) == 1 && c_LastAtkTime.getElapsedTime().asSeconds() >= c_DelayAtkTime) // gestion de l'attaque
+    if(c_AggroState == AGGRESIVE && m->getCellDist(pCell, myCell) == 1 && c_LastAtkTime.getElapsedTime().asSeconds() >= c_DelayAtkTime) // gestion de l'attaque
     {
         p->takeDamages(10);
         std::cout << c_Name << " made 10 damages on " << p->getName() << "\n";
