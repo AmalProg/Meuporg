@@ -14,7 +14,45 @@ void Obstacle::draw(sf::RenderWindow & app, uint16_t cellSize)
     c_Shape.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
     app.draw(c_Shape);
 }
-
+/***/
+void Fire::realTimeAction(Map * m, Player * p)
+{
+    if(c_FirstStateOfFire && c_SwitchClock.getElapsedTime().asSeconds() > 0.20 + (rand() % 5) / 100.f)
+    {
+        c_Shape.setFillColor(sf::Color(255, 155, 0));
+        c_FirstStateOfFire = false;
+        c_SwitchClock.restart();
+    }
+    else if(c_SwitchClock.getElapsedTime().asSeconds() > 0.20 + (rand() % 5) / 100.f)
+    {
+        c_Shape.setFillColor(sf::Color(200, 100, 0));
+        c_FirstStateOfFire = true;
+        c_SwitchClock.restart();
+    }
+}
+void Fire::walkAction(Map * mape, Living * l)
+{
+    if(l->getPosition().x == c_Position.x && l->getPosition().y == c_Position.y
+       && c_DamageTickClock.getElapsedTime().asSeconds() > c_DamageTickTime)
+    {
+        l->takeDamages(5);
+        std::cout << "Fire made 5 damages done on " << l->getName() << "\n";
+        c_DamageTickClock.restart();
+    }
+}
+/***/
+Door::Door(bool isOpen, EntityTypeId typeId, const sf::Vector2f & pos)
+: Obstacle(typeId, pos, isOpen, true, false, true, false), c_IsOpen(isOpen)
+{
+    if(c_IsOpen)
+    {
+        c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
+    }
+    else
+    {
+        c_Shape.setFillColor(sf::Color(200, 150 ,30));
+    }
+}
 void Door::speakAction(Map * mape, Player * p)
 {
     if(c_IsOpen)
@@ -34,7 +72,14 @@ void Door::speakAction(Map * mape, Player * p)
         std::cout << "Vous ouvrez la porte.\n";
     }
 }
-
+void Door::touchAction(Map * mape, Player * p)
+{
+    if(!c_IsOpen)
+    {
+        std::cout << "Cette porte est actuellement fermée !\n";
+    }
+}
+/***/
 void LockedDoor::speakAction(Map * mape, Player * p)
 {
     if(!c_IsLocked)
@@ -55,3 +100,11 @@ void LockedDoor::speakAction(Map * mape, Player * p)
         }
     }
 }
+void LockedDoor::touchAction(Map * mape, Player * p)
+{
+    if(c_IsLocked)
+        std::cout << "Cette porte est actuellement fermée à clef!" << '\n';
+    else
+        Door::touchAction(mape, p);
+}
+/***/

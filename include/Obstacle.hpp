@@ -30,9 +30,10 @@ class Obstacle : public Entity
 
         virtual void draw(sf::RenderWindow & app, uint16_t cellSize);
 
-        virtual void speakAction(Map * mape, Player * p) = 0; // activé si l'on essaye de "parler" a l'obstacle
-        virtual void touchAction(Map * mape, Player * p) = 0; // activé lorsqu'on essaye de marcher sur l'obstacle
-        virtual void walkAction(Map * mape, Player * p) = 0; // activé lorsqu'on marche sur l'obstacle
+        virtual void realTimeAction(Map * m, Player * p) {} // activé dans diverses cas en fonction de positions de certains objets etc ...
+        virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
+        virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
+        virtual void walkAction(Map * mape, Living * l) {} // activé lorsqu'on marche sur l'obstacle
 
     protected:
         sf::RectangleShape c_Shape;
@@ -51,13 +52,54 @@ public:
     {
         c_Shape.setFillColor(sf::Color::Green);
     }
+};
 
-    virtual void speakAction(Map * mape, Player * p)
-    {}; // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {} // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
+class Water : public Obstacle
+{
+public:
+    Water(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(WATER, pos, false, false, true, false, true)
+    {
+        c_Shape.setFillColor(sf::Color(0, 0, 175));
+    }
+};
+
+class Sand : public Obstacle
+{
+public:
+    Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SAND, pos, true, false, false, false, true)
+    {
+        c_Shape.setFillColor(sf::Color(180, 180, 40));
+    }
+};
+
+class Soil : public Obstacle
+{
+public:
+    Soil(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SOIL, pos, true, false, false, false, true)
+    {
+        c_Shape.setFillColor(sf::Color(50, 25, 0));
+    }
+};
+
+class Fire : public Obstacle
+{
+public:
+    Fire(float damageTickTime = 0.5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamageTickTime(damageTickTime)
+    {
+        c_Shape.setFillColor(sf::Color(200, 100, 0));
+        c_FirstStateOfFire = true;
+    }
+
+    virtual void realTimeAction(Map * m, Player * p);
+    virtual void walkAction(Map * mape, Living * l);
+
+private:
+    sf::Clock c_SwitchClock;
+    bool c_FirstStateOfFire;
+
+    sf::Clock c_DamageTickClock;
+    float c_DamageTickTime; // temps entre chaque tick de dégats
 };
 
 class Rock : public Obstacle
@@ -67,41 +109,15 @@ public:
     {
         c_Shape.setFillColor(sf::Color(120, 120 ,120));
     }
-
-    virtual void speakAction(Map * mape, Player * p)
-    {}; // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {} // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
 };
 
 class Door : public Obstacle
 {
 public:
-    Door(bool isOpen = false, EntityTypeId typeId = DOOR, const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(typeId, pos, isOpen, true, false, true, false)
-    , c_IsOpen(isOpen)
-    {
-        if(c_IsOpen)
-        {
-            c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
-        }
-        else
-        {
-            c_Shape.setFillColor(sf::Color(200, 150 ,30));
-        }
-    }
+    Door(bool isOpen = false, EntityTypeId typeId = DOOR, const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
-    virtual void speakAction(Map * mape, Player * p); // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {
-        if(!c_IsOpen)
-        {
-            std::cout << "Cette porte est actuellement fermée !\n";
-        }
-    } // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
+    virtual void speakAction(Map * mape, Player * p);
+    virtual void touchAction(Map * mape, Player * p);
 
     bool isOpen() const { return c_IsOpen; }
     bool setOpen(bool isOpen) { c_IsOpen = isOpen; }
@@ -115,20 +131,10 @@ class LockedDoor : public Door
 public:
     LockedDoor(bool isLocked = true, bool isOpen = false, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Door(isOpen, LOCKEDDOOR, pos), c_IsLocked(isLocked)
-    {
-    }
+    {}
 
+    virtual void touchAction(Map * mape, Player * p);
     virtual void speakAction(Map * mape, Player * p);
-    // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {
-        if(c_IsLocked)
-            std::cout << "Cette porte est actuellement fermée à clef!" << '\n';
-        else
-            Door::touchAction(mape, p);
-    } // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
 
     bool isLocked() const { return c_IsLocked; }
 
@@ -147,15 +153,14 @@ public:
     {
     }
 
-    virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
+    virtual void walkAction(Map * mape, Living * l)
     {
-        if(c_Position.x == p->getPosition().x && c_Position.y == p->getPosition().y)
+
+        if(l->getEntityTypeId() == PLAYER && c_Position.x == l->getPosition().x && c_Position.y == l->getPosition().y)
             c_IsActivated = true;
         else
             c_IsActivated = false;
-    } // activé lorsqu'on marche sur l'obstacle
+    }
 
     bool isActivated() const { return c_IsActivated; }
     bool isRising() const { return c_IsRising; }
@@ -170,38 +175,6 @@ private:
     bool c_IsActivated;
 
     bool c_IsRising;
-};
-
-class Water : public Obstacle
-{
-public:
-    Water(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(WATER, pos, false, false, true, false, true)
-    {
-        c_Shape.setFillColor(sf::Color(0, 0, 175));
-    }
-
-    virtual void speakAction(Map * mape, Player * p)
-    {}; // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {} // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
-};
-
-class Sand : public Obstacle
-{
-public:
-    Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SAND, pos, true, false, false, false, true)
-    {
-        c_Shape.setFillColor(sf::Color(180, 180, 40));
-    }
-
-    virtual void speakAction(Map * mape, Player * p)
-    {}; // activé si l'on essaye de "parler" a l'obstacle
-    virtual void touchAction(Map * mape, Player * p)
-    {} // activé lorsqu'on essaye de marcher sur l'obstacle
-    virtual void walkAction(Map * mape, Player * p)
-    {} // activé lorsqu'on marche sur l'obstacle
 };
 
 #endif // OBSTACLE_H
