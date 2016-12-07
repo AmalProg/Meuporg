@@ -65,6 +65,7 @@ class Map
         const std::list< LootBag * > & getLootBags() const { return c_LootBags; }
 
         Cell * getCell(uint16_t c, uint16_t l) const { if(c >= 0 && l >= 0 && c < getNbrColumn() && l < getNbrLine()) return c_Map[c][l]; return NULL; }
+        Cell * getCell(const sf::Vector2f & pos) const { if(pos.x >= 0 && pos.y >= 0 && pos.x < getNbrColumn() && pos.y < getNbrLine()) return c_Map[pos.x][pos.y]; return NULL; }
         float getDist(Cell * c1, Cell * c2) const;
         uint16_t getCellDist(Cell * c1, Cell * c2) const;
         bool lineOfSight(Cell * c1, Cell * c2) const;
