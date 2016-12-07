@@ -247,8 +247,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
     }
 
     std::vector< EntityInfo > ObsInfos = genInfos.getObstaclesInfos();
-    for(std::vector< EntityInfo >::iterator it = ObsInfos.begin();
-            it != ObsInfos.end(); it++)
+    for(std::vector< EntityInfo >::iterator it = ObsInfos.begin(); it != ObsInfos.end(); it++)
     {
         EntityTypeId id = (*it).getEntityTypeId();
         float maxOccu = (*it).getInfo("maxOccu");
@@ -269,7 +268,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
                 if(addObstacleOnCell(id, cell)) // si le nomùbre à changé (normalement +1)
                 {
                     expandEntity(id, cell, expand);
-                    occurencesNbr++; //oon ajoute une occurence
+                    occurencesNbr++; // on ajoute une occurence
                 }
 
                 nbrTry++;
@@ -286,19 +285,48 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
             }
         }
     }
-    standardize(ROCK, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
-    standardize(WATER, 4, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
 
+    std::vector< EntityInfo > standInfos = genInfos.getStandardizeInfos();
+    for(std::vector< EntityInfo >::iterator it = standInfos.begin(); it != standInfos.end(); it++)
+    {
+        standardize((*it).getEntityTypeId(), (*it).getInfo("switchValue"), sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
+    }
+
+    uint16_t xRise, yRise;
+    uint16_t i = 0; // nbr de fois passé dans la boucle
+    uint16_t wallGap = 4; // écart au mur maximum
     while(true)
-    { // place un escalier protégé par un porte fermée a clef
+    { // place un escalier remontant à la map précédente
+        xRise = rand() % getNbrColumn();
+        yRise = rand() % getNbrLine();
+        if(xRise < wallGap || yRise < wallGap || getNbrColumn() - xRise < wallGap || getNbrLine() - yRise < wallGap)
+        { // si l'écart maximum aux murs est respecté
+            if(getCell(xRise, yRise)->isWalkable())
+            {
+                addStairs(new Stairs(0, true), xRise, yRise);
+                break;
+            }
+        }
+        i++;
+        if(i % 30 == 0) // tous les 50 essais on incrémente wallGap
+            wallGap++;
+    }
+
+    uint16_t stairsGap = (getNbrColumn() + getNbrColumn()) * 2/3; // écart entre les duex escaliers
+    i = 0; // nbr de fois passé dans la boucle
+    while(true)
+    { // place un escalier protégé par une porte fermée a clef
         uint16_t x = rand() % getNbrColumn();
         uint16_t y = rand() % getNbrLine();
-        if(getCell(x, y)->isWalkable())
+        if(getCell(x, y)->isWalkable() && getCellDist(getCell(x, y), getCell(xRise, yRise)) > stairsGap)
         {
             addStairs(new Stairs(0, false), x, y);
             addObstacle(new LockedDoor, x, y);
             break;
         }
+        i++;
+        if(i % 10 == 0) // tous les 50 essais on incrémente wallGap
+            stairsGap++;
     }
 
     std::vector< EntityInfo > LivInfos = genInfos.getLivingsInfos();
@@ -320,8 +348,8 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
                 uint16_t l = rand() % getNbrLine();
                 Cell * cell = getCell(c, l);
 
-                if(addLivingOnCell(id, cell)) // si le nomùbre à changé (normalement +1)
-                    occurencesNbr++; //oon ajoute une occurence
+                if(addLivingOnCell(id, cell)) // si le nombre à changé (normalement +1)
+                    occurencesNbr++; //on ajoute une occurence
 
                 nbrTry++;
             }while(nbrTry < nbrTryMax && occurencesNbr < maxOccu);
@@ -700,11 +728,11 @@ bool Map::addLivingOnCell(EntityTypeId id, Cell * cell)
     switch(id)
     {
     case SHEEP:
-        if(cell->isWalkable() && cell->getLiving() == NULL)
+        if(cell->isWalkable() && !cell->gotStairs() && cell->getLiving() == NULL)
             addMonster(new Sheep(), c, l);
         break;
     case WOLF:
-        if(cell->isWalkable() && cell->getLiving() == NULL)
+        if(cell->isWalkable() && !cell->gotStairs() && cell->getLiving() == NULL)
             addMonster(new Wolf(), c, l);
         break;
     case CHARACTER:
@@ -791,6 +819,12 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
 
     c_Map[c][l]->setLiving(li); // on donne son Id de joueur
     li->setPosition(c, l);
+
+    Cell * cell = getCell(c, l);
+    for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
+    {
+        (*it)->firstStepAction(this, li);
+    }
 }
 
 void Map::setFocus(Living * p)
