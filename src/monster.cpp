@@ -24,7 +24,7 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
     Cell * pCell = m->getCell(p->getPosition().x, p->getPosition().y);
     Cell * myCell = m->getCell(c_Position.x, c_Position.y);
 
-    if(m->getCellDist(pCell, myCell) <= c_AggroDist)
+    if(c_AggroState == AGGRESIVE && m->getCellDist(pCell, myCell) <= c_AggroDist)
     {
         c_IsInAggro = true;
         c_LastAggroTime.restart();
@@ -34,9 +34,9 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
 
     if(isMoveable()) // gestion du déplacmeent
     {
-        if(c_IsInAggro && c_AggroState == AGGRESIVE && m->getCellDist(pCell, myCell) > 1)
+        if(c_IsInAggro && m->getCellDist(pCell, myCell) > 1)
         {// si en en aggro et en mode aggresif
-            std::vector< Cell * > path = m-> (myCell, pCell, false, false, 1);
+            std::vector< Cell * > path = m->getPath(myCell, pCell, false, false, 1);
 
             if(path.size() != 0 && path[0]->isWalkable())
             {
@@ -80,7 +80,7 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                         cell = m->getRCell(myCell);
                     break;
                 }
-                if(cell != NULL && cell->isWalkable())
+                if(cell != NULL && cell->isWalkable() && !cell->gotStairs())
                     m->moveLiving(this, cell->getC(), cell->getL());
             }
         }
