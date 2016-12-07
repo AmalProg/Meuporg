@@ -287,7 +287,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
         }
     }
     standardize(ROCK, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
-    standardize(WATER, 5, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
+    standardize(WATER, 4, sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
 
     while(true)
     { // place un escalier protégé par un porte fermée a clef
@@ -629,6 +629,41 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
 
     switch(id)
     {
+    case GRASS:
+        if(!cell->isCovered())
+        {
+            addObstacle(new Grass(), c, l);
+            return true;
+        }
+        break;
+    case WATER:
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        {
+            addObstacle(new Water(), c, l);
+            return true;
+        }
+        break;
+    case SAND:
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        {
+            addObstacle(new Sand(), c, l);
+            return true;
+        }
+        break;
+    case SOIL:
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        {
+            addObstacle(new Soil(), c, l);
+            return true;
+        }
+        break;
+    case FIRE:
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() != WATER)
+        {
+            addObstacle(new Fire(), c, l);
+            return true;
+        }
+        break;
     case ROCK:
         if(!cell->isFilled())
         {
@@ -647,20 +682,6 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
         if(cell->isWalkable())
         {
             addObstacle(new LockedDoor(), c, l);
-            return true;
-        }
-        break;
-    case WATER:
-        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
-        {
-            addObstacle(new Water(), c, l);
-            return true;
-        }
-        break;
-    case GRASS:
-        if(!cell->isCovered())
-        {
-            addObstacle(new Grass(), c, l);
             return true;
         }
         break;
