@@ -665,7 +665,7 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
         }
         break;
     case WATER:
-        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        if(true)
         {
             addObstacle(new Water(), c, l);
             return true;
@@ -820,7 +820,13 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
     c_Map[c][l]->setLiving(li); // on donne son Id de joueur
     li->setPosition(c, l);
 
-    Cell * cell = getCell(c, l);
+    Cell * lastCell = getCell(aC, aL); // gestion des events de sortie sur la cell ou l'on était
+    for(std::list< Obstacle * >::const_iterator it = lastCell->getObstacles().begin(); it != lastCell->getObstacles().end(); ++it)
+    {
+        (*it)->lastStepAction(this, li);
+    }
+
+    Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
     for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
     {
         (*it)->firstStepAction(this, li);
