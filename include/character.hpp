@@ -14,10 +14,12 @@ class Character : public Living
                   const sf::Vector2f & pos = sf::Vector2f(0, 0));
         virtual ~Character();
 
+        void update(const sf::Time & elapsed);
+
         bool takeItem(const Item * item, uint16_t nbr); // rammasse un 'nbr' d''item'
         void removeItem(const Item * item, uint16_t nbr); // detruit un 'nbr' d''item'
 
-        void setDirection(Direction dir) { c_TurnTime.restart(); Living::setDirection(dir); }
+        void setDirection(Direction dir) { c_TurnTime = sf::Time::Zero; Living::setDirection(dir); }
 
         const Item * getItem(uint16_t i) const;
         const Bag * getBag() const { return c_Bag; }
@@ -25,7 +27,7 @@ class Character : public Living
 
     protected:
         Bag * c_Bag;
-        sf::Clock c_TurnTime;
+        sf::Time c_TurnTime;
 };
 
 #endif // CHARACTER_HPP

@@ -11,7 +11,7 @@
 class Player : public Character
 {
     public:
-        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 20, const sf::Vector2f & pos = sf::Vector2f(0, 0));
+        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 10, const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
         void setShortCut(const Item * item, sf::Keyboard::Key key);
 

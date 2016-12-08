@@ -12,6 +12,13 @@ Living::~Living()
 {
 }
 
+void Living::update(const sf::Time & elapsed)
+{
+    c_SpeedTime += elapsed;
+    if(elapsed.asSeconds() < 1.f / c_Speed && c_SpeedTime.asSeconds() > 1.f / c_Speed)
+        c_SpeedTime = sf::seconds(1.f / c_Speed);
+}
+
 void Living::draw(sf::RenderWindow & app, uint16_t cellSize)
 {
     c_Shape.setSize(sf::Vector2f(cellSize * 3/4, cellSize * 3/4));
@@ -21,10 +28,24 @@ void Living::draw(sf::RenderWindow & app, uint16_t cellSize)
 
 bool Living::isMoveable()
 {
-    if(c_SpeedClock.getElapsedTime().asSeconds() > 1 / c_Speed)
+    if(c_SpeedTime.asSeconds() >= 1.f / c_Speed - 0.001) // 0.001 contre les erreurs d'arrondi
     {
-        c_SpeedClock.restart();
-        return true;
+        c_IsMoveable = true;
     }
-    return false;
+
+    return c_IsMoveable;
 }
+
+void Living::setPosition(uint16_t i, uint16_t j)
+{
+    c_IsMoveable = false;
+    c_SpeedTime -= sf::seconds(1.f / c_Speed);
+    Entity::setPosition(i, j);
+}
+void Living::setPosition(const sf::Vector2f & position)
+{
+    c_IsMoveable = false;
+    c_SpeedTime -= sf::seconds(1.f / c_Speed);
+    Entity::setPosition(position);
+}
+

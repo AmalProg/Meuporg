@@ -36,6 +36,7 @@ class Game
         bool useItem(Player * p, const Item * item, uint16_t c, uint16_t l);
 
     private:
+        void update(const sf::Time & elapsed);
         void eventManage();
         int32_t choiceTextEventManage();
         void rawTextEventManage();
@@ -62,6 +63,9 @@ class Game
         Menu c_Menu;
         RawText c_RawText;
         ChoiceText c_ChoiceText;
+
+        sf::Clock c_GameClock;
+        uint64_t c_NbrLoops;
 };
 
 #endif // GAME_HPP

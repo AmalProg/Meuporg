@@ -20,7 +20,7 @@ int16_t CELLSIZE = 45;
 Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
-    c_View.setSize(app.getSize().x, app.getSize().y);
+    c_View.setSize(app.getSize().x * 1.3, app.getSize().y * 1.3);
 
     if(mapId == 0)
     {
@@ -73,14 +73,14 @@ void Map::moveMap()
     if(c_Focus->getPosition().x >= c_Map.size() - c_View.getSize().x / CELLSIZE / 2)
         c_View.setCenter(c_Map.size() * CELLSIZE - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
     else if(c_Focus->getPosition().x < c_View.getSize().x / CELLSIZE / 2)
-            c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
+        c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
     else if(c_Focus->getPosition().x >= c_View.getSize().x / CELLSIZE / 2)
         c_View.setCenter(c_Focus->getPosition().x * CELLSIZE, c_View.getCenter().y); // centre la map sur le joueur focus
 
     if(c_Focus->getPosition().y >= c_Map[0].size() - c_View.getSize().y / CELLSIZE / 2)
         c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * CELLSIZE - c_View.getSize().y/2); // place la map en bas
     else if(c_Focus->getPosition().y < c_View.getSize().y / CELLSIZE / 2)
-                c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
+        c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
     else if(c_Focus->getPosition().y >= c_View.getSize().y / CELLSIZE / 2)
         c_View.setCenter(c_View.getCenter().x, c_Focus->getPosition().y * CELLSIZE); // centre la map sur le joueur focus
 
@@ -224,16 +224,28 @@ void Map::draw()
                     c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
                 }
 
-                sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
+                /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
                 t.setPosition(c_Map[i][j]->getC() * c_CellSize + 10, c_Map[i][j]->getL() * c_CellSize + 10);
                 t.setColor(sf::Color::Red);
                 sf::Text t2(nbrToString(c_Map[i][j]->getL()), font, 10);
                 t2.setPosition(c_Map[i][j]->getC() * c_CellSize +20, c_Map[i][j]->getL() * c_CellSize+20);
                 t2.setColor(sf::Color::Red);
                 app.draw(t);
-                app.draw(t2);
+                app.draw(t2);*/
             }
         }
+    }
+}
+
+void Map::update(const sf::Time & elapsed)
+{
+    for(std::list< Living * >::iterator it = c_Livings.begin(); it != c_Livings.end(); it++)
+    {
+        (*it)->update(elapsed);
+    }
+    for(std::list< Obstacle * >::iterator it = c_Obstacles.begin(); it != c_Obstacles.end(); it++)
+    {
+        (*it)->update(elapsed);
     }
 }
 
@@ -312,7 +324,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
             wallGap++;
     }
 
-    uint16_t stairsGap = (getNbrColumn() + getNbrColumn()) * 2/3; // écart entre les duex escaliers
+    uint16_t stairsGap = sqrt(getNbrColumn() * getNbrColumn() + getNbrColumn() * getNbrColumn()) * 2/3; // écart entre les duex escaliers
     i = 0; // nbr de fois passé dans la boucle
     while(true)
     { // place un escalier protégé par une porte fermée a clef
@@ -324,8 +336,8 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
             addObstacle(new LockedDoor, x, y);
             break;
         }
-        i++;
-        if(i % 10 == 0) // tous les 50 essais on incrémente wallGap
+        i--;
+        if(i % 30 == 0) // tous les 10 essais on incrémente wallGap
             stairsGap++;
     }
 
@@ -376,9 +388,13 @@ void Map::save(std::ofstream & file)
                         file << ((LockedDoor*)(*it))->isOpen() << " " << ((LockedDoor*)(*it))->isLocked() << " ";
                         break;
                     case DOOR:
+                        file << ((LockedDoor*)(*it))->isOpen() << " ";
                         break;
                     case STAIRS:
                         file << ((Stairs*)(*it))->isRising() << " " << ((Stairs*)(*it))->getLinkedMapId() << " ";
+                        break;
+                    case FIRE:
+                        file << ((Fire*)(*it))->getDamageTickTime() << " " << ((Fire*)(*it))->getDamagePerTick() << " ";
                         break;
 
                     default:
@@ -397,6 +413,7 @@ void Map::save(std::ofstream & file)
         file << (*it)->getPosition().x << " " << (*it)->getPosition().y << " " << (*it)->getSpeed() << " ";
         file << (*it)->getName() << " " << (*it)->getLife() << " " << (*it)->getMaxLife() << " " << (*it)->getDirection() << " ";
         file << (*it)->getAggroState() << " " << (*it)->getAggroDist() << " " << (*it)->getLastAggroTime().asSeconds() << " ";
+        file << (*it)->getLostAggroTime() << " ";
         file << (*it)->getDelayAtkTime() << " " << (*it)->getLastAtkTime().asSeconds() << "\n";
         file << (*it)->getLootTable().getLootsInfos().size() << "\n";
         for(std::list< lootInfos >::const_iterator it2 = (*it)->getLootTable().getLootsInfos().begin(); it2 != (*it)->getLootTable().getLootsInfos().end(); ++it2)
@@ -482,12 +499,15 @@ void Map::load(std::ifstream & file)
                             uint16_t open, locked;
                             file >> open >> locked;
                             LockedDoor * lockedDoor = new LockedDoor(locked, open);
-                            lockedDoor->setOpen(open);
-                            lockedDoor->setLock(locked);
                             addObstacle(lockedDoor, i, j);
                         }break;
                         case DOOR:
-                            break;
+                        {
+                            uint16_t open;
+                            file >> open;
+                            Door * door = new Door(open);
+                            addObstacle(door, i, j);
+                        }break;
 
                         case STAIRS:
                         {
@@ -496,6 +516,15 @@ void Map::load(std::ifstream & file)
                             file >> rising >> linkedMapId;
                             Stairs * stairs = new Stairs(linkedMapId, rising);
                             addStairs(stairs, i, j);
+                        }break;
+
+                        case FIRE:
+                        {
+                            uint16_t dmgPerTick;
+                            float dmgTickTime;
+                            file >> dmgTickTime >> dmgPerTick;
+                            Fire * fire = new Fire(dmgTickTime, dmgPerTick);
+                            addObstacle(fire, i, j);
                         }break;
 
                         default:
@@ -513,22 +542,22 @@ void Map::load(std::ifstream & file)
             for(uint16_t i = 0; i < nbrMon; i++)
             {
                 uint16_t id, c, l, life, totalLife, direction, aggroState, aggroDist;
-                float speed, lastAggroTime, lastAtkTime, delayAtkTime;
+                float speed, lastAggroTime, lastAtkTime, lostAggroTime, delayAtkTime;
                 std::string name;
 
                 file >> id >> c >> l >> speed >> name >> life >> totalLife >> direction >> aggroState;
-                file >> aggroDist >> lastAggroTime >> delayAtkTime >> lastAtkTime;
+                file >> aggroDist >> lastAggroTime >> lostAggroTime >> delayAtkTime >> lastAtkTime;
 
                 Monster * monster;
                 switch(id)
                 {
                     case SHEEP:
-                        monster = new Sheep(name, (AggroState)aggroState, aggroDist, totalLife, (Direction)direction,
+                        monster = new Sheep(name, (AggroState)aggroState, aggroDist, lostAggroTime, totalLife, (Direction)direction,
                                             sf::Vector2f(c, l), sf::Color::White, speed, delayAtkTime);
                         break;
 
                     case WOLF:
-                        monster = new Wolf(name, (AggroState)aggroState, aggroDist, totalLife, (Direction)direction,
+                        monster = new Wolf(name, (AggroState)aggroState, aggroDist, lostAggroTime, totalLife, (Direction)direction,
                                             sf::Vector2f(c, l), sf::Color(50, 50, 50), speed, delayAtkTime);
                         break;
                 }

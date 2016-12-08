@@ -12,9 +12,16 @@ Character::~Character()
     c_Bag = NULL;
 }
 
+void Character::update(const sf::Time & elapsed)
+{
+     c_TurnTime += elapsed;
+
+     Living::update(elapsed);
+}
+
 bool Character::isMoveable()
 {
-    if(c_TurnTime.getElapsedTime().asSeconds() >= 0.15)
+    if(c_TurnTime.asSeconds() >= 0.10)
         return Living::isMoveable();
     return false;
 }

@@ -89,23 +89,28 @@ public:
 class Fire : public Obstacle
 {
 public:
-    Fire(float damageTickTime = 0.75, uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    Fire(float damageTickTime = 0.5, uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Obstacle(FIRE, pos, true, false, false, false, true), c_DamageTickTime(damageTickTime),
-    c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
+    c_DamagePerTick(damageDealt), c_FirstStateOfFire(true), c_Ticking(false)
     {
         c_Shape.setFillColor(sf::Color(200, 100, 0));
     }
 
+    void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; c_LastTickTime += elapsed; }
+
     virtual void realTimeAction(Map * m, Player * p);
     virtual void walkAction(Map * mape, Living * l);
 
+    float getDamageTickTime() const { return c_DamageTickTime; }
+    uint16_t getDamagePerTick() const { return c_DamagePerTick; }
+
 private:
-    sf::Clock c_SwitchClock;
+    sf::Time c_SwitchTime;
     bool c_FirstStateOfFire;
 
-    static sf::Clock c_DamageTickClock;
+    sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
     float c_DamageTickTime; // temps entre chaque tick de dégats
-    static bool c_Ticking;
+    bool c_Ticking;
 
     uint16_t c_DamagePerTick;
 };
@@ -145,7 +150,6 @@ public:
     virtual void speakAction(Map * mape, Player * p);
 
     bool isLocked() const { return c_IsLocked; }
-
     void setLock(bool isLocked) { c_IsLocked = isLocked; }
 
 private:

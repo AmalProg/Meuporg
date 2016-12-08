@@ -33,6 +33,11 @@ class Map
         ~Map();
 
         void moveMap(); // déplace la map en fonction du focus sur la vue
+        void moveLiving(Living * p, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
+        void setFocus(Living * p);
+        void draw();
+        void update(const sf::Time & elapsed);
+
         bool addObstacle(Obstacle * o,  uint16_t c, uint16_t l);
         void removeObstacle(const Obstacle * o, uint16_t c, uint16_t l);
         bool addStairs(Stairs * s,  uint16_t c, uint16_t l);
@@ -42,14 +47,10 @@ class Map
         void removeCharacter(Character * cha);
         bool addLootBag(LootBag * lB,  uint16_t c, uint16_t l);
         void removeLootBag(const LootBag * lB, uint16_t c, uint16_t l);
-        void draw();
 
         void generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL);
         void save(std::ofstream & file);
         void load(std::ifstream & file);
-
-        void moveLiving(Living * p, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
-        void setFocus(Living * p);
 
         bool getLivingOnCell(Living * p, uint16_t c, uint16_t l); // retourne le Living de cette case
         bool getObstaclesOnCell(std::list< Obstacle * > os, uint16_t c, uint16_t l); // retourne l'obstacle de cette case
