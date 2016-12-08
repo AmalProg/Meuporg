@@ -10,139 +10,123 @@ ChoiceText::ChoiceText() : Text()
     c_SelectedChoice = 0;
     c_FirstChoicesShown = 0;
     c_ShowChoices = false;
-    c_Choiced = false;
     c_IsCancelable = false;
 }
-ChoiceText::ChoiceText(const std::string & question, std::vector< std::string > & choices)
- : Text()
+
+void ChoiceText::newText(const std::string & question, std::vector< std::string > & choices, const sf::Texture & texture
+                         , sf::RenderWindow & app, bool isCancelable)
 {
-    c_ChoiceBackGround.setOutlineThickness(5);
-    c_ChoiceBackGround.setFillColor(sf::Color(200, 200, 200));
-    c_ChoiceBackGround.setOutlineColor(sf::Color::Black);
-    c_CharSize = 25;
+    c_ActualDisplay.setTexture(texture);
+    c_ActualDisplay.setPosition(0, 0);
 
-    if(!c_Drawing) // initialis&ation lors d'un nouveau texte
+    c_CutText = cutText(question);
+    c_Choices = choices;
+    c_CurrentLine = 0;
+    c_NbrLine = c_CutText.size();
+    c_IsCancelable = isCancelable;
+    c_SelectedChoice = 0;
+    c_NumberChoicesShown = 4;
+    c_FirstChoicesShown = 0;
+    c_ShowChoices = false;
+
+    c_Drawing = true;
+    while(c_Drawing)
     {
-        c_CutText = cutText(question);
-        c_Choices = choices;
-        c_CurrentLine = 0;
-        c_NbrLine = c_CutText.size();
-
-        c_Drawing = true;
-        c_SelectedChoice = 0;
-        c_NumberChoicesShown = 4;
-        c_FirstChoicesShown = 0;
-        c_ShowChoices = false;
-        c_Choiced = false;
+        eventManage(app);
+        draw(app);
     }
 }
 
-void ChoiceText::newText(const std::string & question, std::vector< std::string > & choices)
+void ChoiceText::eventManage(sf::RenderWindow & app)
 {
-    if(!c_Drawing) // initialis&ation lors d'un nouveau texte
+    sf::Event event;
+    while (app.pollEvent(event))
     {
-        c_CutText = cutText(question);
-        c_Choices = choices;
-        c_CurrentLine = 0;
-        c_NbrLine = c_CutText.size();
-
-        c_Drawing = true;
-        c_SelectedChoice = 0;
-        c_NumberChoicesShown = 4;
-        c_FirstChoicesShown = 0;
-        c_ShowChoices = false;
-        c_Choiced = false;
-    }
-}
-
-void ChoiceText::eventManage(sf::Event event, sf::RenderWindow & a)
-{
-    switch(event.type)
-    {
-        case sf::Event::KeyPressed:
+        switch(event.type)
         {
-            switch(event.key.code)
+            case sf::Event::KeyPressed:
             {
-            case sf::Keyboard::Escape:
-                if(c_IsCancelable)
+                switch(event.key.code)
                 {
-                    c_Choiced = true;
+                case sf::Event::Closed:
                     c_Drawing = false;
-                    c_SelectedChoice = -1;
-                }
-                break;
-            case sf::Keyboard::Return:
-                if(!c_ShowChoices)
-                    nextLine();
-                else
-                {
-                    c_Choiced = true;
-                    c_Drawing = false;
-                }
+                    app.close();
                 break;
 
-
-            case sf::Keyboard::Z:
-                c_SelectedChoice--;
-                if(c_SelectedChoice < 0)
-                {
-                    c_SelectedChoice = c_Choices.size()-1;
-                    c_FirstChoicesShown = c_SelectedChoice-c_NumberChoicesShown+1;
-                    if(c_FirstChoicesShown < 0)
-                        c_FirstChoicesShown = 0;
-                }
-                else if(c_SelectedChoice < c_FirstChoicesShown)
-                {
-                    c_FirstChoicesShown--;
-                }
-                break;
-            case sf::Keyboard::S:
-                c_SelectedChoice++;
-                if(c_SelectedChoice == c_Choices.size())
-                {
-                    c_SelectedChoice = 0;
-                    c_FirstChoicesShown = 0;
-                }
-                else if(c_SelectedChoice >= c_FirstChoicesShown + c_NumberChoicesShown)
-                {
-                    c_FirstChoicesShown++;
-                }
-                break;
-
-            default:
-                break;
-            }
-        }break;
-
-        case sf::Event::MouseButtonReleased:
-        {
-            switch(event.mouseButton.button)
-            {
-                case sf::Mouse::Left:
+                case sf::Keyboard::Escape:
+                    if(c_IsCancelable)
+                    {
+                        c_Drawing = false;
+                        c_SelectedChoice = -1;
+                    }
+                    break;
+                case sf::Keyboard::Return:
                     if(!c_ShowChoices)
                         nextLine();
                     else
-                    {
-                        c_Choiced = true;
                         c_Drawing = false;
+                    break;
+
+
+                case sf::Keyboard::Z:
+                    c_SelectedChoice--;
+                    if(c_SelectedChoice < 0)
+                    {
+                        c_SelectedChoice = c_Choices.size()-1;
+                        c_FirstChoicesShown = c_SelectedChoice-c_NumberChoicesShown+1;
+                        if(c_FirstChoicesShown < 0)
+                            c_FirstChoicesShown = 0;
+                    }
+                    else if(c_SelectedChoice < c_FirstChoicesShown)
+                    {
+                        c_FirstChoicesShown--;
+                    }
+                    break;
+                case sf::Keyboard::S:
+                    c_SelectedChoice++;
+                    if(c_SelectedChoice == c_Choices.size())
+                    {
+                        c_SelectedChoice = 0;
+                        c_FirstChoicesShown = 0;
+                    }
+                    else if(c_SelectedChoice >= c_FirstChoicesShown + c_NumberChoicesShown)
+                    {
+                        c_FirstChoicesShown++;
                     }
                     break;
 
                 default:
                     break;
-            }
-            break;
-        }break;
+                }
+            }break;
 
-        default:
-            break;
+            case sf::Event::MouseButtonReleased:
+            {
+                switch(event.mouseButton.button)
+                {
+                    case sf::Mouse::Left:
+                        if(!c_ShowChoices)
+                            nextLine();
+                        else
+                            c_Drawing = false;
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+            }break;
+
+            default:
+                break;
+        }
     }
 
     sf::Mouse mouse;
 
     for(uint16_t i = 0; i < c_ChoicesTexts.size(); ++i)
     {
-        if(c_ChoicesTexts[i].getGlobalBounds().contains(mouse.getPosition(a).x, mouse.getPosition(a).y))
+        if(c_ChoicesTexts[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
         {
             c_SelectedChoice = i;
         }
@@ -189,13 +173,17 @@ void ChoiceText::draw(sf::RenderWindow & app)
             c_ShowChoices = true; // si toutes les lignes ont été affichées, on affiche les réponses
         }
 
+        app.clear();
+
+        sf::View lastView = app.getView();
         // changement de vue pour garder le texte au même endroit
         // même avec changement de position de la vue principale
-        sf::View lastView = app.getView();
         app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+        app.draw(c_ActualDisplay);
+
         app.draw(c_BackGround);
         app.draw(c_ChoiceBackGround);
-
 
         for(int16_t i = c_CurrentLine; i < c_CurrentLine + c_NbrLineDraw; i++)
         {
@@ -231,6 +219,7 @@ void ChoiceText::draw(sf::RenderWindow & app)
         }
 
         app.setView(lastView);
+        app.display();
     }
 }
 
