@@ -2,65 +2,67 @@
 
 RawText::RawText() : Text()
 {
-
 }
-RawText::RawText(const std::string & text) : Text()
-{
-    if(!c_Drawing) // initialis&ation lors d'un nouveau texte
-    {
-        c_CutText = cutText(text);
-        c_CurrentLine = 0;
-        c_NbrLine = c_CutText.size();
 
-        c_Drawing = true;
+void RawText::newText(const std::string & text, const sf::Texture & texture, sf::RenderWindow & app)
+{
+    c_ActualDisplay.setTexture(texture);
+    c_ActualDisplay.setPosition(0, 0);
+
+    c_CutText = cutText(text);
+    c_CurrentLine = 0;
+    c_NbrLine = c_CutText.size();
+
+    c_Drawing = true;
+    while(c_Drawing)
+    {
+        eventManage(app);
+        draw(app);
     }
 }
-
-void RawText::newText(const std::string & text)
+void RawText::eventManage(sf::RenderWindow & app)
 {
-    if(!c_Drawing) // initialis&ation lors d'un nouveau texte
+    sf::Event event;
+    while (app.pollEvent(event))
     {
-        c_CutText = cutText(text);
-        c_CurrentLine = 0;
-        c_NbrLine = c_CutText.size();
-
-        c_Drawing = true;
-    }
-}
-void RawText::eventManage(sf::Event event)
-{
-    switch(event.type)
-    {
-        case sf::Event::KeyPressed:
+        switch(event.type)
         {
-            switch(event.key.code)
-            {
-                case sf::Keyboard::Return:
-                    nextLine();
-                    break;
-
-                default:
-                    break;
-            }
-        }break;
-
-        case sf::Event::MouseButtonPressed:
-        {
-            switch(event.mouseButton.button)
-            {
-                case sf::Mouse::Left:
-                    nextLine();
-                    break;
-
-                default:
-                    break;
-            }
+            case sf::Event::Closed:
+                c_Drawing = false;
+                app.close();
             break;
-        }break;
+
+            case sf::Event::KeyPressed:
+            {
+                switch(event.key.code)
+                {
+                    case sf::Keyboard::Return:
+                        nextLine();
+                        break;
+
+                    default:
+                        break;
+                }
+            }break;
+
+            case sf::Event::MouseButtonPressed:
+            {
+                switch(event.mouseButton.button)
+                {
+                    case sf::Mouse::Left:
+                        nextLine();
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+            }break;
 
 
-        default:
-            break;
+            default:
+                break;
+        }
     }
 }
 
@@ -88,10 +90,15 @@ void RawText::draw(sf::RenderWindow & app)
             }
         }
 
+        app.clear();
+
+        sf::View lastView = app.getView();
         // changement de vue pour garder le texte au même endroit
         // même avec changement de position de la vue principale
-        sf::View lastView = app.getView();
         app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+        app.draw(c_ActualDisplay);
+
         app.draw(c_BackGround);
 
         sf::Font font;
@@ -110,5 +117,6 @@ void RawText::draw(sf::RenderWindow & app)
         }
 
         app.setView(lastView);
+        app.display();
     }
 }

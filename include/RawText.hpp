@@ -3,18 +3,19 @@
 
 #include "Text.hpp"
 
-
 class RawText : public Text
 {
     public:
         RawText();
-        RawText(const std::string & text);
 
-        void newText(const std::string & text);
-        void draw(sf::RenderWindow & a);
-        void eventManage(sf::Event event);
+        void newText(const std::string & text, const sf::Texture & texture, sf::RenderWindow & app);
 
     private:
+        void draw(sf::RenderWindow & app);
+        void eventManage(sf::RenderWindow & app);
+
+    private:
+        sf::Sprite c_ActualDisplay; //affichage présent avant d'afficher le texte
 };
 
 #endif // RAWTEXT_HPP

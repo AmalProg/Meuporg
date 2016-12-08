@@ -9,14 +9,11 @@ class Text
     public:
         Text();
 
-        virtual void draw(sf::RenderWindow & a) = 0;
-        //virtual void eventManage(sf::Event event) = 0;
-
-        void nextLine() { c_NextLine = true; }
-        bool isDrawing() const { return c_Drawing; }
+        virtual void draw(sf::RenderWindow & app) = 0;
+        virtual void eventManage(sf::RenderWindow & app) = 0;
 
     protected:
-
+        void nextLine() { c_NextLine = true; }
         std::vector< std::string > cutText(const std::string & text);
 
     protected:
