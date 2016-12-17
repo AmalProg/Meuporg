@@ -12,24 +12,30 @@ Text::Text()
     c_NbrLine = 0;
 }
 
-std::vector< std::string > Text::cutText(const std::string & text)
+std::vector< std::string > Text::cutText(const std::string & text, sf::Font & font, uint16_t charSize, uint16_t width)
 {
-    std::string tex = text; // texte à découper
     std::vector< std::string > cutText;
-    while(tex.length() != 0) // jusqu'au parcours de tout le texte
+
+    sf::Text visualText("", font, charSize);
+    for(uint16_t i = 0; i < text.length(); i++)
     {
-        cutText.push_back(tex.substr(0, c_NbrCaraLine)); // ajoute la ligne
-
-        int8_t i = cutText.size()-1; // taille actuelle de cutText
-        if(tex.length() > c_NbrCaraLine)
-            if(cutText[i][cutText[i].length()-1] != ' ' && tex[c_NbrCaraLine] != ' ')
-                cutText[i].append("-"); // ajoute '-' si le mot n'est pas finit
-        if(cutText[i][0] == ' ')
-            cutText[i].erase(0, 1); // la ligne ne commence pas par ' '
-
-
-        tex.erase(0, c_NbrCaraLine); // supprime la ligne lu
+        visualText.setString(visualText.getString() + text[i]);
+        if(visualText.getLocalBounds().width > width)
+        {
+            std::string lineText = visualText.getString();
+            if(i != text.length()-1 && text[i+1] != ' ')
+                while(lineText.at(lineText.length()-1) != ' ')
+                {
+                    lineText.erase(lineText.end()-1);
+                    i--;
+                }
+            cutText.push_back(lineText);
+            visualText.setString("");
+        }
     }
+
+    if(!visualText.getString().isEmpty())
+        cutText.push_back(visualText.getString());
 
     return cutText;
 }
