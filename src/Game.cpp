@@ -183,6 +183,7 @@ void Game::loop()
             walkEventTest();
         }
 
+
         c_FpsTxt.setString(nbrToString((int)(1/fpsValue)));
         c_FpsTxt.setPosition(app.getSize().x - c_FpsTxt.getLocalBounds().width, 0);
 
@@ -206,7 +207,7 @@ void Game::loop()
             sf::Texture texture;
             texture.create(app.getSize().x, app.getSize().y);
             texture.update(app);
-            //c_RawText.newText("Recherchez votre sac. Il n'a pas du tomber très loin de vous !", texture, app);
+            c_RawText.newText("Recherchez votre sac. Il n'a pas du tomber très loin de vous ! Je suis mais je ne suis pas donc nique sa race !", texture, app);
         }
         c_NbrLoops++;
     }

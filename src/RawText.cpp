@@ -2,6 +2,8 @@
 
 RawText::RawText() : Text()
 {
+    c_Font.loadFromFile("arial.ttf");
+    c_CharSize = 25;
 }
 
 void RawText::newText(const std::string & text, const sf::Texture & texture, sf::RenderWindow & app)
@@ -9,7 +11,7 @@ void RawText::newText(const std::string & text, const sf::Texture & texture, sf:
     c_ActualDisplay.setTexture(texture);
     c_ActualDisplay.setPosition(0, 0);
 
-    c_CutText = cutText(text);
+    c_CutText = cutText(text, c_Font, c_CharSize, app.getSize().x);
     c_CurrentLine = 0;
     c_NbrLine = c_CutText.size();
 
@@ -101,14 +103,11 @@ void RawText::draw(sf::RenderWindow & app)
 
         app.draw(c_BackGround);
 
-        sf::Font font;
-        font.loadFromFile("arial.ttf");
-
         for(int16_t i = c_CurrentLine; i < c_CurrentLine + c_NbrLineDraw; i++)
         {
             if(i < c_CutText.size())
             {// lignes restantes vident
-                sf::Text text(sf::String(c_CutText[i]), font, 30);
+                sf::Text text(sf::String(c_CutText[i]), c_Font, c_CharSize);
                 text.setPosition(c_BackGround.getPosition().x + c_BackGround.getOutlineThickness()
                                   , c_BackGround.getPosition().y + (i-c_CurrentLine)*35);
                 text.setColor(sf::Color(100, 100, 100));

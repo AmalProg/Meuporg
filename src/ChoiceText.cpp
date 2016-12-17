@@ -7,6 +7,8 @@ ChoiceText::ChoiceText() : Text()
     c_ChoiceBackGround.setOutlineColor(sf::Color::Black);
     c_CharSize = 25;
 
+    c_Font.loadFromFile("arial.ttf");
+
     c_SelectedChoice = 0;
     c_FirstChoicesShown = 0;
     c_ShowChoices = false;
@@ -19,7 +21,7 @@ void ChoiceText::newText(const std::string & question, std::vector< std::string 
     c_ActualDisplay.setTexture(texture);
     c_ActualDisplay.setPosition(0, 0);
 
-    c_CutText = cutText(question);
+    c_CutText = cutText(question, c_Font, c_CharSize, app.getSize().x);
     c_Choices = choices;
     c_CurrentLine = 0;
     c_NbrLine = c_CutText.size();
@@ -146,9 +148,7 @@ void ChoiceText::draw(sf::RenderWindow & app)
                                             app.getSize().y * 3/4 + c_BackGround.getOutlineThickness()));
 
 
-        sf::Font font;
-        font.loadFromFile("arial.ttf");
-        sf::Text t(sf::String("azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN"), font, c_CharSize);
+        sf::Text t(sf::String("azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN"), c_Font, c_CharSize);
 
         uint16_t charHeight = t.getGlobalBounds().height; // taille max d'un caract
         uint16_t height = c_Choices.size() * (charHeight + PXLBTWTEXT) - c_ChoiceBackGround.getOutlineThickness()*2;
@@ -189,7 +189,7 @@ void ChoiceText::draw(sf::RenderWindow & app)
         {
             if(i < c_CutText.size())
             {// lignes restantes vident
-                sf::Text text(sf::String(c_CutText[i]), font, c_CharSize);
+                sf::Text text(sf::String(c_CutText[i]), c_Font, c_CharSize);
                 text.setPosition(c_BackGround.getPosition().x + c_BackGround.getOutlineThickness()
                                   , c_BackGround.getPosition().y + (i-c_CurrentLine) * c_CharSize);
                 text.setColor(sf::Color(100, 100, 100));
@@ -203,7 +203,7 @@ void ChoiceText::draw(sf::RenderWindow & app)
         {
             if(i < c_Choices.size())
             {// lignes restantes vident
-                sf::Text text(sf::String(c_Choices[i]), font, c_CharSize);
+                sf::Text text(sf::String(c_Choices[i]), c_Font, c_CharSize);
                 text.setPosition(c_ChoiceBackGround.getPosition().x + c_ChoiceBackGround.getOutlineThickness() / 2
                         , c_ChoiceBackGround.getPosition().y + (i-c_FirstChoicesShown) * (charHeight + (i != c_FirstChoicesShown) * PXLBTWTEXT) - text.getLocalBounds().height/4 + (i == c_FirstChoicesShown) * PXLBTWTEXT/2);
 

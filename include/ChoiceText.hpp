@@ -26,7 +26,6 @@ class ChoiceText : public Text
         bool c_ShowChoices;
         bool c_IsCancelable;
 
-        uint16_t c_CharSize;
         sf::RectangleShape c_ChoiceBackGround;
 
         sf::Sprite c_ActualDisplay; //affichage présent avant d'afficher le texte
