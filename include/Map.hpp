@@ -92,13 +92,17 @@ class Map
         void recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int distMax, Cell * baseCell) const;
         void pathMap(std::vector < std::vector < int16_t > > * distMap, const std::vector< const Cell * > & actualCs, uint16_t actualDist, const Cell * targetC, bool skipLivings, bool fullMap) const;
         void recursivePath(std::vector < Cell * > * bestPath, std::vector < std::vector < int16_t > > * distMap, const Cell * startC, const Cell * endC, uint16_t maxMoreSteps) const;
+        void expandEntity(EntityTypeId id, Cell * cell, float expandValue);
+        void standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i targetColumns, sf::Vector2i targetLines);
+        std::vector< std::vector< Cell * > > getTypesGroups(std::map< EntityTypeId, bool > & typesToCheck, std::map< EntityTypeId, bool > & typesToNotCheck);
+        void fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std::map< EntityTypeId, bool > & typesToNotCheck);
+        void checkCellsGroup(std::vector< Cell * > & group, Cell * cell, std::vector< std::vector< bool > > & cellsToCheck, std::vector< std::vector< bool > > & cellsChecked);
 
         std::vector < Cell *> getCellsOnLineOfSight(Cell * c1, Cell * c2) const;
 
+        void setObstacleOnCell(EntityTypeId id, Cell * cell);
         bool addObstacleOnCell(EntityTypeId id, Cell * cell);
         bool addLivingOnCell(EntityTypeId id, Cell * cell);
-        void expandEntity(EntityTypeId id, Cell * cell, float expandValue);
-        void standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i targetColumns, sf::Vector2i targetLines);
 
     private:
         std::vector< std::vector < Cell *> > c_Map;

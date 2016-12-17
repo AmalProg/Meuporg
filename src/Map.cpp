@@ -175,7 +175,6 @@ void Map::removeCharacter(Character * cha)
 }
 bool Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
 {
-    std::cout << c << ", " << l << "\n";
     c_Map[c][l]->addLootBag(lB); // on donne l'ID de l'obstacle
     c_LootBags.push_back(lB);
     lB->setPosition(sf::Vector2f(c, l));
@@ -187,7 +186,6 @@ void Map::removeLootBag(const LootBag * lB, uint16_t c, uint16_t l)
     c_Map[c][l]->removeLootBag(lB);
     std::list< LootBag * >::iterator it = std::find(c_LootBags.begin(), c_LootBags.end(), lB);
     c_LootBags.erase(it);
-    delete lB;
 }
 
 void Map::draw()
@@ -225,16 +223,37 @@ void Map::draw()
                 }
 
                 /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
-                t.setPosition(c_Map[i][j]->getC() * c_CellSize + 10, c_Map[i][j]->getL() * c_CellSize + 10);
+                t.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize + 10);
                 t.setColor(sf::Color::Red);
                 sf::Text t2(nbrToString(c_Map[i][j]->getL()), font, 10);
-                t2.setPosition(c_Map[i][j]->getC() * c_CellSize +20, c_Map[i][j]->getL() * c_CellSize+20);
+                t2.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize+20);
                 t2.setColor(sf::Color::Red);
                 app.draw(t);
                 app.draw(t2);*/
             }
         }
     }
+    /*std::map< EntityTypeId, bool > toCheck;
+    toCheck[GRASS] = true;
+    toCheck[SOIL] = true;
+    toCheck[SAND] = true;
+    toCheck[FIRE] = true;
+    std::map< EntityTypeId, bool > toNotCheck;
+    toNotCheck[ROCK] = true;
+    toNotCheck[WATER] = true;
+    std::vector< std::vector< Cell * > > groups = getTypesGroups(toCheck, toNotCheck);
+    sf::Font arial;
+    arial.loadFromFile("arial.ttf");
+    for(uint16_t i = 0; i < groups.size(); i++)
+    {
+        sf::Text txt(nbrToString(i), arial, 20);
+        txt.setColor(sf::Color::Red);
+        for(uint16_t j = 0; j < groups[i].size(); j++)
+        {
+            txt.setPosition(groups[i][j]->getC() * c_CellSize, groups[i][j]->getL() * c_CellSize);
+            app.draw(txt);
+        }
+    }*/
 }
 
 void Map::update(const sf::Time & elapsed)
@@ -303,6 +322,16 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
     {
         standardize((*it).getEntityTypeId(), (*it).getInfo("switchValue"), sf::Vector2i(0, getNbrColumn()-1), sf::Vector2i(0, getNbrLine()-1));
     }
+
+    std::map< EntityTypeId, bool > toCheck;
+    toCheck[GRASS] = true;
+    toCheck[SOIL] = true;
+    toCheck[SAND] = true;
+    toCheck[FIRE] = true;
+    std::map< EntityTypeId, bool > toNotCheck;
+    toNotCheck[ROCK] = true;
+    toNotCheck[WATER] = true;
+    fillSeparatedCells(toCheck, toNotCheck);
 
     uint16_t xRise, yRise;
     uint16_t i = 0; // nbr de fois passé dans la boucle
@@ -679,6 +708,43 @@ void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
     if(eTable[3] && u != NULL && addObstacleOnCell(id, u))
         expandEntity(id, u, expandValue-1);
 }
+
+void Map::setObstacleOnCell(EntityTypeId id, Cell * cell)
+{
+    uint16_t c = cell->getC();
+    uint16_t l = cell->getL();
+
+    switch(id)
+    {
+    case GRASS:
+        addObstacle(new Grass(), c, l);
+        break;
+    case WATER:
+        addObstacle(new Water(), c, l);
+        break;
+    case SAND:
+        addObstacle(new Sand(), c, l);
+        break;
+    case SOIL:
+        addObstacle(new Soil(), c, l);
+        break;
+    case FIRE:
+        addObstacle(new Fire(), c, l);
+        break;
+    case ROCK:
+        addObstacle(new Rock(), c, l);
+        break;
+    case DOOR:
+        addObstacle(new Door(), c, l);
+        break;
+    case LOCKEDDOOR:
+        addObstacle(new LockedDoor(), c, l);
+        break;
+
+    default:
+        break;
+    }
+}
 bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
 {
     uint16_t c = cell->getC();
@@ -836,6 +902,133 @@ void Map::standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i target
                 }
             }
         }
+    }
+}
+
+std::vector< std::vector< Cell * > > Map::getTypesGroups(std::map< EntityTypeId, bool > & typesToCheck, std::map< EntityTypeId, bool > & typesToNotCheck)
+{
+    std::vector< std::vector< bool > > cellsToCheck; // cells que l'on veux checker valant true
+    std::vector< std::vector< bool > > cellsChecked; // cells already checked
+    for(uint16_t i = 0; i < getNbrColumn(); i++)
+    {
+        cellsToCheck.push_back(std::vector< bool >(0));
+        cellsChecked.push_back(std::vector< bool >(0));
+        for(uint16_t j = 0; j < getNbrLine(); j++)
+        {
+            bool toCheck = false;
+            for(std::list< Obstacle * >::const_iterator it = getCell(i, j)->getObstacles().begin();
+                it != getCell(i, j)->getObstacles().end();  it++)
+            {
+                if(typesToNotCheck[(*it)->getEntityTypeId()])
+                {
+                    toCheck = false;
+                    break; // on arrête de chercher si il y a un seul noToCheck
+                }
+                if(typesToCheck[(*it)->getEntityTypeId()])
+                    toCheck = true;
+            }
+            cellsToCheck[i].push_back(toCheck);
+            cellsChecked[i].push_back(false);
+        }
+    }
+
+    std::vector< std::vector< Cell * > > cellsGroups;
+    for(uint16_t i = 0; i < getNbrColumn(); i++)
+    {
+        for(uint16_t j = 0; j < getNbrLine(); j++)
+        {
+            if(cellsToCheck[i][j] && !cellsChecked[i][j])
+            {
+                std::vector< Cell * > group;
+                checkCellsGroup(group, getCell(i, j), cellsToCheck, cellsChecked);
+                cellsGroups.push_back(group);
+            }
+        }
+    }
+
+    return cellsGroups;
+}
+void Map::fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std::map< EntityTypeId, bool > & typesToNotCheck)
+{
+    std::vector< std::vector< Cell * > > cellsGroups = getTypesGroups(typesToCheck, typesToNotCheck);
+
+    uint16_t indexMaxCells = 0, actualIndex = 0; // index du groupe de cells le plus grand
+    for(uint16_t i = 0; i < cellsGroups.size(); i++)
+    {
+        if(cellsGroups[i].size() > cellsGroups[indexMaxCells].size())
+            indexMaxCells = actualIndex;
+        actualIndex++;
+    }
+
+    for(uint16_t i = 0; i < cellsGroups.size(); i++)
+    {
+        if(i == indexMaxCells)
+            continue; // on ne modifie pas le groupe de cells le plus grand
+
+        std::map< EntityTypeId, uint16_t > typesNbr; // nombre de cells entourantes pour chaque type
+        std::map< uint16_t, std::map< uint16_t, bool > > neighbourChecked; // cells autour du groupe deja checkée
+        for(uint16_t j = 0; j < cellsGroups[i].size(); j++)
+        {
+            Cell * cell = cellsGroups[i][j];
+            Cell * neighbours[4];// les 4 cells voisines
+            neighbours[0] = getRCell(cell); neighbours[1] = getLCell(cell);
+            neighbours[2] = getUCell(cell); neighbours[3] = getDCell(cell);
+
+            for(uint16_t k = 0; k < 4; k++)
+            {
+                if(neighbours[k] != NULL && !neighbourChecked[neighbours[k]->getC()][neighbours[k]->getL()]
+                    && std::find(cellsGroups[i].begin(), cellsGroups[i].end(), neighbours[k]) == cellsGroups[i].end())
+                {
+                    for(std::list< Obstacle * >::const_iterator it = neighbours[k]->getObstacles().begin();
+                        it  != neighbours[k]->getObstacles().end();  it++)
+                    {
+                        if(!typesToCheck[(*it)->getEntityTypeId()])
+                        { // ça doit être un type différent de ce que l'on a cherché pour faire les groupes
+                            if(typesNbr[(*it)->getEntityTypeId()])
+                                typesNbr[(*it)->getEntityTypeId()]++;
+                            else
+                                typesNbr[(*it)->getEntityTypeId()] = 1;
+                        }
+                    }
+                    neighbourChecked[neighbours[k]->getC()][neighbours[k]->getL()] = true;
+                }
+            }
+        }
+        EntityTypeId idMaxObstacles; // id de l'obstacle avec le plus présence autour du groupe
+        uint16_t nbrMaxObstacles = 0; // nbr d'obstacles
+        for(std::map< EntityTypeId, uint16_t >::const_iterator it = typesNbr.begin();
+                it != typesNbr.end(); it++)
+        {
+            if((*it).second > nbrMaxObstacles)
+            {
+                nbrMaxObstacles = (*it).second;
+                idMaxObstacles = (*it).first;
+            }
+        }
+        for(uint16_t j = 0; j < cellsGroups[i].size(); j++)
+        {
+            setObstacleOnCell(idMaxObstacles, getCell(cellsGroups[i][j]->getC(), cellsGroups[i][j]->getL()));
+            std::cout << cellsGroups[i][j]->getC() << ", " << cellsGroups[i][j]->getL() << "\n";
+            std::cout << idMaxObstacles << "\n";
+        }
+    }
+}
+void Map::checkCellsGroup(std::vector< Cell * > & group, Cell * cell, std::vector< std::vector< bool > > & cellsToCheck, std::vector< std::vector< bool > > & cellsChecked)
+{
+    group.push_back(cell);
+    cellsChecked[cell->getC()][cell->getL()] = true;
+
+    Cell * neighbours[4];// les 4 cells voisines
+    neighbours[0] = getRCell(cell); neighbours[1] = getLCell(cell);
+    neighbours[2] = getUCell(cell); neighbours[3] = getDCell(cell);
+
+    for(uint16_t i = 0; i < 4; i++)
+    {
+        if(neighbours[i] != NULL)
+            if(cellsToCheck[neighbours[i]->getC()][neighbours[i]->getL()] && !cellsChecked[neighbours[i]->getC()][neighbours[i]->getL()])
+            {
+                checkCellsGroup(group, getCell(neighbours[i]->getC(), neighbours[i]->getL()), cellsToCheck, cellsChecked);
+            }
     }
 }
 
