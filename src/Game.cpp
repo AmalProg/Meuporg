@@ -1,7 +1,13 @@
 #include "Game.hpp"
 
-Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
+Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
+ c_NbrLoops(0)
 {
+    c_Font.loadFromFile("arial.ttf");
+    c_FpsTxt.setString("0");
+    c_FpsTxt.setFont(c_Font);
+    c_FpsTxt.setColor(sf::Color::Black);
+
     c_Map = new Map(app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
@@ -13,6 +19,8 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     genInfo.addObstacleInfos(SOIL, 7.5, 1);
     genInfo.addObstacleInfos(SAND, 3.25, 2);
     genInfo.addObstacleInfos(ROCK, 2.5, 2);
+    genInfo.addObstacleInfos(ROCK, 3.25, 4);
+    genInfo.addObstacleInfos(ROCK, 7.5, 2);
     genInfo.addObstacleInfos(ROCK, 4.75, 1);
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
     genInfo.addObstacleInfos(FIRE, 1.5, 1);
@@ -22,7 +30,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     genInfo.addStandardizeInfos(ROCK, 5);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
-    c_Map->generateMap(genInfo, 30, 25);
+    c_Map->generateMap(genInfo, 37, 29);
 
     uint16_t x = 0, y = 0;
     do
@@ -51,9 +59,6 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app)
     c_ShortCutKeys[1] = sf::Keyboard::Num2;
     c_ShortCutKeys[2] = sf::Keyboard::Num3;
     c_ShortCutKeys[3] = sf::Keyboard::Num4;
-
-    c_RawText = RawText();
-    //c_RawText.newText("Cherchez votre sac, il ne doit pas être très loin");
 }
 Game::~Game()
 {
@@ -62,6 +67,7 @@ Game::~Game()
 
 void Game::loop()
 {
+    c_GameClock.restart();
     while (app.isOpen())
     {
         {
@@ -92,14 +98,16 @@ void Game::loop()
                     std::cout << "hein??, l'item est introuvable";
             }
 
+            std::list< LootBag * > lootBagsToDelete;
             for(std::list< LootBag * >::const_iterator it = c_Map->getLootBags().begin(); it != c_Map->getLootBags().end(); ++it)
             { // gestion des LootBags
                 if((*it)->getNbrItems() == 0)
-                {
-                    std::list< LootBag * >::const_iterator tmpIt = it; --tmpIt; // permet un delete dans la boucle
-                    c_Map->removeLootBag((*it), (*it)->getPosition().x, (*it)->getPosition().y);
-                    it = tmpIt;
-                }
+                    lootBagsToDelete.push_back((*it));
+            }
+            for(std::list< LootBag * >::iterator it = lootBagsToDelete.begin(); it != lootBagsToDelete.end(); it++)
+            {
+                c_Map->removeLootBag((*it), (*it)->getPosition().x, (*it)->getPosition().y);
+                delete (*it);
             }
 
             for(std::list< Stairs * >::const_iterator it = c_Map->getStairss().begin(); it != c_Map->getStairss().end(); ++it)
@@ -107,11 +115,34 @@ void Game::loop()
                 if((*it)->isActivated())
                 {
                     (*it)->setActivated(false); // on desactive l'escalier
+
+                    if((*it)->isRising() && c_ActualLevel == 0)
+                    {
+                        sf::Texture texture;
+                        texture.create(app.getSize().x, app.getSize().y);
+                        texture.update(app); // récupère l'affichage actuel pour l'afficher en fond
+
+                        std::vector< std::string > answers;
+                        answers.push_back("Oui");
+                        answers.push_back("Non");
+                        c_ChoiceText.newText("Voulez vous vraiment retourner à la surface ?"
+                                          , answers, texture, app, true);
+
+                        if(c_ChoiceText.getChoice() == 0)
+                            c_RawText.newText("Je suis désolé mais ce n'est pas possible.Retourné à votre tâche !", texture, app);
+                        else
+                            c_RawText.newText("C'est bien ! Ne faites pas l'enfant.", texture, app);
+
+
+                        break;
+                    }
+
                     Map * lastMap = c_Map;
                     lastMap->removeCharacter(c_Player); // on enlève player de la map actuelle
                     lastMap->setFocus(NULL);
 
                     c_Map = Map::getMapFromId((*it)->getLinkedMapId()); // on pointe la nouvelle map
+
                     if(c_Map == NULL)
                     {
                         c_Map = new Map(app);
@@ -139,17 +170,21 @@ void Game::loop()
             }
         }
 
+        static float fpsValue = 0;
         { // event managing
-            if(c_RawText.isDrawing()) // si du texte est affiché on ne peut plus intéragir avec autre chose
-                rawTextEventManage();
-            else // gestion évènements sans texte affiché
-            {
-                eventManage();
-                deathManage();
-                realTimeEventManage();
-                walkEventTest();
-            }
+            if(c_NbrLoops % 50 == 2)
+                fpsValue = c_GameClock.getElapsedTime().asSeconds();
+
+            update(c_GameClock.restart());
+
+            eventManage();
+            deathManage();
+            realTimeEventManage();
+            walkEventTest();
         }
+
+        c_FpsTxt.setString(nbrToString((int)(1/fpsValue)));
+        c_FpsTxt.setPosition(app.getSize().x - c_FpsTxt.getLocalBounds().width, 0);
 
         { //draw managing
             app.clear();
@@ -157,11 +192,23 @@ void Game::loop()
             c_Map->moveMap(); // déplace la map par rapport au focus
             c_Map->draw(); // draw the map
             drawShortCuts(); // draw shortcuts logo
+
+            app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+            app.draw(c_FpsTxt);
+
             c_Menu.draw(c_Map, c_Player); // draw actives menus
-            c_RawText.draw(app);
 
             app.display();
         }
+
+        if(c_NbrLoops == 1)
+        {
+            sf::Texture texture;
+            texture.create(app.getSize().x, app.getSize().y);
+            texture.update(app);
+            //c_RawText.newText("Recherchez votre sac. Il n'a pas du tomber très loin de vous !", texture, app);
+        }
+        c_NbrLoops++;
     }
 }
 
@@ -276,14 +323,20 @@ void Game::genNextMap(Map * map, Map * lastMap, uint16_t lvl)
 {
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
-    genInfo.addObstacleInfos(WATER, 7.5, 1);
-    genInfo.addObstacleInfos(ROCK, 2.5, 5);
+    genInfo.addObstacleInfos(WATER, 5.5, 1);
+    genInfo.addObstacleInfos(SOIL, 7.5, 1);
+    genInfo.addObstacleInfos(SAND, 3.25, 2);
+    genInfo.addObstacleInfos(ROCK, 2.5, 2);
     genInfo.addObstacleInfos(ROCK, 4.75, 1);
-    genInfo.addObstacleInfos(ROCK, 1.5, 3);
     genInfo.addObstacleInfos(ROCK, 0.5, 2);
+    genInfo.addObstacleInfos(FIRE, 1.5, 1);
+    genInfo.addStandardizeInfos(WATER, 4);
+    genInfo.addStandardizeInfos(SAND, 5);
+    genInfo.addStandardizeInfos(SOIL, 5);
+    genInfo.addStandardizeInfos(ROCK, 5);
     genInfo.addLivingInfos(SHEEP, 1, 10);
     genInfo.addLivingInfos(WOLF, 1, 4);
-    map->generateMap(genInfo, 25, 30);
+    map->generateMap(genInfo, 37, 29);
 
     for(std::list< Stairs * >::const_iterator it = map->getStairss().begin(); it != map->getStairss().end(); it++)
     {
@@ -375,8 +428,14 @@ bool Game::movePlayer(Player * p, Direction d)
     return false;
 }
 
+void Game::update(const sf::Time & elapsed)
+{
+    c_Map->update(elapsed);
+}
+
 void Game::deathManage()
 {
+    std::list< Monster* > monstersToDelete;
     for(std::list< Monster * >::const_iterator it = c_Map->getMonsters().begin(); it != c_Map->getMonsters().end(); ++it)
     {
         if((*it)->isDead())
@@ -393,11 +452,13 @@ void Game::deathManage()
             if((*it)->getKiller() != NULL)
                 std::cout << (*it)->getName() << " est mort par " << (*it)->getKiller()->getName() << "\n";
 
-            std::list< Monster * >::const_iterator tmpIt = it; --tmpIt;
-            c_Map->removeMonster((*it));
-            delete (*it);
-            it = tmpIt;
+            monstersToDelete.push_back((*it));
         }
+    }
+    for(std::list< Monster * >::iterator it = monstersToDelete.begin(); it != monstersToDelete.end(); it++)
+    {
+        c_Map->removeMonster((*it));
+        delete (*it);
     }
 }
 
@@ -517,12 +578,7 @@ int32_t Game::choiceTextEventManage()
             default:
                 break;
             }
-            c_ChoiceText.eventManage(event, app);
         }
-
-        if(c_ChoiceText.isChoiced())
-            return c_ChoiceText.getChoice();
-
         app.clear();
 
         c_Map->moveMap();
@@ -551,7 +607,6 @@ void Game::rawTextEventManage()
         default:
             break;
         }
-        c_RawText.eventManage(event);
     }
 }
 

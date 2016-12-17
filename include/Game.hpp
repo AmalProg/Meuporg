@@ -66,6 +66,8 @@ class Game
 
         sf::Clock c_GameClock;
         uint64_t c_NbrLoops;
+        sf::Font c_Font;
+        sf::Text c_FpsTxt;
 };
 
 #endif // GAME_HPP
