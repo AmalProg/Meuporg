@@ -5,7 +5,7 @@
 The player is able to progress in a dungeon with X floors. Each floor is randomly generated and got different fauna and flora.
 The difficulty will grow for each floor done.
 
-here is a little screenshot from the actual game (not quite understable at the moment si i hadded text)
+Here is a little screenshot from the actual game (not quite understable at the moment so i added text)
 <img src="https://github.com/LightningAmal/Meuporg/blob/master/preview.png" width="802" height="630">
 
 The green square is the player.
