@@ -563,54 +563,6 @@ void Game::realTimeEventManage()
     }
 }
 
-int32_t Game::choiceTextEventManage()
-{
-    while (app.isOpen())
-    {
-        sf::Event event;
-        while (app.pollEvent(event))
-        {
-            switch(event.type)
-            {
-            case sf::Event::Closed:
-                app.close();
-                break;
-
-            default:
-                break;
-            }
-        }
-        app.clear();
-
-        c_Map->moveMap();
-        c_Map->draw();
-        drawShortCuts();
-
-        c_ChoiceText.draw(app);
-
-        app.display();
-    }
-
-    return -1;
-}
-
-void Game::rawTextEventManage()
-{
-    sf::Event event;
-    while (app.pollEvent(event))
-    {
-        switch(event.type)
-        {
-        case sf::Event::Closed:
-            app.close();
-            break;
-
-        default:
-            break;
-        }
-    }
-}
-
 void Game::walkEventTest()
 {
     for(std::list< Living * >::const_iterator it = c_Map->getLivings().begin(); it != c_Map->getLivings().end(); ++it)

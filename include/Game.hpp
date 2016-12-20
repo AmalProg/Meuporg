@@ -38,8 +38,6 @@ class Game
     private:
         void update(const sf::Time & elapsed);
         void eventManage();
-        int32_t choiceTextEventManage();
-        void rawTextEventManage();
         void walkEventTest();
         void actionEventTest();
         void realTimeEventManage();
