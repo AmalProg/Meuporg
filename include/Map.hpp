@@ -52,6 +52,7 @@ class Map
         void save(std::ofstream & file);
         void load(std::ifstream & file);
 
+        sf::View getView() const { return c_View; }
         bool getLivingOnCell(Living * p, uint16_t c, uint16_t l); // retourne le Living de cette case
         bool getObstaclesOnCell(std::list< Obstacle * > os, uint16_t c, uint16_t l); // retourne l'obstacle de cette case
         uint16_t getNbrColumn() const {return c_Map.size();}

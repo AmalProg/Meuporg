@@ -13,7 +13,7 @@ class Menu
         Menu(sf::RenderWindow & a);
 
         void draw(const Map * m, const Player * p);
-        void manage(sf::Event & event, const Player * p);
+        void manage(sf::Event & event, const Map * m, const Player * p);
 
         void setShowingInventory();
         void setShowingCellChoice(int16_t i);

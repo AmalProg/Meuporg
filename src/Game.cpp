@@ -12,6 +12,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawT
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::key, 5);
+    c_Player->takeItem(Item::grenade, 5);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -194,9 +195,11 @@ void Game::loop()
             c_Map->draw(); // draw the map
             drawShortCuts(); // draw shortcuts logo
 
+            sf::View lastView = app.getView();
             app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
             app.draw(c_FpsTxt);
 
+            app.setView(c_Map->getView());
             c_Menu.draw(c_Map, c_Player); // draw actives menus
 
             app.display();
@@ -360,7 +363,6 @@ bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
     { // si on peut utiliser l'item a cette distance
         for(uint16_t i = 0; i < infos.getNbrEffect(); i++)
         { // on gère chaque effet de l'item
-
             std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell(c, l, infos.getEffect(i).maxEffectRange, infos.getEffect(i).minEffectRange);
             for(std::list< Cell * >::iterator it = cellsAffected.begin(); it != cellsAffected.end(); it++)
             {
@@ -468,7 +470,7 @@ void Game::eventManage()
     sf::Event event;
     while (app.pollEvent(event))
     {
-        c_Menu.manage(event, c_Player);
+        c_Menu.manage(event, c_Map, c_Player);
 
         switch(event.type)
         {

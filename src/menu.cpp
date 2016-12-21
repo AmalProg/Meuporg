@@ -46,8 +46,7 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(0), c_LootBagFirst(0
 void Menu::draw(const Map * m, const Player * p)
 {
     sf::View lastView = app.getView();
-    sf::View newView(sf::FloatRect(0, 0, 800, 600));
-    app.setView(newView);
+    app.setView(sf::View(sf::FloatRect(0, 0, 800, 600)));
 
     if(c_ShowingInventory)
         inventoryMenu(p);
@@ -58,23 +57,27 @@ void Menu::draw(const Map * m, const Player * p)
     if(c_ShowingLootBag)
         lootbagMenu();
 
-    app.setView(lastView);
+    app.setView(m->getView());
 
     if(c_ShowingCellChoice)
         cellChoiceMenu(m, p);
+
+    app.setView(lastView);
 }
 
-void Menu::manage(sf::Event & event, const Player * p)
+void Menu::manage(sf::Event & event, const Map * m, const Player * p)
 {
     sf::Mouse mouse;
 
-    float widthScale = app.getSize().x / 800;
-    float heightScale = app.getSize().y / 600;
-
-    float left = app.getView().getCenter().x - app.getView().getSize().x + app.getSize().x/2;
-    float top = app.getView().getCenter().y - app.getView().getSize().y + app.getSize().y/2;
-    int32_t x = (mouse.getPosition(app).x + left) / CELLSIZE;
-    int32_t y = (mouse.getPosition(app).y + top) / CELLSIZE;
+    float viewMultX = m->getView().getSize().x / (float)app.getSize().x;
+    float viewMultY = m->getView().getSize().y / (float)app.getSize().y;
+    float cellSizeDrawnX = (float)m->getCellSize() / viewMultX;
+    float cellSizeDrawnY = (float)m->getCellSize() / viewMultY;
+    float mapSizeDrawnX = m->getView().getSize().x / 2.f ;
+    float mapSizeDrawnY = m->getView().getSize().y / 2.f;
+    int32_t x = ((float)mouse.getPosition(app).x + (m->getView().getCenter().x - mapSizeDrawnX) / viewMultX) / cellSizeDrawnX;
+    int32_t y = ((float)mouse.getPosition(app).y + (m->getView().getCenter().y - mapSizeDrawnY) / viewMultY) / cellSizeDrawnY;
+    // coordonnées en terme de cell de la souris
 
     switch(event.type)
     {

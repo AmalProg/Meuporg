@@ -20,7 +20,7 @@ int16_t CELLSIZE = 45;
 Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
-    c_View.setSize(app.getSize().x * 1.3, app.getSize().y * 1.3);
+    c_View.setSize(app.getSize().x * 1.5, app.getSize().y * 1.5);
 
     if(mapId == 0)
     {
@@ -75,14 +75,14 @@ void Map::moveMap()
     else if(c_Focus->getPosition().x < c_View.getSize().x / CELLSIZE / 2)
         c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
     else if(c_Focus->getPosition().x >= c_View.getSize().x / CELLSIZE / 2)
-        c_View.setCenter(c_Focus->getPosition().x * CELLSIZE, c_View.getCenter().y); // centre la map sur le joueur focus
+        c_View.setCenter(c_Focus->getPosition().x * CELLSIZE + CELLSIZE/2, c_View.getCenter().y); // centre la map sur le joueur focus
 
     if(c_Focus->getPosition().y >= c_Map[0].size() - c_View.getSize().y / CELLSIZE / 2)
         c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * CELLSIZE - c_View.getSize().y/2); // place la map en bas
     else if(c_Focus->getPosition().y < c_View.getSize().y / CELLSIZE / 2)
         c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
     else if(c_Focus->getPosition().y >= c_View.getSize().y / CELLSIZE / 2)
-        c_View.setCenter(c_View.getCenter().x, c_Focus->getPosition().y * CELLSIZE); // centre la map sur le joueur focus
+        c_View.setCenter(c_View.getCenter().x, c_Focus->getPosition().y * CELLSIZE + CELLSIZE/2); // centre la map sur le joueur focus
 
     app.setView(c_View);
 }
@@ -190,6 +190,8 @@ void Map::removeLootBag(const LootBag * lB, uint16_t c, uint16_t l)
 
 void Map::draw()
 {
+    app.setView(c_View);
+
     static sf::RectangleShape backG(sf::Vector2f(CELLSIZE, CELLSIZE));
     backG.setFillColor(sf::Color::White);
 
@@ -222,14 +224,14 @@ void Map::draw()
                     c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
                 }
 
-                /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
+                sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
                 t.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize + 10);
                 t.setColor(sf::Color::Red);
                 sf::Text t2(nbrToString(c_Map[i][j]->getL()), font, 10);
                 t2.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize+20);
                 t2.setColor(sf::Color::Red);
                 app.draw(t);
-                app.draw(t2);*/
+                app.draw(t2);
             }
         }
     }
