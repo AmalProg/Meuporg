@@ -4,10 +4,11 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "lootbag.hpp"
-#include "item.hpp"
 #include "loottable.hpp"
+#include "living.hpp"
+#include "Map.hpp"
 #include "Player.hpp"
-class Map;
+class Cell;
 
 enum AggroState {AGGRESIVE = 0, PASSIVE};
 
@@ -69,7 +70,7 @@ class Wolf : public Monster
 {
     public:
         Wolf(const std::string & name = "Wolf", AggroState aggroState = AGGRESIVE, uint16_t aggroDist = 5,
-             float lostAggroTime = 2.0, float maxLife = 10, Direction dir = LEFT, const sf::Vector2f & pos = sf::Vector2f(0, 0),
+             float lostAggroTime = 2.0, float maxLife = 1000, Direction dir = LEFT, const sf::Vector2f & pos = sf::Vector2f(0, 0),
              const sf::Color & color = sf::Color(50, 50, 50), float speed = 2.0, float delayAtkTime = 1);
 
         void attack(Map * m, Player * p);

@@ -99,10 +99,10 @@ void LockedDoor::speakAction(Map * mape, Player * p)
         const Bag * bag = p->getBag();
         for(uint16_t i = 0; i < bag->getNbrItems(); ++i)
         {
-            if(bag->getItem(i) == (Item::key))
+            if(bag->getItem(i) == (Item::getItemFromId(KEY)))
             {
                 c_IsLocked = false;
-                p->removeItem(Item::key, 1);
+                p->removeItem(Item::getItemFromId(KEY), 1);
                 std::cout << "Vous  déverouillez la porte.\n";
             }
         }

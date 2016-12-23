@@ -5,11 +5,8 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "Entity.hpp"
-class Living;
-#include "Player.hpp"
-#include "bag.hpp"
-#include "item.hpp"
-class Map;
+#include "living.hpp"
+#include "Map.hpp"
 
 class Obstacle : public Entity
 {
@@ -133,7 +130,7 @@ public:
     virtual void touchAction(Map * mape, Player * p);
 
     bool isOpen() const { return c_IsOpen; }
-    bool setOpen(bool isOpen) { c_IsOpen = isOpen; }
+    void setOpen(bool isOpen) { c_IsOpen = isOpen; }
 
 private:
     bool c_IsOpen;

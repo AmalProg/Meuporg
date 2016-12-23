@@ -6,17 +6,12 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
 #include "Map.hpp"
-#include "cell.hpp"
-#include "Living.hpp"
-#include "Player.hpp"
-#include "character.hpp"
-#include "monster.hpp"
+#include "Item.hpp"
+class Cell;
+class Player;
 #include "RawText.hpp"
 #include "ChoiceText.hpp"
-#include "Obstacle.hpp"
-#include "Item.hpp"
 #include "menu.hpp"
-#include "lootbag.hpp"
 
 #include <sstream>
 
@@ -28,12 +23,13 @@ class Game
 
         void loop();
 
+    private:
         void save(const std::string & fileName);
         void load(const std::string & fileName);
 
-        //void setPlayer(Player * p) {c_Player = p;}
         bool movePlayer(Player * p, Direction d);
         bool useItem(Player * p, const Item * item, uint16_t c, uint16_t l);
+        void useWeapon(Player * p, const Item * item, const std::list<Cell *> & cellsF);
 
     private:
         void update(const sf::Time & elapsed);
