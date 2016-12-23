@@ -4,11 +4,10 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <list>
-#include "living.hpp"
+class Living;
 #include "Obstacle.hpp"
 class Obstacle;
 class LootBag;
-class Map;
 
 class Cell
 {

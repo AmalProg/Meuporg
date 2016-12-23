@@ -3,6 +3,8 @@
 Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
  c_NbrLoops(0)
 {
+    Item::initItems();
+
     c_Font.loadFromFile("arial.ttf");
     c_FpsTxt.setString("0");
     c_FpsTxt.setFont(c_Font);
@@ -11,8 +13,11 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawT
     c_Map = new Map(app);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
-    c_Player->takeItem(Item::key, 5);
-    c_Player->takeItem(Item::grenade, 5);
+    c_Player->takeItem(Item::getItemFromId(KEY), 5);
+    c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
+    c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
+    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
+    c_Player->takeItem(Item::getItemFromId(HEALPOTION), 50);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -42,9 +47,9 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawT
     c_Map->setFocus(c_Player);
 
     LootBag * basicBag = new LootBag;
-    basicBag->addItem(Item::key, 3);
-    basicBag->addItem(Item::woodenSword, 1);
-    basicBag->addItem(Item::healPotion, 2);
+    basicBag->addItem(Item::getItemFromId(KEY), 3);
+    basicBag->addItem(Item::getItemFromId(WOODENSWORD), 1);
+    basicBag->addItem(Item::getItemFromId(HEALPOTION), 2);
     while(true)
     { // place le lootBag de base aleatoirement sur la map
         x = rand() % c_Map->getNbrColumn();
@@ -77,6 +82,10 @@ void Game::loop()
             if((item = c_Menu.getItemToDestroy()) != -1) // gestion de destruction d'item
             {
                 c_Player->removeItem(bag->getItem(item), bag->getNbrOfItem(item));
+            }
+            if((item = c_Menu.getItemToEquip()) != -1) // gestion de d'équippement d'item
+            {
+                c_Player->equip(bag->getItem(item));
             }
 
             const Cell * focusedCell = NULL;
@@ -210,7 +219,7 @@ void Game::loop()
             sf::Texture texture;
             texture.create(app.getSize().x, app.getSize().y);
             texture.update(app);
-            c_RawText.newText("Recherchez votre sac. Il n'a pas du tomber très loin de vous ! Je suis mais je ne suis pas donc nique sa race !", texture, app);
+            c_RawText.newText("Recherchez votre sac. Il n'a pas du tomber très loin de vous !", texture, app);
         }
         c_NbrLoops++;
     }
@@ -354,33 +363,31 @@ void Game::genNextMap(Map * map, Map * lastMap, uint16_t lvl)
 
 bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
 {
-    const ItemInfos & infos = item->getInfos(); // infos sur l'item
-
     Living * lAffected = NULL;
 
     uint16_t dist = abs(p->getPosition().x - c) + abs(p->getPosition().y - l);
-    if(dist >= infos.getMinUseRange() && dist <= infos.getMaxUseRange())
+    if(dist >= item->getMinUseRange() && dist <= item->getMaxUseRange())
     { // si on peut utiliser l'item a cette distance
-        for(uint16_t i = 0; i < infos.getNbrEffect(); i++)
+        for(uint16_t i = 0; i < item->getNbrEffect(); i++)
         { // on gère chaque effet de l'item
-            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell(c, l, infos.getEffect(i).maxEffectRange, infos.getEffect(i).minEffectRange);
+            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell(c, l, item->getEffect(i).maxEffectRange, item->getEffect(i).minEffectRange);
             for(std::list< Cell * >::iterator it = cellsAffected.begin(); it != cellsAffected.end(); it++)
             {
-                switch(infos.getEffect(i).type)
+                switch(item->getEffect(i).type)
                 {
                 case HEAL:
                     if((lAffected = (*it)->getLiving()) != NULL)
                     { // si il y a un joueur sur cette case
-                        lAffected->heal(infos.getEffect(i).value);
-                        std::cout << "Healing of " << infos.getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
+                        lAffected->heal(item->getEffect(i).value);
+                        std::cout << "Healing of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
                     }
                     break;
 
                 case DAMAGE:
                     if((lAffected = (*it)->getLiving()) != NULL)
                     { // si il y a un joueur sur cette case
-                        lAffected->takeDamages(infos.getEffect(i).value);
-                        std::cout << "Damage of " << infos.getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
+                        lAffected->takeDamages(item->getEffect(i).value);
+                        std::cout << "Damage of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
                         if(lAffected->isDead())
                             lAffected->setKiller(p);
                     }
@@ -394,13 +401,45 @@ bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
         }
 
         // gestion pour le type d'objet
-        if(infos.getItemType() == CONSUMABLE)
+        if(item->getItemType() == CONSUMABLE)
         {
             p->removeItem(item, 1);
         }
+        p->itemUsed(item);
         return true;
     }
     return false;
+}
+void Game::useWeapon(Player * p, const Item * item, const std::list<Cell *> & cellsF)
+{
+    Living * lAffected = NULL;
+
+    for(std::list< Cell * >::const_iterator it = cellsF.begin(); it != cellsF.end(); it++)
+    {
+        for(uint16_t i = 0; i < item->getNbrEffect(); i++)
+        { // on gère chaque effet de l'item
+            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell((*it)->getC(), (*it)->getL(), item->getEffect(i).maxEffectRange, item->getEffect(i).minEffectRange);
+            for(std::list< Cell * >::iterator it = cellsAffected.begin(); it != cellsAffected.end(); it++)
+            {
+                switch(item->getEffect(i).type)
+                {
+                case DAMAGE:
+                    if((lAffected = (*it)->getLiving()) != NULL)
+                    { // si il y a un joueur sur cette case
+                        lAffected->takeDamages(item->getEffect(i).value);
+                        std::cout << "Damage of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
+                        if(lAffected->isDead())
+                            lAffected->setKiller(p);
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    p->weaponUsed();
 }
 
 bool Game::movePlayer(Player * p, Direction d)
@@ -546,9 +585,15 @@ void Game::eventManage()
         {
             if(keyboard.isKeyPressed(c_ShortCutKeys[i]))
             {
-                if(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]) != -1)
+                if(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]) != -1 && c_Player->canUseItem(c_Player->getItemShortCut(c_ShortCutKeys[i])))
                     c_Menu.setShowingCellChoice(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]));
             }
+        }
+        if(keyboard.isKeyPressed(sf::Keyboard::Space))
+        {
+            if(c_Player->getWeaponEquipped() != NULL && c_Player->canUseWeapon())
+                useWeapon(c_Player, c_Player->getWeaponEquipped(),
+                            c_Player->getWeaponEquipped()->getTargetableCells(c_Map, c_Player, c_Player->getPosition().x, c_Player->getPosition().y));
         }
     }
 }

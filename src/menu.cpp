@@ -4,7 +4,7 @@ extern int16_t CELLSIZE;
 
 Menu::Menu(sf::RenderWindow & a) : app(a),
 c_ShowingInventory(false), c_InventorySelected(0), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
-c_ShowingItemMenu(false), c_ItemMenuSelected(0), c_ItemToDestroy(-1), c_ItemToUse(-1),
+c_ShowingItemMenu(false), c_ItemMenuSelected(0), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
 c_ShowingCellChoice(false), c_CellToFocus(NULL),
 c_ShowingShortCutChoice(false), c_ShortCutSelected(0), c_ItemToShortCut(-1), c_KeyToShortCut(sf::Keyboard::Unknown),
 c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(0), c_LootBagFirst(0), c_LootBagNbrShown(100), c_LootBagNbrItems(0)
@@ -30,8 +30,9 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(0), c_LootBagFirst(0
         arial.loadFromFile("arial.ttf");
 
         c_ItemMenuTexts[0] = sf::Text(sf::String("Utilisez"), arial, 30);
-        c_ItemMenuTexts[1] = sf::Text(sf::String("Raccourci"), arial, 30);
-        c_ItemMenuTexts[2] = sf::Text(sf::String("Détruire"), arial, 30);
+        c_ItemMenuTexts[1] = sf::Text(sf::String("Equipper"), arial, 30);
+        c_ItemMenuTexts[2] = sf::Text(sf::String("Raccourci"), arial, 30);
+        c_ItemMenuTexts[3] = sf::Text(sf::String("Détruire"), arial, 30);
     }
 
     if(c_ShortCutTexture.loadFromFile("image\\shortCut.jpg"))
@@ -187,9 +188,15 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                         }
                         if(c_ItemMenuSelected == 1)
                         {
-                            c_ShowingShortCutChoice = true;
+                            c_ShowingInventory = false;
+                            c_ShowingItemMenu = false;
+                            c_ItemToEquip = c_InventorySelected;
                         }
                         if(c_ItemMenuSelected == 2)
+                        {
+                            c_ShowingShortCutChoice = true;
+                        }
+                        if(c_ItemMenuSelected == 3)
                         {
                             c_ItemToDestroy = c_InventorySelected;
                             c_ShowingItemMenu = false;
@@ -261,7 +268,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     }
     else if(c_ShowingItemMenu)
     {
-        for(uint16_t i = 0; i < 3; ++i)
+        for(uint16_t i = 0; i < 4; ++i)
         {
             if(c_ItemMenuTexts[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                 c_ItemMenuSelected = i;
@@ -371,23 +378,26 @@ void Menu::itemMenu(const Player * p)
     c_ItemMenuSprite.setPosition(442, basePos);
     app.draw(c_ItemMenuSprite);
 
-    for(uint16_t i = 0; i < 3; ++i)
+    for(uint16_t i = 0; i < 4; ++i)
     {
-        if(!p->getItem(c_InventorySelected)->isUsable() && (i == 0 || i == 1));
-        else // si l'item n'st pas utilisable on affiche que le choix de destruction d el'item
-        {
-            c_ItemMenuTexts[i].setPosition(450, basePos + lastTextHeightPosition + lastTextHeightSize + (10 * (i != 0)) );
-            if(i == c_ItemMenuSelected)
-                c_ItemMenuTexts[i].setColor(sf::Color::Red);
-            else
-                c_ItemMenuTexts[i].setColor(sf::Color::Black);
+        if(!p->getItem(c_InventorySelected)->isUsable() && (i == 0 || i == 1))
+            continue; // si l'item n'st pas utilisable on affiche que le choix de destruction d el'item
+        if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT && (i == 0))
+            continue; // si un equipement on n'affiche pas le choix utiliser
+        if(!p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT && (i == 1))
+            continue; // si pas un equipement on n'affiche pas le choix equipper
 
-            app.draw(c_ItemMenuTexts[i]);
+        c_ItemMenuTexts[i].setPosition(450, basePos + lastTextHeightPosition + lastTextHeightSize + (10 * (i != 0)) );
+        if(i == c_ItemMenuSelected)
+            c_ItemMenuTexts[i].setColor(sf::Color::Red);
+        else
+            c_ItemMenuTexts[i].setColor(sf::Color::Black);
 
-            lastTextHeightPosition = c_ItemMenuTexts[i].getPosition().y - basePos;
-            lastTextHeightSize = c_ItemMenuTexts[i].getGlobalBounds().height;
-            // permet de positionner le porchain affichage d'item dans le menu
-        }
+        app.draw(c_ItemMenuTexts[i]);
+
+        lastTextHeightPosition = c_ItemMenuTexts[i].getPosition().y - basePos;
+        lastTextHeightSize = c_ItemMenuTexts[i].getGlobalBounds().height;
+        // permet de positionner le porchain affichage d'item dans le menu
     }
 }
 

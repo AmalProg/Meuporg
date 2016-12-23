@@ -21,6 +21,7 @@ class Menu
 
         int16_t getItemToDestroy() { int16_t tmp = c_ItemToDestroy; c_ItemToDestroy = -1;  return tmp; }
         int16_t getItemToUse() { int16_t tmp = c_ItemToUse; c_ItemToUse = -1; return tmp; }
+        int16_t getItemToEquip() { int16_t tmp = c_ItemToEquip; c_ItemToEquip = -1; return tmp; }
         const Cell * getCellToFocus() { const Cell * tmp = c_CellToFocus; c_CellToFocus = NULL; return tmp; }
         int16_t getItemToShortCut() { int16_t tmp = c_ItemToShortCut; c_ItemToShortCut = -1; return tmp; }
         sf::Keyboard::Key getKeyToShortCut() { sf::Keyboard::Key tmp = c_KeyToShortCut; c_KeyToShortCut = sf::Keyboard::Unknown; return tmp; }
@@ -56,10 +57,11 @@ class Menu
         bool c_ShowingItemMenu;
         sf::Texture c_ItemMenuTexture;
         sf::Sprite c_ItemMenuSprite;
-        sf::Text c_ItemMenuTexts[3];
+        sf::Text c_ItemMenuTexts[4];
         uint16_t c_ItemMenuSelected;
         int16_t c_ItemToDestroy;
         int16_t c_ItemToUse;
+        int16_t c_ItemToEquip;
 
         bool c_ShowingCellChoice;
         std::list< Cell * > c_AffectedCells;

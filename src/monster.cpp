@@ -103,7 +103,7 @@ Sheep::Sheep(const std::string & name, AggroState aggroState, uint16_t aggroDist
       Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
 : Monster(SHEEP, name, aggroState, aggroDist, lostAggroTime, maxLife, dir, pos, color, speed, delayAtkTime)
 {
-    c_LootTable.addItem(Item::crap, 2, 80);
+    c_LootTable.addItem(Item::getItemFromId(CRAP), 2, 80);
     c_Loots = new LootBag(c_LootTable.getLoots());
 }
 
@@ -124,7 +124,7 @@ Wolf::Wolf(const std::string & name, AggroState aggroState, uint16_t aggroDist, 
       Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
 : Monster(WOLF, name, aggroState, aggroDist, lostAggroTime, maxLife, dir, pos, color, speed, delayAtkTime)
 {
-    c_LootTable.addItem(Item::teeth, 1, 30);
+    c_LootTable.addItem(Item::getItemFromId(TEETH), 1, 30);
     c_Loots = new LootBag(c_LootTable.getLoots());
 }
 

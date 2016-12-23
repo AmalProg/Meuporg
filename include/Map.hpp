@@ -8,12 +8,14 @@
 #include <math.h>
 #include <list>
 #include "cell.hpp"
-#include "Living.hpp"
+class Living;
 class Obstacle;
 class Stairs;
 class LockedDoor;
 #include "monster.hpp"
 class Monster;
+#include "character.hpp"
+#include "item.hpp"
 #include "lootbag.hpp"
 #include "GenInfo.hpp"
 #include "Tree.hpp"
@@ -74,7 +76,10 @@ class Map
         std::vector< Cell * > getPath(const Cell * startC, const Cell * endC, bool skipLivings, bool fullMap, uint16_t maxMoreSteps) const;
         uint16_t getPathLenght(const Cell * startC, const Cell * endC, bool skipLivings) const;
         std::list< Cell * > getCellsDistFromCell(uint16_t c, uint16_t l, uint16_t dist) const; // cellules a moins d'un certaine distance
-        std::list< Cell * > getCellsBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int distMin) const;
+        std::list< Cell * > getCellsBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin) const; // cellules entre deux distances
+        std::list< Cell * > getCellsBetweenDistFromCellDirection(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin, Direction d) const; // cellules dans une seule direction entre deux distances
+        std::list< Cell * > getCellsInLineBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin) const; // cellules en ligne dans les quatres direction entre deux distances
+        std::list< Cell * > getCellsInLineBetweenDistFromCellDirection(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin, Direction d) const; // cellule en ligne dans une seule diretion entre deux distances
         Cell * getRCell(uint16_t c, uint16_t l) const { if(c+1 < c_Map.size()) return c_Map[c+1][l]; return NULL; }
         Cell * getLCell(uint16_t c, uint16_t l) const { if(c-1 >= 0) return c_Map[c-1][l]; return NULL; }
         Cell * getUCell(uint16_t c, uint16_t l) const { if(l-1 >= 0) return c_Map[c][l-1]; return NULL; }
@@ -90,7 +95,8 @@ class Map
     private:
         void removeLiving(uint16_t c, uint16_t l);
 
-        void recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int distMax, Cell * baseCell) const;
+        void recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int16_t distMax, Cell * baseCell) const;
+        void recursiveLine(std::list< Cell * > & cells, Cell * c, int16_t distMin, int16_t distMax, int16_t actualDist, Direction d) const;
         void pathMap(std::vector < std::vector < int16_t > > * distMap, const std::vector< const Cell * > & actualCs, uint16_t actualDist, const Cell * targetC, bool skipLivings, bool fullMap) const;
         void recursivePath(std::vector < Cell * > * bestPath, std::vector < std::vector < int16_t > > * distMap, const Cell * startC, const Cell * endC, uint16_t maxMoreSteps) const;
         void expandEntity(EntityTypeId id, Cell * cell, float expandValue);

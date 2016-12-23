@@ -224,14 +224,14 @@ void Map::draw()
                     c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
                 }
 
-                sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
+                /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
                 t.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize + 10);
                 t.setColor(sf::Color::Red);
                 sf::Text t2(nbrToString(c_Map[i][j]->getL()), font, 10);
                 t2.setPosition(c_Map[i][j]->getC() * c_CellSize + 20, c_Map[i][j]->getL() * c_CellSize+20);
                 t2.setColor(sf::Color::Red);
                 app.draw(t);
-                app.draw(t2);
+                app.draw(t2);*/
             }
         }
     }
@@ -1168,42 +1168,59 @@ std::list< Cell * > Map::getCellsDistFromCell(uint16_t c, uint16_t l, uint16_t d
 
     recursiveNeighbourDist(cells, c_Map[c][l], dist, c_Map[c][l]);
 
-    /*sf::RectangleShape p(sf::Vector2f(10, 10));
-    p.setFillColor(sf::Color::Red);
-    for(uint16_t i = 0; i < cells.size(); i++)
-    {
-        p.setPosition(cells[i]->getC() * CELLSIZE, cells[i]->getL() * CELLSIZE);
-        app.draw(p);
-    }*/
-
     return cells;
 }
-std::list< Cell * > Map::getCellsBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int distMin) const
+std::list< Cell * > Map::getCellsBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin) const
 {
-    std::list< Cell * > cellsMax;
+    std::list< Cell * > cells;
 
-    recursiveNeighbourDist(cellsMax, c_Map[c][l], distMax, c_Map[c][l]);
+    recursiveNeighbourDist(cells, c_Map[c][l], distMax, c_Map[c][l]);
 
-    for(std::list< Cell * >::iterator it = cellsMax.begin(); it != cellsMax.end(); ++it)
+    for(std::list< Cell * >::iterator it = cells.begin(); it != cells.end(); ++it)
     {
         if(getCellDist(c_Map[c][l], *it) < distMin)
         {
-            it = cellsMax.erase(it);
+            it = cells.erase(it);
             it--;
         }
     }
 
-    /*sf::RectangleShape p(sf::Vector2f(10, 10));
-    p.setFillColor(sf::Color::Red);
-    for(std::list< Cell * >::iterator it = cellsMax.begin(); it != cellsMax.end(); it++)
-    {
-        p.setPosition((*it)->getC() * CELLSIZE, (*it)->getL() * CELLSIZE);
-        app.draw(p);
-    }*/
-
-    return cellsMax;
+    return cells;
 }
-void Map::recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int distMax, Cell * baseCell) const
+std::list< Cell * > Map::getCellsBetweenDistFromCellDirection(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin, Direction d) const
+{
+    std::list< Cell * > cells = getCellsBetweenDistFromCell(c, l, distMax, distMin);
+
+    for(std::list< Cell * >::iterator it = cells.begin(); it != cells.end(); ++it)
+    {
+        if((d == RIGHT && (c - (*it)->getC()) >= 0) || (d == LEFT && (c - (*it)->getC()) <= 0)
+                || (d == UP && (l - (*it)->getL()) >= 0) || (d == DOWN && (l - (*it)->getL()) <= 0))
+            continue;
+
+        it = cells.erase(it);
+        it--;
+    }
+
+    return cells;
+}
+
+std::list< Cell * > Map::getCellsInLineBetweenDistFromCell(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin) const
+{
+    std::list< Cell * > cells;
+    recursiveLine(cells, getCell(c, l), distMin, distMax, 0, RIGHT);
+    recursiveLine(cells, getCell(c, l), distMin, distMax, 0, LEFT);
+    recursiveLine(cells, getCell(c, l), distMin, distMax, 0, DOWN);
+    recursiveLine(cells, getCell(c, l), distMin, distMax, 0, UP);
+    return cells;
+}
+std::list< Cell * > Map::getCellsInLineBetweenDistFromCellDirection(uint16_t c, uint16_t l, uint16_t distMax, int16_t distMin, Direction d) const
+{
+    std::list< Cell * > cells;
+    recursiveLine(cells, getCell(c, l), distMin, distMax, 0, d);
+    return cells;
+}
+
+void Map::recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int16_t distMax, Cell * baseCell) const
 {
     if(c == NULL || getCellDist(c, baseCell) > distMax || std::find(cells.begin(), cells.end(), c) != cells.end())
         return;
@@ -1214,6 +1231,30 @@ void Map::recursiveNeighbourDist(std::list< Cell * > & cells, Cell * c, int dist
     recursiveNeighbourDist(cells, getLCell(c), distMax, baseCell);
     recursiveNeighbourDist(cells, getUCell(c), distMax, baseCell);
     recursiveNeighbourDist(cells, getDCell(c), distMax, baseCell);
+}
+void Map::recursiveLine(std::list< Cell * > & cells, Cell * c, int16_t distMin, int16_t distMax, int16_t actualDist, Direction d) const
+{
+    if(c == NULL || actualDist > distMax)
+        return;
+
+    if(actualDist >= distMin)
+        cells.push_back(c);
+
+    switch(d)
+    {
+    case RIGHT:
+        recursiveLine(cells, getRCell(c), distMin, distMax, actualDist+1, d);
+        break;
+    case LEFT:
+        recursiveLine(cells, getLCell(c), distMin, distMax, actualDist+1, d);
+        break;
+    case DOWN:
+        recursiveLine(cells, getDCell(c), distMin, distMax, actualDist+1, d);
+        break;
+    case UP:
+        recursiveLine(cells, getUCell(c), distMin, distMax, actualDist+1, d);
+        break;
+    }
 }
 
 bool Map::getLivingOnCell(Living * p, uint16_t c, uint16_t l)
