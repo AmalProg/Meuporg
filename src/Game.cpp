@@ -697,16 +697,16 @@ void Game::actionEventTest()
 
     const std::list< LootBag * > & lBs = focusedCell->getLootBags();
     const std::list< Obstacle * > & os = focusedCell->getObstacles();
-    if(focusedCell->getLiving() != NULL)
+    if(focusedCell->getLiving() != NULL) // priorité au entité vivantes
         focusedCell->getLiving()->speakAction();
-    else if(lBs.size() != 0)
+    else if(lBs.size() != 0) // puis aux lootBags
     {
         for(std::list< LootBag * >::const_iterator it = lBs.begin(); it != lBs.end(); ++it)
         {
             c_Menu.setShowingLootBag((*it));
         }
     }
-    else if(os.size() != 0)
+    else if(os.size() != 0) // et enfin aux obstacles
     {
         for(std::list< Obstacle * >::const_iterator it = os.begin(); it != os.end(); ++it)
         {

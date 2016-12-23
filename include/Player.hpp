@@ -29,7 +29,7 @@ class Player : public Character
         int16_t getItemIndexShortCut(sf::Keyboard::Key key);
         const Item * getWeaponEquipped() const { return c_WeaponEquipped; }
         bool canUseWeapon() const { return c_CanUseWeapon; }
-        bool canUseItem(const Item * item);
+        bool canUseItem(const Item * item) const;
 
     private:
         std::map< sf::Keyboard::Key, const Item * > c_Shortcuts; //

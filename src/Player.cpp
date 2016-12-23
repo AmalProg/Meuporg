@@ -70,9 +70,9 @@ void Player::setShortCut(const Item * item, sf::Keyboard::Key key)
     }
 }
 
-bool Player::canUseItem(const Item * item)
+bool Player::canUseItem(const Item * item) const
 {
-    return c_CanUseItem[item->getItemId()];
+    return c_CanUseItem.at(item->getItemId());
 }
 
 const Item * Player::getItemShortCut(sf::Keyboard::Key key)

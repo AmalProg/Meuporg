@@ -182,9 +182,15 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                     {
                         if(c_ItemMenuSelected == 0)
                         {
-                            c_ShowingInventory = false;
-                            c_ShowingItemMenu = false;
-                            c_ShowingCellChoice = true;
+                            if(p->getItem(c_InventorySelected)->getItemType() != EQUIPMENT
+                               && p->canUseItem(p->getItem(c_InventorySelected)))
+                            {
+                                c_ShowingInventory = false;
+                                c_ShowingItemMenu = false;
+                                c_ShowingCellChoice = true;
+                            }
+                            else
+                                std::cout << "Cet item est en CD !" << "\n";
                         }
                         if(c_ItemMenuSelected == 1)
                         {

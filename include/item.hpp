@@ -1,6 +1,9 @@
 #ifndef ITEM_HPP
 #define ITEM_HPP
 
+enum ItemId {HEALPOTION = 0, WOODENSWORD, STONESWORD, LONGSWORD, GRENADE, TEETH, KEY, CRAP};
+// putain de problèmes d'inclusion multiples donc je le place là
+
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <list>
@@ -22,7 +25,6 @@ public:
 };
 
 enum ItemType {CONSUMABLE, EQUIPMENT, TOOL};
-enum ItemId {HEALPOTION = 0, WOODENSWORD, STONESWORD, LONGSWORD, GRENADE, TEETH, KEY, CRAP};
 enum ZoneType {LINE = 0, AOE};
 
 class Item
