@@ -1,36 +1,35 @@
 #include "Obstacle.hpp"
 
+sf::Texture Obstacle::obstacleTexture;
+void Obstacle::initTextures()
+{
+    Obstacle::obstacleTexture.loadFromFile("image\\map\\obstacleTextures.png");
+}
+
 Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable, bool visionBlocking, bool attackBlocking
                    , bool filler, bool cover)
  : Entity(typeId, pos), c_Walkable(walkable), c_VisionBlocking(visionBlocking), c_AttackBlocking(attackBlocking)
  ,  c_IsFiller(filler), c_IsCover(cover)
 {
-    c_Shape.setFillColor(sf::Color::Black);
+    c_Sprite.setTexture(obstacleTexture);
 }
 
 void Obstacle::draw(sf::RenderWindow & app, uint16_t cellSize)
 {
-    c_Shape.setSize(sf::Vector2f(cellSize, cellSize));
-    c_Shape.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
-    app.draw(c_Shape);
+    c_Sprite.setScale(cellSize / c_Sprite.getLocalBounds().width, cellSize / c_Sprite.getLocalBounds().height);
+    c_Sprite.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
+    app.draw(c_Sprite);
 }
 /***/
+void Fire::update(const sf::Time & elapsed)
+{
+    c_LastTickTime += elapsed;
+    //c_Rect.setSwitchTime(0.20 + (rand() % 31) / 100.f);
+    c_Rect.update(elapsed);
+    c_Sprite.setTextureRect(c_Rect.getRect());
+}
 void Fire::realTimeAction(Map * m, Player * p)
 {
-    float randSwitchTime = 0.20 + (rand() % 31) / 100.f;
-    if(c_FirstStateOfFire && c_SwitchTime.asSeconds() > randSwitchTime)
-    {
-        c_Shape.setFillColor(sf::Color(255, 155, 0));
-        c_FirstStateOfFire = false;
-        c_SwitchTime -= sf::seconds(randSwitchTime);
-    }
-    else if(c_SwitchTime.asSeconds() > randSwitchTime)
-    {
-        c_Shape.setFillColor(sf::Color(200, 100, 0));
-        c_FirstStateOfFire = true;
-        c_SwitchTime -= sf::seconds(randSwitchTime);
-    }
-
     if(c_LastTickTime.asSeconds() > c_DamageTickTime)
     {
         c_Ticking = true;
@@ -54,18 +53,18 @@ Door::Door(bool isOpen, EntityTypeId typeId, const sf::Vector2f & pos)
 {
     if(c_IsOpen)
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
+        c_Sprite.setTextureRect(sf::IntRect(0, 1536, 512, 512));
     }
     else
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30));
+        c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
     }
 }
 void Door::speakAction(Map * mape, Player * p)
 {
     if(c_IsOpen)
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30));
+        c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
         c_IsOpen = false;
         setWalkable(false);
         mape->getCell(c_Position.x, c_Position.y)->stateTest();
@@ -73,7 +72,7 @@ void Door::speakAction(Map * mape, Player * p)
     }
     else
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
+        c_Sprite.setTextureRect(sf::IntRect(0, 1536, 512, 512));
         c_IsOpen = true;
         setWalkable(true);
         mape->getCell(c_Position.x, c_Position.y)->stateTest();

@@ -15,12 +15,12 @@ std::string nbrToString(float nbr)
     return o.str();
 }
 
-int16_t CELLSIZE = 45;
+int16_t CELLSIZE = 37;
 
 Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
-    c_View.setSize(app.getSize().x * 1.5, app.getSize().y * 1.5);
+    c_View.setSize(app.getSize().x, app.getSize().y);
 
     if(mapId == 0)
     {
@@ -70,19 +70,25 @@ Map::~Map()
 
 void Map::moveMap()
 {
-    if(c_Focus->getPosition().x >= c_Map.size() - c_View.getSize().x / CELLSIZE / 2)
-        c_View.setCenter(c_Map.size() * CELLSIZE - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
-    else if(c_Focus->getPosition().x < c_View.getSize().x / CELLSIZE / 2)
-        c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
-    else if(c_Focus->getPosition().x >= c_View.getSize().x / CELLSIZE / 2)
-        c_View.setCenter(c_Focus->getPosition().x * CELLSIZE + CELLSIZE/2, c_View.getCenter().y); // centre la map sur le joueur focus
+    float posXCell = c_Focus->getPosition().x;
+    float posX = posXCell * CELLSIZE + CELLSIZE/2;
 
-    if(c_Focus->getPosition().y >= c_Map[0].size() - c_View.getSize().y / CELLSIZE / 2)
+    if(posX >= c_Map.size() * CELLSIZE - c_View.getSize().x/2)
+        c_View.setCenter(c_Map.size() * CELLSIZE - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
+    else if(posX <= c_View.getSize().x/2)
+        c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
+    else
+        c_View.setCenter(posX, c_View.getCenter().y); // centre la map sur le joueur focus
+
+    float posYCell = c_Focus->getPosition().y;
+    float posY = posYCell * CELLSIZE + CELLSIZE/2;
+
+    if(posY >= c_Map[0].size() * CELLSIZE - c_View.getSize().y/2)
         c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * CELLSIZE - c_View.getSize().y/2); // place la map en bas
-    else if(c_Focus->getPosition().y < c_View.getSize().y / CELLSIZE / 2)
+    else if(posY <= c_View.getSize().y/2)
         c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
-    else if(c_Focus->getPosition().y >= c_View.getSize().y / CELLSIZE / 2)
-        c_View.setCenter(c_View.getCenter().x, c_Focus->getPosition().y * CELLSIZE + CELLSIZE/2); // centre la map sur le joueur focus
+    else
+        c_View.setCenter(c_View.getCenter().x, posY); // centre la map sur le joueur focus
 
     app.setView(c_View);
 }
@@ -1010,8 +1016,6 @@ void Map::fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std:
         for(uint16_t j = 0; j < cellsGroups[i].size(); j++)
         {
             setObstacleOnCell(idMaxObstacles, getCell(cellsGroups[i][j]->getC(), cellsGroups[i][j]->getL()));
-            std::cout << cellsGroups[i][j]->getC() << ", " << cellsGroups[i][j]->getL() << "\n";
-            std::cout << idMaxObstacles << "\n";
         }
     }
 }

@@ -4,6 +4,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawT
  c_NbrLoops(0)
 {
     Item::initItems();
+    Obstacle::initTextures();
 
     c_Font.loadFromFile("arial.ttf");
     c_FpsTxt.setString("0");
