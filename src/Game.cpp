@@ -1,17 +1,18 @@
 #include "Game.hpp"
 
-Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
+Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(25), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
  c_NbrLoops(0)
 {
     Item::initItems();
-    Obstacle::initTextures();
+    Entity::initTextures();
 
     c_Font.loadFromFile("arial.ttf");
     c_FpsTxt.setString("0");
     c_FpsTxt.setFont(c_Font);
     c_FpsTxt.setColor(sf::Color::Black);
 
-    c_Map = new Map(app);
+
+    c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal");
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
@@ -156,7 +157,7 @@ void Game::loop()
 
                     if(c_Map == NULL)
                     {
-                        c_Map = new Map(app);
+                        c_Map = new Map(app, lastMap->getCellSize());
                         c_ActualLevel++;
                         genNextMap(c_Map, lastMap, c_ActualLevel);
                         (*it)->setLinkedMapId(c_Map->getMapId());
@@ -287,7 +288,7 @@ void Game::load(const std::string & fileName)
             {
                 file >> mapId;
 
-                Map * m = new Map(app, mapId);
+                Map * m = new Map(app, app.getSize().x / c_NbrCellsToDraw, mapId);
                 m->load(file);
                 c_Maps.push_back(m);
 

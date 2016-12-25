@@ -26,8 +26,6 @@ class Obstacle : public Entity
         bool isVisionBlocking() const { return c_VisionBlocking; }
         bool isAttackBlocking() const { return c_AttackBlocking; }
 
-        virtual void draw(sf::RenderWindow & app, uint16_t cellSize);
-
         virtual void realTimeAction(Map * m, Player * p) {} // activé dans diverses cas en fonction de positions de certains objets etc ...
         virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
         virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
@@ -35,17 +33,12 @@ class Obstacle : public Entity
         virtual void firstStepAction(Map * mape, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
         virtual void lastStepAction(Map * mape, Living * l) {} // activé lorsqu'on sort juste de la cell
 
-        static void initTextures();
-
     protected:
         bool c_Walkable; // peut on marcher dessus ?
         bool c_IsCover; // recouvre le sol de la cell
         bool c_IsFiller; // prend toute la place de la cell
         bool c_VisionBlocking; // bloque-t-il la vision
         bool c_AttackBlocking; // peut on tirer à travers ?
-
-        sf::Sprite c_Sprite;
-        static sf::Texture obstacleTexture;
 };
 
 class Grass : public Obstacle

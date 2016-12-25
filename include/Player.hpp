@@ -17,12 +17,14 @@ class Player : public Character
 
         bool takeItem(const Item * item, uint16_t nbr); // rammasse un 'nbr' d''item'
         void update(const sf::Time & elapsed);
+        void draw(sf::RenderWindow & app, uint16_t cellSize);
 
         bool equip(const Item * i);
         void removeItem(const Item * item, uint16_t nbr);
         void weaponUsed() { c_CanUseWeapon = false; c_LastWeaponUseTime = sf::Time::Zero; }
         void itemUsed(const Item * item);
 
+        void setDirection(Direction dir);
         void setShortCut(const Item * item, sf::Keyboard::Key key);
 
         const Item * getItemShortCut(sf::Keyboard::Key key);

@@ -1,7 +1,5 @@
 #include "menu.hpp"
 
-extern int16_t CELLSIZE;
-
 Menu::Menu(sf::RenderWindow & a) : app(a),
 c_ShowingInventory(false), c_InventorySelected(0), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
 c_ShowingItemMenu(false), c_ItemMenuSelected(0), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
@@ -19,8 +17,6 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(0), c_LootBagFirst(0
     if(c_LootBagTexture.loadFromFile("image\\LootBagMenu.jpg"))
     {
         c_LootBagSprite.setTexture(c_LootBagTexture);
-        c_LootBagSprite.setPosition(app.getSize().x / 2 - c_LootBagSprite.getLocalBounds().width / 2,
-                                    app.getSize().y / 2 - c_LootBagSprite.getLocalBounds().height / 2);
     }
 
     if(c_ItemMenuTexture.loadFromFile("image\\itemMenu.jpg"))
@@ -308,6 +304,11 @@ void Menu::shortCutMenu(const Map * m)
 
 void Menu::lootbagMenu()
 {
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+    c_LootBagSprite.setPosition(app.getSize().x / 2 - c_LootBagSprite.getLocalBounds().width / 2,
+                                    app.getSize().y / 2 - c_LootBagSprite.getLocalBounds().height / 2);
     app.draw(c_LootBagSprite);
 
     uint16_t lastTextHeightSize = 0;
@@ -342,11 +343,13 @@ void Menu::lootbagMenu()
         lastTextHeightPosition = c_LootBagTexts[i].getPosition().y - c_LootBagSprite.getPosition().y;
         lastTextHeightSize = c_LootBagTexts[i].getGlobalBounds().height;
     }
+
+    app.setView(lastView);
 }
 
 void Menu::cellChoiceMenu(const Map * m, const Player * p)
 {
-    static sf::RectangleShape outline(sf::Vector2f(CELLSIZE * 7/10, CELLSIZE * 7/10));
+    static sf::RectangleShape outline(sf::Vector2f(m->getCellSize() * 7/10, m->getCellSize() * 7/10));
     outline.setOutlineColor(sf::Color::Red);
     outline.setOutlineThickness(3);
 
@@ -360,7 +363,7 @@ void Menu::cellChoiceMenu(const Map * m, const Player * p)
     {
         if(m->lineOfSight(playerCell, (*it)))
         {
-            outline.setPosition(CELLSIZE * (*it)->getC() + CELLSIZE * 15/100, CELLSIZE * (*it)->getL() + CELLSIZE * 15/100);
+            outline.setPosition(m->getCellSize() * (*it)->getC() + m->getCellSize() * 15/100, m->getCellSize() * (*it)->getL() + m->getCellSize() * 15/100);
             if((*it) == c_CellChoiceSelected)
                 outline.setFillColor(sf::Color::Red);
             else
@@ -375,6 +378,9 @@ void Menu::cellChoiceMenu(const Map * m, const Player * p)
 
 void Menu::itemMenu(const Player * p)
 {
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
     uint16_t lastTextHeightSize = 0;
     uint16_t lastTextHeightPosition = 0;
 
@@ -405,10 +411,17 @@ void Menu::itemMenu(const Player * p)
         lastTextHeightSize = c_ItemMenuTexts[i].getGlobalBounds().height;
         // permet de positionner le porchain affichage d'item dans le menu
     }
+
+    app.setView(lastView);
 }
 
 void Menu::inventoryMenu(const Player * p)
 {
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+    c_InventorySprite.setScale(app.getSize().x / c_InventorySprite.getLocalBounds().width,
+                               app.getSize().y / c_InventorySprite.getLocalBounds().height);
     app.draw(c_InventorySprite);
 
     const Bag * bag = p->getBag();
@@ -443,6 +456,8 @@ void Menu::inventoryMenu(const Player * p)
         lastTextHeightPosition = c_InventoryTexts.back().getPosition().y;
         lastTextHeightSize = c_InventoryTexts.back().getGlobalBounds().height;
     }
+
+    app.setView(lastView);
 }
 
 void Menu::setShowingLootBag(LootBag * lB)

@@ -15,9 +15,7 @@ std::string nbrToString(float nbr)
     return o.str();
 }
 
-int16_t CELLSIZE = 37;
-
-Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
+Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
     c_View.setCenter(sf::Vector2f(0, 0));
     c_View.setSize(app.getSize().x, app.getSize().y);
@@ -32,12 +30,12 @@ Map::Map(sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
         c_MapId = mapId;
         Map::mapsIds[c_MapId] = this;
 }
-Map::Map(uint16_t c, uint16_t l, sf::RenderWindow & a, uint32_t mapId) : app(a), c_CellSize(CELLSIZE)
+Map::Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
-    for(uint16_t i = 0; i < c; i++) // créer une map de cases vide
+    for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
     { // colonnes
         c_Map.push_back(std::vector < Cell *>());
-        for(uint16_t j = 0; j < l; j++) // lignes
+        for(uint16_t j = 0; j < nbrL; j++) // lignes
             c_Map[i].push_back(new Cell(i, j));
     }
 
@@ -71,20 +69,20 @@ Map::~Map()
 void Map::moveMap()
 {
     float posXCell = c_Focus->getPosition().x;
-    float posX = posXCell * CELLSIZE + CELLSIZE/2;
+    float posX = posXCell * c_CellSize + c_CellSize/2;
 
-    if(posX >= c_Map.size() * CELLSIZE - c_View.getSize().x/2)
-        c_View.setCenter(c_Map.size() * CELLSIZE - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
+    if(posX >= c_Map.size() * c_CellSize - c_View.getSize().x/2)
+        c_View.setCenter(c_Map.size() * c_CellSize - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
     else if(posX <= c_View.getSize().x/2)
         c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
     else
         c_View.setCenter(posX, c_View.getCenter().y); // centre la map sur le joueur focus
 
     float posYCell = c_Focus->getPosition().y;
-    float posY = posYCell * CELLSIZE + CELLSIZE/2;
+    float posY = posYCell * c_CellSize + c_CellSize/2;
 
-    if(posY >= c_Map[0].size() * CELLSIZE - c_View.getSize().y/2)
-        c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * CELLSIZE - c_View.getSize().y/2); // place la map en bas
+    if(posY >= c_Map[0].size() * c_CellSize - c_View.getSize().y/2)
+        c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
     else if(posY <= c_View.getSize().y/2)
         c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
     else
@@ -198,7 +196,7 @@ void Map::draw()
 {
     app.setView(c_View);
 
-    static sf::RectangleShape backG(sf::Vector2f(CELLSIZE, CELLSIZE));
+    static sf::RectangleShape backG(sf::Vector2f(c_CellSize, c_CellSize));
     backG.setFillColor(sf::Color::White);
 
     if(c_Map.begin() != c_Map.end()) // si la map est definit
@@ -210,24 +208,20 @@ void Map::draw()
         {
             for(uint16_t j = 0; j < c_Map[i].size(); j++)
             {
-                backG.setPosition(CELLSIZE * i, CELLSIZE * j);
+                backG.setPosition(c_CellSize * i, c_CellSize * j);
                 app.draw(backG); // affiche le fond blanc d'une case
 
                 if(c_Map[i][j]->isCovered())
-                    c_Map[i][j]->getCover()->draw(app, CELLSIZE);
+                    c_Map[i][j]->getCover()->draw(app, c_CellSize);
                 if(c_Map[i][j]->gotStairs())
-                    c_Map[i][j]->getStairs()->draw(app, CELLSIZE);
+                    c_Map[i][j]->getStairs()->draw(app, c_CellSize);
                 if(c_Map[i][j]->isFilled())
-                    c_Map[i][j]->getFiller()->draw(app, CELLSIZE);
+                    c_Map[i][j]->getFiller()->draw(app, c_CellSize);
 
                 std::list< LootBag * > lBs = c_Map[i][j]->getLootBags();
                 for(std::list< LootBag * >::iterator it = lBs.begin(); it != lBs.end(); ++it)
                 {
-                    (*it)->draw(app, CELLSIZE);
-                }
-                if(c_Map[i][j]->getLiving() != NULL)
-                {
-                    c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
+                    (*it)->draw(app, c_CellSize);
                 }
 
                 /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
@@ -240,6 +234,11 @@ void Map::draw()
                 app.draw(t2);*/
             }
         }
+    }
+
+    for(std::list< Living * >::const_iterator it = c_Livings.begin(); it != c_Livings.end(); it++)
+    {
+        (*it)->draw(app, c_CellSize);
     }
     /*std::map< EntityTypeId, bool > toCheck;
     toCheck[GRASS] = true;

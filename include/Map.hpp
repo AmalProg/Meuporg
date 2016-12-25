@@ -30,8 +30,8 @@ typedef struct PathCell
 class Map
 {
     public:
-        Map(sf::RenderWindow & a, uint32_t mapId = 0);
-        Map(uint16_t c, uint16_t l, sf::RenderWindow & a, uint32_t mapId = 0);
+        Map(sf::RenderWindow & a, uint16_t cellSize = 40, uint32_t mapId = 0);
+        Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize = 40, uint32_t mapId = 0);
         ~Map();
 
         void moveMap(); // déplace la map en fonction du focus sur la vue
@@ -53,6 +53,8 @@ class Map
         void generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL);
         void save(std::ofstream & file);
         void load(std::ifstream & file);
+
+        void setCellSize(uint16_t cellSize) { c_CellSize = cellSize; }
 
         sf::View getView() const { return c_View; }
         bool getLivingOnCell(Living * p, uint16_t c, uint16_t l); // retourne le Living de cette case

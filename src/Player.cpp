@@ -3,14 +3,15 @@
 Player::Player(const std::string & name, float maxLife, Direction dir, float speed, const sf::Vector2f & pos)
  : Character(PLAYER, name, maxLife, dir, speed, pos), c_WeaponEquipped(NULL), c_CanUseWeapon(true), c_WeaponCDTime(0)
 {
-    c_Shape.setFillColor(sf::Color(0, 120, 0));
+    c_Sprite.setTexture(Entity::playerTextures);
+    setDirection(c_Direction); // pour initialiser le sprite
 }
 
 bool Player::takeItem(const Item * item, uint16_t nbr)
 {
     c_CanUseItem[item->getItemId()] = true;
 
-    Character::takeItem(item, nbr);
+    return Character::takeItem(item, nbr);
 }
 
 void Player::update(const sf::Time & elapsed)
@@ -34,6 +35,27 @@ void Player::update(const sf::Time & elapsed)
     }
 
     Character::update(elapsed);
+}
+
+void Player::draw(sf::RenderWindow & app, uint16_t cellSize)
+{
+    c_Sprite.setScale(cellSize / c_Sprite.getLocalBounds().width, cellSize / c_Sprite.getLocalBounds().height);
+    c_Sprite.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
+    app.draw(c_Sprite);
+}
+
+void Player::setDirection(Direction dir)
+{
+    if(dir == LEFT)
+        c_Sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+    else if(dir == RIGHT)
+        c_Sprite.setTextureRect(sf::IntRect(128, 0, 64, 64));
+    else if(dir == UP)
+        c_Sprite.setTextureRect(sf::IntRect(192, 0, 64, 64));
+    else
+        c_Sprite.setTextureRect(sf::IntRect(64, 0, 64, 64));
+
+    Character::setDirection(dir);
 }
 
 bool Player::equip(const Item * i)

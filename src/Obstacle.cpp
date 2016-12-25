@@ -1,30 +1,16 @@
 #include "Obstacle.hpp"
 
-sf::Texture Obstacle::obstacleTexture;
-void Obstacle::initTextures()
-{
-    Obstacle::obstacleTexture.loadFromFile("image\\map\\obstacleTextures.png");
-}
-
 Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable, bool visionBlocking, bool attackBlocking
                    , bool filler, bool cover)
  : Entity(typeId, pos), c_Walkable(walkable), c_VisionBlocking(visionBlocking), c_AttackBlocking(attackBlocking)
  ,  c_IsFiller(filler), c_IsCover(cover)
 {
-    c_Sprite.setTexture(obstacleTexture);
-}
-
-void Obstacle::draw(sf::RenderWindow & app, uint16_t cellSize)
-{
-    c_Sprite.setScale(cellSize / c_Sprite.getLocalBounds().width, cellSize / c_Sprite.getLocalBounds().height);
-    c_Sprite.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
-    app.draw(c_Sprite);
+    c_Sprite.setTexture(Entity::obstacleTexture);
 }
 /***/
 void Fire::update(const sf::Time & elapsed)
 {
     c_LastTickTime += elapsed;
-    //c_Rect.setSwitchTime(0.20 + (rand() % 31) / 100.f);
     c_Rect.update(elapsed);
     c_Sprite.setTextureRect(c_Rect.getRect());
 }

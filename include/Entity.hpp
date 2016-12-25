@@ -12,7 +12,10 @@ class Entity
         Entity(EntityTypeId typeId, const sf::Vector2f & pos);
         ~Entity() {};
 
+        static void initTextures();
+
         virtual void update(const sf::Time & elapsed) {}
+        virtual void draw(sf::RenderWindow & app, uint16_t cellSize);
 
         void setPosition(uint16_t i, uint16_t j) {c_Position = sf::Vector2f(i, j);}
         void setPosition(const sf::Vector2f & position) { c_Position = position; }
@@ -27,6 +30,11 @@ class Entity
         EntityTypeId c_EntityTypeId;
         uint32_t c_EntityId;
         static uint32_t entityNbr;
+
+        sf::Sprite c_Sprite;
+        static sf::Texture obstacleTexture;
+        static sf::Texture lootbagTexture;
+        static sf::Texture playerTextures;
 };
 
 #endif // ENTITY_HPP

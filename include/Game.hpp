@@ -45,6 +45,7 @@ class Game
 
     private:
         sf::RenderWindow & app;
+        uint16_t c_NbrCellsToDraw; // nbr de cells à affiher sur la fenêtre
 
         std::vector< Map * > c_Maps; // liste de toutes les maps
         Map * c_Map; // map actuelle
