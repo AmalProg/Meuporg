@@ -40,7 +40,7 @@ class Living : public Entity
         bool isDead() const { return c_IsDead; }
         Living * getKiller() const { return c_Killer; }
         Direction getDirection() const {return c_Direction;}
-        bool isMoveable();
+        bool isMoveable() const { return c_IsMoveable; }
         float getSpeed() const { return c_Speed; }
 
     protected:

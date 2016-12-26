@@ -12,7 +12,7 @@
 class Player : public Character
 {
     public:
-        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 10,
+        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 3.f,
                const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
         bool takeItem(const Item * item, uint16_t nbr); // rammasse un 'nbr' d''item'

@@ -86,14 +86,14 @@ public:
 class Fire : public Obstacle
 {
 public:
-    Fire(float damageTickTime = 0.5, uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamageTickTime(damageTickTime),
-    c_DamagePerTick(damageDealt), c_FirstStateOfFire(true), c_Ticking(false)
+    Fire(uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
     {
         c_Shape.setFillColor(sf::Color(200, 100, 0));
     }
 
-    void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; c_LastTickTime += elapsed; }
+    void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; }
+    static void updateTick(const sf::Time & elapsed);
 
     virtual void realTimeAction(Map * m, Player * p);
     virtual void walkAction(Map * mape, Living * l);
@@ -105,9 +105,9 @@ private:
     sf::Time c_SwitchTime;
     bool c_FirstStateOfFire;
 
-    sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
-    float c_DamageTickTime; // temps entre chaque tick de dégats
-    bool c_Ticking;
+    static sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
+    static float c_DamageTickTime; // temps entre chaque tick de dégats
+    static bool c_Ticking;
 
     uint16_t c_DamagePerTick;
 };

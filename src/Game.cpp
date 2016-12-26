@@ -472,6 +472,7 @@ bool Game::movePlayer(Player * p, Direction d)
 
 void Game::update(const sf::Time & elapsed)
 {
+    Fire::updateTick(elapsed);
     c_Map->update(elapsed);
 }
 
@@ -647,17 +648,12 @@ void Game::actionEventTest()
     if(focusedCell == NULL)
         return;
 
-    const std::list< LootBag * > & lBs = focusedCell->getLootBags();
+    LootBag * lB = focusedCell->getLootBag();
     const std::list< Obstacle * > & os = focusedCell->getObstacles();
     if(focusedCell->getLiving() != NULL) // priorité au entité vivantes
         focusedCell->getLiving()->speakAction();
-    else if(lBs.size() != 0) // puis aux lootBags
-    {
-        for(std::list< LootBag * >::const_iterator it = lBs.begin(); it != lBs.end(); ++it)
-        {
-            c_Menu.setShowingLootBag((*it));
-        }
-    }
+    else if(lB != NULL) // puis aux lootBag
+        c_Menu.setShowingLootBag(lB);
     else if(os.size() != 0) // et enfin aux obstacles
     {
         for(std::list< Obstacle * >::const_iterator it = os.begin(); it != os.end(); ++it)

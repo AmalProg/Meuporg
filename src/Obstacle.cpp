@@ -15,6 +15,19 @@ void Obstacle::draw(sf::RenderWindow & app, uint16_t cellSize)
     app.draw(c_Shape);
 }
 /***/
+sf::Time Fire::c_LastTickTime;
+float Fire::c_DamageTickTime = 0.5;
+bool Fire::c_Ticking = false;
+void Fire::updateTick(const sf::Time & elapsed)
+{
+    c_LastTickTime += elapsed;
+    c_Ticking = false;
+    if(c_LastTickTime.asSeconds() > c_DamageTickTime)
+    {
+        c_Ticking = true;
+        c_LastTickTime = sf::Time::Zero;
+    }
+}
 void Fire::realTimeAction(Map * m, Player * p)
 {
     float randSwitchTime = 0.20 + (rand() % 31) / 100.f;
@@ -30,14 +43,6 @@ void Fire::realTimeAction(Map * m, Player * p)
         c_FirstStateOfFire = true;
         c_SwitchTime -= sf::seconds(randSwitchTime);
     }
-
-    if(c_LastTickTime.asSeconds() > c_DamageTickTime)
-    {
-        c_Ticking = true;
-        c_LastTickTime -= sf::seconds(c_DamageTickTime);
-    }
-    else
-        c_Ticking = false;
 }
 void Fire::walkAction(Map * mape, Living * l)
 {
@@ -45,7 +50,6 @@ void Fire::walkAction(Map * mape, Living * l)
     {
         l->takeDamages(c_DamagePerTick);
         std::cout << "Fire made " << c_DamagePerTick << " damages done on " << l->getName() << "\n";
-        c_Ticking = false;
     }
 }
 /***/

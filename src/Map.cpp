@@ -173,17 +173,27 @@ void Map::removeCharacter(Character * cha)
     c_Characters.erase(it);
     removeLiving(cha->getPosition().x, cha->getPosition().y);
 }
-bool Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
+void Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
 {
-    c_Map[c][l]->addLootBag(lB); // on donne l'ID de l'obstacle
-    c_LootBags.push_back(lB);
-    lB->setPosition(sf::Vector2f(c, l));
-
-    return true;
+    LootBag * lBag = c_Map[c][l]->getLootBag();
+    if(lBag != NULL)
+    {
+        for(uint16_t i = 0; i < lB->getNbrItems(); i++)
+        {
+            lBag->addItem(lB->getItem(i), lB->getNbrOfItem(i));
+        }
+        delete lB;
+    }
+    else
+    {
+        c_Map[c][l]->addLootBag(lB); // on donne l'ID de l'obstacle
+        c_LootBags.push_back(lB);
+        lB->setPosition(sf::Vector2f(c, l));
+    }
 }
 void Map::removeLootBag(const LootBag * lB, uint16_t c, uint16_t l)
 {
-    c_Map[c][l]->removeLootBag(lB);
+    c_Map[c][l]->removeLootBag();
     std::list< LootBag * >::iterator it = std::find(c_LootBags.begin(), c_LootBags.end(), lB);
     c_LootBags.erase(it);
 }
@@ -214,11 +224,8 @@ void Map::draw()
                 if(c_Map[i][j]->isFilled())
                     c_Map[i][j]->getFiller()->draw(app, CELLSIZE);
 
-                std::list< LootBag * > lBs = c_Map[i][j]->getLootBags();
-                for(std::list< LootBag * >::iterator it = lBs.begin(); it != lBs.end(); ++it)
-                {
-                    (*it)->draw(app, CELLSIZE);
-                }
+                if(c_Map[i][j]->gotLootBag())
+                    c_Map[i][j]->getLootBag()->draw(app, getCellSize());
                 if(c_Map[i][j]->getLiving() != NULL)
                 {
                     c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
@@ -425,7 +432,7 @@ void Map::save(std::ofstream & file)
                         file << ((Stairs*)(*it))->isRising() << " " << ((Stairs*)(*it))->getLinkedMapId() << " ";
                         break;
                     case FIRE:
-                        file << ((Fire*)(*it))->getDamageTickTime() << " " << ((Fire*)(*it))->getDamagePerTick() << " ";
+                        file << " " << ((Fire*)(*it))->getDamagePerTick() << " ";
                         break;
 
                     default:
@@ -553,8 +560,8 @@ void Map::load(std::ifstream & file)
                         {
                             uint16_t dmgPerTick;
                             float dmgTickTime;
-                            file >> dmgTickTime >> dmgPerTick;
-                            Fire * fire = new Fire(dmgTickTime, dmgPerTick);
+                            file >> dmgPerTick;
+                            Fire * fire = new Fire(dmgPerTick);
                             addObstacle(fire, i, j);
                         }break;
 

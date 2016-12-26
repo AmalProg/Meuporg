@@ -71,7 +71,7 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
             if(moveProb < 1) // 1% de chance de se déplacer
             {
                 Direction dir = (Direction)(rand() % 4); // direction vers laquelle il veut se diriger
-                Cell * cell;// cell vers laquelle il veut se diriger
+                Cell * cell = NULL;// cell vers laquelle il veut se diriger
                 switch(dir)
                 {
                 case UP:
