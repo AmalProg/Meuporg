@@ -106,8 +106,8 @@ void Map::moveMap()
         c_PosToTransit.y = c_View.getCenter().y;
 
     uint16_t k = 10;
-    float gapX = c_PosToTransit.x - c_View.getCenter().x;
-    float gapY = c_PosToTransit.y - c_View.getCenter().y;
+    int16_t gapX = c_PosToTransit.x - c_View.getCenter().x;
+    int16_t gapY = c_PosToTransit.y - c_View.getCenter().y;
     int16_t moveOnX = (gapX) / k;
     int16_t moveOnY = (gapY) / k;
 
@@ -174,7 +174,7 @@ bool Map::addMonster(Monster * m, uint16_t c, uint16_t l)
         c_Map[c][l]->setLiving(m);
         c_Monsters.push_back(m);
         c_Livings.push_back(m);
-        m->setPosition(c, l);
+        m->setPosition(c, l, c_CellSize);
 
         return true;
     }
@@ -193,7 +193,7 @@ bool Map::addCharacter(Character * cha, uint16_t c, uint16_t l)
         c_Map[c][l]->setLiving(cha); // on donne son Id de joueur
         c_Characters.push_back(cha);
         c_Livings.push_back(cha);
-        cha->setPosition(c, l);
+        cha->setPosition(c, l, c_CellSize);
 
         return true;
     }
@@ -1072,7 +1072,7 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
     c_Map[aC][aL]->setLiving(NULL); // le joueur n'est plus sur cette case
 
     c_Map[c][l]->setLiving(li); // on donne son Id de joueur
-    li->setPosition(c, l);
+    li->moveTo(c, l, c_CellSize);
 
     Cell * lastCell = getCell(aC, aL); // gestion des events de sortie sur la cell ou l'on était
     for(std::list< Obstacle * >::const_iterator it = lastCell->getObstacles().begin(); it != lastCell->getObstacles().end(); ++it)
