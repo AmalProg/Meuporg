@@ -129,6 +129,8 @@ class Map
 
         float c_CellSize;
 
+        sf::Vector2f c_PosToTransit;
+
         uint32_t c_MapId;
         static std::map< uint32_t, Map * > mapsIds;
 };

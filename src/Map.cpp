@@ -17,7 +17,7 @@ std::string nbrToString(float nbr)
 
 Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
-    c_View.setCenter(sf::Vector2f(0, 0));
+    c_View.setCenter(sf::Vector2f(app.getSize().x, app.getSize().y));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
     if(mapId == 0)
@@ -30,7 +30,8 @@ Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_Ce
         c_MapId = mapId;
         Map::mapsIds[c_MapId] = this;
 }
-Map::Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
+Map::Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a),
+c_CellSize(cellSize)
 {
     for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
     { // colonnes
@@ -39,7 +40,7 @@ Map::Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize, 
             c_Map[i].push_back(new Cell(i, j));
     }
 
-    c_View.setCenter(sf::Vector2f(0, 0));
+    c_View.setCenter(sf::Vector2f(app.getSize().x, app.getSize().y));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
     if(mapId == 0)
@@ -68,27 +69,54 @@ Map::~Map()
 
 void Map::moveMap()
 {
-    float posXCell = c_Focus->getPosition().x;
-    float posX = posXCell * c_CellSize + c_CellSize/2;
+    int16_t posXCell = c_Focus->getPosition().x;
+    int16_t posX = posXCell * c_CellSize + c_CellSize/2;
 
     if(posX >= c_Map.size() * c_CellSize - c_View.getSize().x/2)
-        c_View.setCenter(c_Map.size() * c_CellSize - c_View.getSize().x/2, c_View.getCenter().y); // place la map a droite
+    {
+        c_PosToTransit.x = (c_Map.size() * c_CellSize - c_View.getSize().x/2); // place la map a droite
+    }
     else if(posX <= c_View.getSize().x/2)
-        c_View.setCenter(c_View.getSize().x/2, c_View.getCenter().y); // place la map a gauche
+    {
+        c_PosToTransit.x = c_View.getSize().x/2; // place la map a gauche
+    }
+    else if(posX != c_View.getCenter().x)
+    {
+        c_PosToTransit.x = posX; // centre la map sur le joueur focus
+    }
     else
-        c_View.setCenter(posX, c_View.getCenter().y); // centre la map sur le joueur focus
+        c_PosToTransit.x = c_View.getCenter().x;
 
-    float posYCell = c_Focus->getPosition().y;
-    float posY = posYCell * c_CellSize + c_CellSize/2;
+    int16_t posYCell = c_Focus->getPosition().y;
+    int16_t posY = posYCell * c_CellSize + c_CellSize/2;
 
     if(posY >= c_Map[0].size() * c_CellSize - c_View.getSize().y/2)
-        c_View.setCenter(c_View.getCenter().x, c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
+    {
+        c_PosToTransit.y = (c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
+    }
     else if(posY <= c_View.getSize().y/2)
-        c_View.setCenter(c_View.getCenter().x, c_View.getSize().y/2); // place la map en haut
+    {
+        c_PosToTransit.y = c_View.getSize().y/2; // place la map en haut
+    }
+    else if(posY != c_View.getCenter().y)
+    {
+        c_PosToTransit.y = posY; // centre la map sur le joueur focus
+    }
     else
-        c_View.setCenter(c_View.getCenter().x, posY); // centre la map sur le joueur focus
+        c_PosToTransit.y = c_View.getCenter().y;
 
-    app.setView(c_View);
+    uint16_t k = 10;
+    float gapX = c_PosToTransit.x - c_View.getCenter().x;
+    float gapY = c_PosToTransit.y - c_View.getCenter().y;
+    int16_t moveOnX = (gapX) / k;
+    int16_t moveOnY = (gapY) / k;
+
+    if(moveOnX == 0 && gapX != 0)
+        moveOnX = (gapX) / abs(gapX);
+    if(moveOnY == 0 && gapY != 0)
+        moveOnY = (gapY) / abs(gapY);
+
+    c_View.move(moveOnX, moveOnY);
 }
 
 void Map::removeLiving(uint16_t c, uint16_t l)
@@ -1036,7 +1064,6 @@ void Map::checkCellsGroup(std::vector< Cell * > & group, Cell * cell, std::vecto
             }
     }
 }
-
 
 void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
 {
