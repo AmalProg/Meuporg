@@ -37,27 +37,6 @@ void Player::update(const sf::Time & elapsed)
     Character::update(elapsed);
 }
 
-void Player::draw(sf::RenderWindow & app, uint16_t cellSize)
-{
-    c_Sprite.setScale(cellSize / c_Sprite.getLocalBounds().width, cellSize / c_Sprite.getLocalBounds().height);
-    c_Sprite.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
-    app.draw(c_Sprite);
-}
-
-void Player::setDirection(Direction dir)
-{
-    if(dir == LEFT)
-        c_Sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
-    else if(dir == RIGHT)
-        c_Sprite.setTextureRect(sf::IntRect(128, 0, 64, 64));
-    else if(dir == UP)
-        c_Sprite.setTextureRect(sf::IntRect(192, 0, 64, 64));
-    else
-        c_Sprite.setTextureRect(sf::IntRect(64, 0, 64, 64));
-
-    Character::setDirection(dir);
-}
-
 bool Player::equip(const Item * i)
 {
     if(i->getItemType() == EQUIPMENT)

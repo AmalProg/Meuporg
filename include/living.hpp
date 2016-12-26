@@ -24,11 +24,10 @@ class Living : public Entity
         virtual void touchAction() {}; // activé lorsqu'on essaye de marcher sur l'obstacle
         virtual void realTimeAction(Map * m, Player * p) {}; // activé dans diverses cas en fonction de positions de certains objets etc ...
 
-        void draw(sf::RenderWindow & app, uint16_t cellSize);
         virtual void update(const sf::Time & elapsed);
 
         void setMaxLife(float l) {c_MaxLife = l; if(c_Life > c_MaxLife) c_Life = c_MaxLife; }
-        void setDirection(Direction dir)  { c_Direction = dir; }
+        void setDirection(Direction dir);
         void setKiller(Living * l) { c_Killer = l; }
         void setSpeed(float s) { c_Speed = s; }
         void setPosition(uint16_t i, uint16_t j);
@@ -55,8 +54,6 @@ class Living : public Entity
         float c_Speed; // en cell / s
         bool c_IsMoveable;
         sf::Time c_SpeedTime;
-
-        sf::RectangleShape c_Shape;
 };
 
 #endif // LIVING_HPP

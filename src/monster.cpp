@@ -5,8 +5,8 @@ Monster::Monster(EntityTypeId typeId, const std::string & name, AggroState aggro
 : Living(typeId, name, maxLife, dir, pos, speed), c_AggroState(aggroState), c_AggroDist(aggroDist), c_IsInAggro(false)
 , c_LostAggroTime(lostAggroTime), c_DelayAtkTime(delayAtkTime)
 {
-    c_Shape.setFillColor(color);
-    setSpeed(c_Speed);
+    c_Sprite.setTexture(Entity::monstersTextures);
+    setDirection(dir);
 }
 
 void Monster::setLootTable(const LootTable & lootTable)
@@ -51,12 +51,31 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
 
             if(path.size() != 0 && path[0]->isWalkable())
             {
+                if(path[0]->getC() - c_Position.x == 1)
+                    setDirection(RIGHT);
+                else if(path[0]->getC() - c_Position.x == -1)
+                    setDirection(LEFT);
+                else if(path[0]->getL() - c_Position.y == 1)
+                    setDirection(DOWN);
+                else if(path[0]->getL() - c_Position.y == -1)
+                    setDirection(UP);
+
                 m->moveLiving(this, path[0]->getC(), path[0]->getL());
                 c_LastAtkTime = sf::Time::Zero; // on attaque pas instantannément après un déplacement
+
             }
             else
             {
                 std::vector< Cell * > path = m->getPath(myCell, pCell, true, false, 0);
+
+                if(path[0]->getC() - c_Position.x == 1)
+                    setDirection(RIGHT);
+                else if(path[0]->getC() - c_Position.x == -1)
+                    setDirection(LEFT);
+                else if(path[0]->getL() - c_Position.y == 1)
+                    setDirection(DOWN);
+                else if(path[0]->getL() - c_Position.y == -1)
+                    setDirection(UP);
 
                 if(path.size() != 0 && path[0]->isWalkable())
                 {
@@ -76,19 +95,31 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                 {
                 case UP:
                     if(c_Position.y > 0)
+                    {
                         cell = m->getUCell(myCell);
+                        setDirection(UP);
+                    }
                     break;
                 case DOWN:
                     if(c_Position.y < m->getNbrLine()-1)
+                    {
                         cell = m->getDCell(myCell);
+                        setDirection(DOWN);
+                    }
                     break;
                 case LEFT:
                     if(c_Position.x > 0)
+                    {
                         cell = m->getLCell(myCell);
+                        setDirection(LEFT);
+                    }
                     break;
                 case RIGHT:
                     if(c_Position.x < m->getNbrColumn()-1)
+                    {
                         cell = m->getRCell(myCell);
+                        setDirection(RIGHT);
+                    }
                     break;
                 }
                 if(cell != NULL && cell->isWalkable() && !cell->gotStairs())
@@ -126,6 +157,8 @@ Wolf::Wolf(const std::string & name, AggroState aggroState, uint16_t aggroDist, 
 {
     c_LootTable.addItem(Item::getItemFromId(TEETH), 1, 30);
     c_Loots = new LootBag(c_LootTable.getLoots());
+
+    c_Sprite.setColor(sf::Color(120, 120, 120));
 }
 
 void Wolf::attack(Map * m, Player * p)

@@ -5,7 +5,6 @@ Living::Living(EntityTypeId typeId, const std::string & name, float maxLife, Dir
 : Entity(typeId, pos), c_Name(name), c_MaxLife(maxLife), c_Life(maxLife), c_IsDead(false), c_Killer(NULL)
 , c_Direction(dir), c_Speed(speed), c_IsMoveable(true)
 {
-    c_Shape.setFillColor(sf::Color::Blue);
 }
 
 Living::~Living()
@@ -17,13 +16,6 @@ void Living::update(const sf::Time & elapsed)
     c_SpeedTime += elapsed;
     if(elapsed.asSeconds() < 1.f / c_Speed && c_SpeedTime.asSeconds() > 1.f / c_Speed)
         c_SpeedTime = sf::seconds(1.f / c_Speed);
-}
-
-void Living::draw(sf::RenderWindow & app, uint16_t cellSize)
-{
-    c_Shape.setSize(sf::Vector2f(cellSize * 3/4, cellSize * 3/4));
-    c_Shape.setPosition(cellSize * c_Position.x + cellSize * 1/8, cellSize * c_Position.y + cellSize * 1/8);
-    app.draw(c_Shape);
 }
 
 bool Living::isMoveable()
@@ -47,5 +39,18 @@ void Living::setPosition(const sf::Vector2f & position)
     c_IsMoveable = false;
     c_SpeedTime -= sf::seconds(1.f / c_Speed);
     Entity::setPosition(position);
+}
+void Living::setDirection(Direction dir)
+{
+    if(dir == LEFT)
+        c_Sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+    else if(dir == RIGHT)
+        c_Sprite.setTextureRect(sf::IntRect(128, 0, 64, 64));
+    else if(dir == UP)
+        c_Sprite.setTextureRect(sf::IntRect(192, 0, 64, 64));
+    else
+        c_Sprite.setTextureRect(sf::IntRect(64, 0, 64, 64));
+
+    c_Direction = dir;
 }
 

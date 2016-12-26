@@ -35,6 +35,7 @@ class Entity
         static sf::Texture obstacleTexture;
         static sf::Texture lootbagTexture;
         static sf::Texture playerTextures;
+        static sf::Texture monstersTextures;
 };
 
 #endif // ENTITY_HPP
