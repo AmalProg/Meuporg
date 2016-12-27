@@ -34,7 +34,6 @@ void Living::update(const sf::Time & elapsed)
             moveOnY = gapY / abs(gapY) * (pixToMove * (pixToMove <= abs(gapY)) + 1 * (pixToMove > abs(gapY)));
 
         c_SmoothMoveTime -= sf::seconds(pixToMove/(c_CellSize*c_Speed));
-        std::cout << "pix :" << pixToMove << "\n";
     }
 
     c_Sprite.move(moveOnX, moveOnY);
