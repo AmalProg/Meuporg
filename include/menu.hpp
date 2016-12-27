@@ -44,12 +44,14 @@ class Menu
         sf::RenderWindow & app;
 
         sf::Font arial;
+        sf::Font itemsFont;
+        sf::Font menuFont;
 
         bool c_ShowingInventory;
         sf::Texture c_InventoryTexture;
         sf::Sprite c_InventorySprite;
-        std::vector< sf::Text > c_InventoryTexts;
-        uint16_t c_InventorySelected;
+        std::vector< sf::IntRect > c_InventoryRects;
+        int16_t c_InventorySelected;
         uint16_t c_InventoryFirst;
         uint16_t c_InventoryNbrShown;
         uint16_t c_InventoryNbrItems;
@@ -57,8 +59,9 @@ class Menu
         bool c_ShowingItemMenu;
         sf::Texture c_ItemMenuTexture;
         sf::Sprite c_ItemMenuSprite;
-        sf::Text c_ItemMenuTexts[4];
-        uint16_t c_ItemMenuSelected;
+        std::vector< sf::Text > c_ItemMenuTexts;
+        std::vector< sf::IntRect > c_ItemMenuRects;
+        int16_t c_ItemMenuSelected;
         int16_t c_ItemToDestroy;
         int16_t c_ItemToUse;
         int16_t c_ItemToEquip;
@@ -79,7 +82,7 @@ class Menu
         sf::Texture c_LootBagTexture;
         sf::Sprite c_LootBagSprite;
         LootBag * c_LootBag;
-        std::vector< sf::Text > c_LootBagTexts;
+        std::vector< sf::IntRect > c_LootBagRects;
         int16_t c_LootBagSelected;
         uint16_t c_LootBagFirst;
         uint16_t c_LootBagNbrShown;

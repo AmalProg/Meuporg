@@ -17,7 +17,6 @@ std::string nbrToString(float nbr)
 
 Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
-    c_View.setCenter(sf::Vector2f(app.getSize().x, app.getSize().y));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
     if(mapId == 0)
@@ -40,7 +39,7 @@ c_CellSize(cellSize)
             c_Map[i].push_back(new Cell(i, j));
     }
 
-    c_View.setCenter(sf::Vector2f(app.getSize().x, app.getSize().y));
+    c_View.setCenter(sf::Vector2f(nbrC * cellSize / 2, nbrL * cellSize / 2));
     c_View.setSize(app.getSize().x, app.getSize().y);
 
     if(mapId == 0)
@@ -311,6 +310,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
         for(uint16_t j = 0; j < nbrL; j++) // lignes
             c_Map[i].push_back(new Cell(i, j));
     }
+    c_View.setCenter(sf::Vector2f(nbrC * c_CellSize / 2, nbrL * c_CellSize / 2));
 
     std::vector< EntityInfo > ObsInfos = genInfos.getObstaclesInfos();
     for(std::vector< EntityInfo >::iterator it = ObsInfos.begin(); it != ObsInfos.end(); it++)
@@ -543,6 +543,7 @@ void Map::load(std::ifstream & file)
                 for(uint16_t j = 0; j < nbrL; j++) // lignes
                     c_Map[i].push_back(new Cell(i, j));
             }
+            c_View.setCenter(sf::Vector2f(nbrC * c_CellSize / 2, nbrL * c_CellSize / 2));
 
             for(uint16_t i = 0; i < nbrC; i++)
             {
@@ -1090,8 +1091,6 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
 void Map::setFocus(Living * p)
 {
     c_Focus = p;
-    if(p != NULL)
-        moveMap();
 }
 std::vector< Cell * > Map::getPath(const Cell * startC, const Cell * endC, bool skipLivings, bool fullMap, uint16_t maxMoreSteps) const
 {

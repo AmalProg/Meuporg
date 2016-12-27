@@ -1,34 +1,34 @@
 #include "menu.hpp"
 
 Menu::Menu(sf::RenderWindow & a) : app(a),
-c_ShowingInventory(false), c_InventorySelected(0), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
-c_ShowingItemMenu(false), c_ItemMenuSelected(0), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
+c_ShowingInventory(false), c_InventorySelected(-1), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
+c_ShowingItemMenu(false), c_ItemMenuSelected(-1), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
 c_ShowingCellChoice(false), c_CellToFocus(NULL),
 c_ShowingShortCutChoice(false), c_ShortCutSelected(0), c_ItemToShortCut(-1), c_KeyToShortCut(sf::Keyboard::Unknown),
-c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(0), c_LootBagFirst(0), c_LootBagNbrShown(100), c_LootBagNbrItems(0)
+c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(0), c_LootBagNbrShown(100), c_LootBagNbrItems(0)
 {
     c_ItemToTake.item = NULL;
     c_ItemToTake.nbr = 0;
 
+    arial.loadFromFile("arial.ttf");
+    itemsFont.loadFromFile("font\\FantaisieArtistique.ttf");
+    menuFont.loadFromFile("font\\mops.ttf");
 
-    if(c_InventoryTexture.loadFromFile("image\\inventoryMenu.jpg"))
+    if(c_InventoryTexture.loadFromFile("image\\menu\\basicMenu.png"))
         c_InventorySprite.setTexture(c_InventoryTexture);
 
-    if(c_LootBagTexture.loadFromFile("image\\LootBagMenu.jpg"))
+    if(c_LootBagTexture.loadFromFile("image\\menu\\basicMenu.png"))
     {
         c_LootBagSprite.setTexture(c_LootBagTexture);
     }
 
-    if(c_ItemMenuTexture.loadFromFile("image\\itemMenu.jpg"))
+    if(c_ItemMenuTexture.loadFromFile("image\\menu\\itemMenu.png"))
     {
         c_ItemMenuSprite.setTexture(c_ItemMenuTexture);
 
-        arial.loadFromFile("arial.ttf");
-
-        c_ItemMenuTexts[0] = sf::Text(sf::String("Utilisez"), arial, 30);
-        c_ItemMenuTexts[1] = sf::Text(sf::String("Equipper"), arial, 30);
-        c_ItemMenuTexts[2] = sf::Text(sf::String("Raccourci"), arial, 30);
-        c_ItemMenuTexts[3] = sf::Text(sf::String("Détruire"), arial, 30);
+        c_ItemMenuTexts.push_back(sf::Text(sf::String("Utilisez"), menuFont, 30));
+        c_ItemMenuTexts.push_back(sf::Text(sf::String("Raccourci"), menuFont, 30));
+        c_ItemMenuTexts.push_back(sf::Text(sf::String("Détruire"), menuFont, 30));
     }
 
     if(c_ShortCutTexture.loadFromFile("image\\shortCut.jpg"))
@@ -128,7 +128,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
             case sf::Mouse::Left:
                 if(c_ShowingLootBag)
                 {
-                    if(c_LootBagTexts[c_LootBagSelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_LootBagSelected != -1 && c_LootBagRects[c_LootBagSelected].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                     {
                         c_ItemToTake.item = c_LootBag->getItem(c_LootBagSelected);
                         c_ItemToTake.nbr = c_LootBag->getNbrOfItem(c_LootBagSelected);
@@ -174,7 +174,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                 }
                 else if(c_ShowingItemMenu)
                 { // choix de ce que l'on veut faire de l'item
-                    if(c_ItemMenuTexts[c_ItemMenuSelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_ItemMenuSelected != -1 && c_ItemMenuRects[c_ItemMenuSelected].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                     {
                         if(c_ItemMenuSelected == 0)
                         {
@@ -187,18 +187,22 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                             }
                             else
                                 std::cout << "Cet item est en CD !" << "\n";
+
+                            if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT)
+                            {
+                                c_ShowingInventory = false;
+                                c_ShowingItemMenu = false;
+                                c_ItemToEquip = c_InventorySelected;
+                            }
+                            else
+                                std::cout << "Cet item est en CD !" << "\n";
+
                         }
                         if(c_ItemMenuSelected == 1)
                         {
-                            c_ShowingInventory = false;
-                            c_ShowingItemMenu = false;
-                            c_ItemToEquip = c_InventorySelected;
-                        }
-                        if(c_ItemMenuSelected == 2)
-                        {
                             c_ShowingShortCutChoice = true;
                         }
-                        if(c_ItemMenuSelected == 3)
+                        if(c_ItemMenuSelected == 2)
                         {
                             c_ItemToDestroy = c_InventorySelected;
                             c_ShowingItemMenu = false;
@@ -206,7 +210,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                     }
                 }
                 else if(c_ShowingInventory) // choix d'un item dans l'inventaire
-                    if(c_InventoryNbrItems > 0 && c_InventoryTexts[c_InventorySelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_InventoryNbrItems > 0 && c_InventorySelected != -1 && c_InventoryRects[c_InventorySelected].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                         c_ShowingItemMenu = true;
 
                 break;
@@ -236,9 +240,10 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
 
     if(c_ShowingLootBag)
     {
-        for(uint16_t i = 0; i < c_LootBagTexts.size(); ++i)
+        c_LootBagSelected = -1;
+        for(uint16_t i = 0; i < c_LootBagRects.size(); ++i)
         {
-            if(c_LootBagTexts[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+            if(c_LootBagRects[i].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
             {
                 c_LootBagSelected = i + c_LootBagFirst;
             }
@@ -270,17 +275,19 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     }
     else if(c_ShowingItemMenu)
     {
-        for(uint16_t i = 0; i < 4; ++i)
+        c_ItemMenuSelected = -1;
+        for(uint16_t i = 0; i < c_ItemMenuRects.size(); ++i)
         {
-            if(c_ItemMenuTexts[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+            if(c_ItemMenuRects[i].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                 c_ItemMenuSelected = i;
         }
     }
     else if(c_ShowingInventory)
     {
-        for(uint16_t i = 0; i < c_InventoryTexts.size(); ++i)
+        c_InventorySelected = -1;
+        for(uint16_t i = 0; i < c_InventoryRects.size(); ++i)
         {
-            if(c_InventoryTexts[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+            if(c_InventoryRects[i].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
             {
                 c_InventorySelected = i + c_InventoryFirst;
             }
@@ -307,41 +314,52 @@ void Menu::lootbagMenu()
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
 
+    c_LootBagSprite.setScale(app.getSize().x * 3/10 / c_LootBagSprite.getLocalBounds().width,
+                               app.getSize().y * 6/10 / c_LootBagSprite.getLocalBounds().height);
     c_LootBagSprite.setPosition(app.getSize().x / 2 - c_LootBagSprite.getLocalBounds().width / 2,
                                     app.getSize().y / 2 - c_LootBagSprite.getLocalBounds().height / 2);
     app.draw(c_LootBagSprite);
 
-    uint16_t lastTextHeightSize = 0;
-    uint16_t lastTextHeightPosition = 0;
-    c_LootBagNbrItems = c_LootBag->getNbrItems();
+    uint16_t posX = c_LootBagSprite.getPosition().x;
+    uint16_t posY = c_LootBagSprite.getPosition().y;
+    uint16_t width = c_LootBagSprite.getGlobalBounds().width - c_LootBagSprite.getGlobalBounds().width / 31; // width sans ombre
+    uint16_t height = c_LootBagSprite.getGlobalBounds().height - c_LootBagSprite.getGlobalBounds().height / 50; // height sans ombre
 
-    c_LootBagTexts.clear();
-    for(uint16_t i = c_LootBagFirst; i < c_LootBagFirst + c_LootBagNbrShown; ++i)
-    {
-        if(lastTextHeightPosition + lastTextHeightSize + 10 > 400 || i >= c_LootBag->getNbrItems())
+    uint16_t lastTextHeightSize = 0; // hauteur du dernier texte affiché
+    uint16_t lastTextHeightPosition = posY + height / 27; // position du dernier texte affiché
+    c_LootBagNbrItems = c_LootBag->getNbrItems();
+    c_LootBagRects.clear();
+
+    for(uint16_t i = c_LootBagFirst; i < c_LootBagNbrItems - c_LootBagFirst; ++i)
+    { // affichage de tous les items du bag
+        sf::Text text(sf::String(c_LootBag->getItem(i)->getName()), itemsFont, 30);
+        text.setPosition(posX + width / 18, lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)) );
+
+        if(i == c_LootBagSelected)
+            text.setColor(sf::Color::Red);
+        else
+            text.setColor(sf::Color::Black);
+
+        sf::Text nbrT(nbrToString(c_LootBag->getNbrOfItem(i)), itemsFont, 30);
+        nbrT.setPosition(posX + width * 16/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
+                         , lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)) );
+        nbrT.setColor(sf::Color::Black);
+
+        sf::IntRect rect(text.getPosition().x, text.getPosition().y
+                            , width * 11/18, height * 2/27);
+
+        lastTextHeightPosition = text.getPosition().y;
+        lastTextHeightSize = text.getGlobalBounds().height;
+        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 26/27)
         {
-            c_LootBagNbrShown = i; // on s'arrête avnt d'écrire n'importe ou
+            c_LootBagNbrShown = i-1; // on s'arrête avant d'écrire n'importe ou
             break;
         }
 
-        c_LootBagTexts.push_back(sf::Text(sf::String(c_LootBag->getItem(i)->getName()), arial, 30));
-        c_LootBagTexts[i].setPosition(c_LootBagSprite.getPosition().x + 10,
-                                    c_LootBagSprite.getPosition().y + lastTextHeightPosition + lastTextHeightSize + (10 * ((i - c_LootBagFirst) != 0)) );
-        if(i == c_LootBagSelected)
-            c_LootBagTexts[i].setColor(sf::Color::Red);
-        else
-            c_LootBagTexts[i].setColor(sf::Color::Black);
+        c_LootBagRects.push_back(rect); // rectangle de collision
 
-        sf::Text nbrT(nbrToString(c_LootBag->getNbrOfItem(i)), arial, 30);
-        nbrT.setPosition(c_LootBagSprite.getPosition().x + c_LootBagSprite.getLocalBounds().width - 35,
-                         c_LootBagSprite.getPosition().y + lastTextHeightPosition + lastTextHeightSize + (10 * ((i - c_LootBagFirst) != 0)) );
-        nbrT.setColor(sf::Color::Black);
-
-        app.draw(c_LootBagTexts.back());
-        app.draw(nbrT);
-
-        lastTextHeightPosition = c_LootBagTexts[i].getPosition().y - c_LootBagSprite.getPosition().y;
-        lastTextHeightSize = c_LootBagTexts[i].getGlobalBounds().height;
+        app.draw(text); // nom de l'item
+        app.draw(nbrT); // nombre d'items
     }
 
     app.setView(lastView);
@@ -381,35 +399,55 @@ void Menu::itemMenu(const Player * p)
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
 
-    uint16_t lastTextHeightSize = 0;
-    uint16_t lastTextHeightPosition = 0;
-
-    int16_t basePos = c_InventoryTexts[c_InventorySelected].getPosition().y + 25;
-    // place le menu au niveau de l'affichage de l'item selectionné
-
-    c_ItemMenuSprite.setPosition(442, basePos);
+    c_ItemMenuSprite.setScale(app.getSize().x * 2/10 / c_ItemMenuSprite.getLocalBounds().width,
+                               app.getSize().y * 2/10 / c_ItemMenuSprite.getLocalBounds().height);
+    c_ItemMenuSprite.setPosition(c_InventoryRects[c_InventorySelected].left - c_ItemMenuSprite.getGlobalBounds().width * 7/8
+                                 , c_InventoryRects[c_InventorySelected].top + c_InventoryRects[c_InventorySelected].height * 2/3);// place le menu au niveau de l'affichage de l'item selectionné
     app.draw(c_ItemMenuSprite);
 
-    for(uint16_t i = 0; i < 4; ++i)
-    {
-        if(!p->getItem(c_InventorySelected)->isUsable() && (i == 0 || i == 1))
-            continue; // si l'item n'st pas utilisable on affiche que le choix de destruction d el'item
-        if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT && (i == 0))
-            continue; // si un equipement on n'affiche pas le choix utiliser
-        if(!p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT && (i == 1))
-            continue; // si pas un equipement on n'affiche pas le choix equipper
+    uint16_t posX = c_ItemMenuSprite.getPosition().x;
+    uint16_t posY = c_ItemMenuSprite.getPosition().y;
+    uint16_t width = c_ItemMenuSprite.getGlobalBounds().width - c_ItemMenuSprite.getGlobalBounds().width / 27; // width sans ombre
+    uint16_t height = c_ItemMenuSprite.getGlobalBounds().height - c_ItemMenuSprite.getGlobalBounds().height / 19; // height sans ombre
 
-        c_ItemMenuTexts[i].setPosition(450, basePos + lastTextHeightPosition + lastTextHeightSize + (10 * (i != 0)) );
+    c_ItemMenuRects.clear();
+    uint16_t nbrTextToDraw = 3;
+    if(!p->getItem(c_InventorySelected)->isUsable())
+    {
+        c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
+        nbrTextToDraw = 2;
+    }
+
+    uint16_t lastTextHeightSize = 0; // hauteur du dernier texte affiché
+    uint16_t lastTextHeightPosition = posY + height / 10; // position du dernier texte affiché
+
+    for(uint16_t i = c_ItemMenuTexts.size() - nbrTextToDraw; i < c_ItemMenuTexts.size(); ++i)
+    {
+        if(i == 0)
+        {
+            if(!p->getItem(c_InventorySelected)->isUsable())
+                continue; // si l'item n'st pas utilisable on affiche que le choix de destruction d el'item
+            else if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT )
+                c_ItemMenuTexts[i].setString(sf::String("Equipper")); // si un equipement on n'affiche pas le choix utiliser
+            else
+                c_ItemMenuTexts[i].setString(sf::String("Utilisez"));
+        }
+
+        c_ItemMenuTexts[i].setPosition(posX + width / 17
+                                       , lastTextHeightPosition + lastTextHeightSize + (height * 2.5/10 - lastTextHeightSize) * (i != 0));
+
         if(i == c_ItemMenuSelected)
             c_ItemMenuTexts[i].setColor(sf::Color::Red);
         else
             c_ItemMenuTexts[i].setColor(sf::Color::Black);
 
-        app.draw(c_ItemMenuTexts[i]);
+        c_ItemMenuRects.push_back(sf::IntRect(c_ItemMenuTexts[i].getPosition().x, c_ItemMenuTexts[i].getPosition().y
+                            , width * 16/17, height * 2.5/10)); // rectangle de collision
 
-        lastTextHeightPosition = c_ItemMenuTexts[i].getPosition().y - basePos;
+        lastTextHeightPosition = c_ItemMenuTexts[i].getPosition().y;
         lastTextHeightSize = c_ItemMenuTexts[i].getGlobalBounds().height;
-        // permet de positionner le porchain affichage d'item dans le menu
+
+        app.draw(c_ItemMenuTexts[i]);
     }
 
     app.setView(lastView);
@@ -420,41 +458,52 @@ void Menu::inventoryMenu(const Player * p)
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
 
-    c_InventorySprite.setScale(app.getSize().x / c_InventorySprite.getLocalBounds().width,
-                               app.getSize().y / c_InventorySprite.getLocalBounds().height);
+    c_InventorySprite.setScale(app.getSize().x * 3/10 / c_InventorySprite.getLocalBounds().width,
+                               app.getSize().y * 6/10 / c_InventorySprite.getLocalBounds().height);
+    c_InventorySprite.setPosition(app.getSize().x * 6/10, app.getSize().y * 2/10);
     app.draw(c_InventorySprite);
 
-    const Bag * bag = p->getBag();
-    uint16_t lastTextHeightSize = 0;
-    uint16_t lastTextHeightPosition = 0;
-    c_InventoryNbrItems = bag->getNbrItems();
-    c_InventoryNbrShown = c_InventoryNbrItems - c_InventoryFirst;
-    c_InventoryTexts.clear();
+    uint16_t posX = c_InventorySprite.getPosition().x;
+    uint16_t posY = c_InventorySprite.getPosition().y;
+    uint16_t width = c_InventorySprite.getGlobalBounds().width - c_InventorySprite.getGlobalBounds().width / 31; // width sans ombre
+    uint16_t height = c_InventorySprite.getGlobalBounds().height - c_InventorySprite.getGlobalBounds().height / 50; // height sans ombre
 
-    for(uint16_t i = c_InventoryFirst; i < c_InventoryFirst + c_InventoryNbrItems; ++i)
+    const Bag * bag = p->getBag();
+    uint16_t lastTextHeightSize = 0; // hauteur du dernier texte affiché
+    uint16_t lastTextHeightPosition = posY + height / 27; // position du dernier texte affiché
+    c_InventoryNbrItems = bag->getNbrItems();
+    c_InventoryRects.clear();
+
+    for(uint16_t i = c_InventoryFirst; i < c_InventoryNbrItems - c_InventoryFirst; ++i)
     { // affichage de tous les items du bag
-        if(lastTextHeightPosition + lastTextHeightSize + 10 > 560)
+        sf::Text text(sf::String(bag->getItem(i)->getName()), itemsFont, 30);
+        text.setPosition(posX + width / 18, lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_InventoryFirst) != 0)) );
+
+        if(i == c_InventorySelected)
+            text.setColor(sf::Color::Red);
+        else
+            text.setColor(sf::Color::Black);
+
+        sf::Text nbrT(nbrToString(bag->getNbrOfItem(i)), itemsFont, 30);
+        nbrT.setPosition(posX + width * 16/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
+                         , lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_InventoryFirst) != 0)) );
+        nbrT.setColor(sf::Color::Black);
+
+        sf::IntRect rect(text.getPosition().x, text.getPosition().y
+                            , width * 11/18, height * 2/27);
+
+        lastTextHeightPosition = text.getPosition().y;
+        lastTextHeightSize = text.getGlobalBounds().height;
+        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 26/27)
         {
-            c_InventoryNbrShown = i; // on s'arrête avant d'écrire n'importe ou
+            c_InventoryNbrShown = i-1; // on s'arrête avant d'écrire n'importe ou
             break;
         }
 
-        c_InventoryTexts.push_back(sf::Text(sf::String(bag->getItem(i)->getName()), arial, 30));
-        c_InventoryTexts.back().setPosition(560, lastTextHeightPosition + lastTextHeightSize + (10 * ((i - c_InventoryFirst) != 0)) );
-        if(i == c_InventorySelected)
-            c_InventoryTexts.back().setColor(sf::Color::Red);
-        else
-            c_InventoryTexts.back().setColor(sf::Color::Black);
+        c_InventoryRects.push_back(rect); // rectangle de collision
 
-        sf::Text nbrT(nbrToString(bag->getNbrOfItem(i)), arial, 30);
-        nbrT.setPosition(770, lastTextHeightPosition + lastTextHeightSize + (10 * ((i - c_InventoryFirst) != 0)) );
-        nbrT.setColor(sf::Color::Black);
-
-        app.draw(c_InventoryTexts.back());
-        app.draw(nbrT);
-
-        lastTextHeightPosition = c_InventoryTexts.back().getPosition().y;
-        lastTextHeightSize = c_InventoryTexts.back().getGlobalBounds().height;
+        app.draw(text); // nom de l'item
+        app.draw(nbrT); // nombre d'items
     }
 
     app.setView(lastView);
