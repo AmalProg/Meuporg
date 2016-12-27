@@ -2,6 +2,7 @@
 #define LIVING_HPP
 
 #include <iostream>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "Entity.hpp"
@@ -57,6 +58,7 @@ class Living : public Entity
         bool c_IsMoveable;
         sf::Time c_SpeedTime;
         sf::Vector2f c_PosToMove; // position ou l'on veux aller avec moveTo
+        sf::Time c_SmoothMoveTime;
         uint16_t c_CellSize; // taille des cellules de la map
 };
 

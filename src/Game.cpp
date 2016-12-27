@@ -13,7 +13,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(25), c_ActualLevel(0
 
     c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
-    c_Player = new Player("Amal", 100, UP, 5.0);
+    c_Player = new Player("Amal", 100, UP, 10.0);
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);

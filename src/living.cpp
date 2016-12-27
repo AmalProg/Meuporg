@@ -3,7 +3,7 @@
 Living::Living(EntityTypeId typeId, const std::string & name, float maxLife, Direction dir, const sf::Vector2f & pos,
                float speed)
 : Entity(typeId, pos), c_Name(name), c_MaxLife(maxLife), c_Life(maxLife), c_IsDead(false), c_Killer(NULL)
-, c_Direction(dir), c_Speed(speed), c_IsMoveable(true)
+, c_Direction(dir), c_Speed(speed), c_IsMoveable(true), c_CellSize(0)
 {
 }
 
@@ -17,16 +17,25 @@ void Living::update(const sf::Time & elapsed)
     if(c_SpeedTime.asSeconds() > 1.f / c_Speed)
         c_IsMoveable = true;
 
+
     int16_t moveOnX;
     int16_t moveOnY;
     int16_t gapX = (c_PosToMove.x - c_Sprite.getPosition().x);
     int16_t gapY = (c_PosToMove.y - c_Sprite.getPosition().y);
 
-    uint16_t k = 5;
-    if(gapX != 0)
-        moveOnX = gapX / abs(gapX) * (c_CellSize/k * (c_CellSize/k <= abs(gapX)) + 1 * (c_CellSize/k > abs(gapX)));
-    if(gapY != 0)
-        moveOnY = gapY / abs(gapY) * (c_CellSize/k * (c_CellSize/k <= abs(gapY)) + 1 * (c_CellSize/k > abs(gapY)));
+    if(gapX != 0 || gapY != 0)
+        c_SmoothMoveTime += elapsed;
+    if((gapX != 0 || gapY != 0) && c_SmoothMoveTime.asSeconds() >= 1.f / (c_CellSize * c_Speed))
+    {
+        int16_t pixToMove = trunc(c_SmoothMoveTime.asSeconds() * c_CellSize * c_Speed);
+        if(gapX != 0)
+            moveOnX = gapX / abs(gapX) * (pixToMove * (pixToMove <= abs(gapX)) + 1 * (pixToMove > abs(gapX)));
+        if(gapY != 0)
+            moveOnY = gapY / abs(gapY) * (pixToMove * (pixToMove <= abs(gapY)) + 1 * (pixToMove > abs(gapY)));
+
+        c_SmoothMoveTime -= sf::seconds(pixToMove/(c_CellSize*c_Speed));
+        std::cout << "pix :" << pixToMove << "\n";
+    }
 
     c_Sprite.move(moveOnX, moveOnY);
 }
