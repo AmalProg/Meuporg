@@ -47,6 +47,8 @@ class Menu
         sf::Font itemsFont;
         sf::Font menuFont;
 
+        uint16_t c_CharacterSize;
+
         bool c_ShowingInventory;
         sf::Texture c_InventoryTexture;
         sf::Sprite c_InventorySprite;
@@ -55,6 +57,8 @@ class Menu
         uint16_t c_InventoryFirst;
         uint16_t c_InventoryNbrShown;
         uint16_t c_InventoryNbrItems;
+        sf::Texture c_ItemInfosTexture;
+        sf::Sprite c_ItemInfosSprite;
 
         bool c_ShowingItemMenu;
         sf::Texture c_ItemMenuTexture;

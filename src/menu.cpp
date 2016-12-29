@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-Menu::Menu(sf::RenderWindow & a) : app(a),
+Menu::Menu(sf::RenderWindow & a) : app(a), c_CharacterSize(30),
 c_ShowingInventory(false), c_InventorySelected(-1), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
 c_ShowingItemMenu(false), c_ItemMenuSelected(-1), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
 c_ShowingCellChoice(false), c_CellToFocus(NULL),
@@ -18,9 +18,9 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
         c_InventorySprite.setTexture(c_InventoryTexture);
 
     if(c_LootBagTexture.loadFromFile("image\\menu\\basicMenu.png"))
-    {
         c_LootBagSprite.setTexture(c_LootBagTexture);
-    }
+    if(c_ItemInfosTexture.loadFromFile("image\\menu\\itemMenu.png"))
+        c_ItemInfosSprite.setTexture(c_ItemInfosTexture);
 
     if(c_ItemMenuTexture.loadFromFile("image\\menu\\itemMenu.png"))
     {
@@ -313,6 +313,7 @@ void Menu::lootbagMenu()
 {
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+    c_CharacterSize = app.getSize().x / 40;
 
     c_LootBagSprite.setScale(app.getSize().x * 3/10 / c_LootBagSprite.getLocalBounds().width,
                                app.getSize().y * 6/10 / c_LootBagSprite.getLocalBounds().height);
@@ -330,23 +331,27 @@ void Menu::lootbagMenu()
     c_LootBagNbrItems = c_LootBag->getNbrItems();
     c_LootBagRects.clear();
 
+    uint16_t gapHeight = height * 1/27;
+
     for(uint16_t i = c_LootBagFirst; i < c_LootBagNbrItems - c_LootBagFirst; ++i)
     { // affichage de tous les items du bag
-        sf::Text text(sf::String(c_LootBag->getItem(i)->getName()), itemsFont, 30);
-        text.setPosition(posX + width / 18, lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)) );
+        sf::Text text(sf::String(c_LootBag->getItem(i)->getName()), itemsFont, c_CharacterSize);
+        text.setOrigin(text.getLocalBounds().left, text.getLocalBounds().top + text.getLocalBounds().height/2);
+        text.setPosition(posX + width / 18, height * 1/27 + lastTextHeightPosition + lastTextHeightSize + ((gapHeight - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)));
 
         if(i == c_LootBagSelected)
             text.setColor(sf::Color::Red);
         else
             text.setColor(sf::Color::Black);
 
-        sf::Text nbrT(nbrToString(c_LootBag->getNbrOfItem(i)), itemsFont, 30);
-        nbrT.setPosition(posX + width * 16/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
-                         , lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)) );
+        sf::Text nbrT(nbrToString(c_LootBag->getNbrOfItem(i)), itemsFont, c_CharacterSize);
+        nbrT.setOrigin(nbrT.getLocalBounds().left, nbrT.getLocalBounds().top + nbrT.getLocalBounds().height/2);
+        nbrT.setPosition(posX + width * 15/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
+                         , height * 1/27 + lastTextHeightPosition + lastTextHeightSize + ((gapHeight - lastTextHeightSize) * ((i - c_LootBagFirst) != 0)));
         nbrT.setColor(sf::Color::Black);
 
-        sf::IntRect rect(text.getPosition().x, text.getPosition().y
-                            , width * 11/18, height * 2/27);
+        sf::IntRect rect(text.getPosition().x, text.getPosition().y - gapHeight/2
+                            , width * 11/18, gapHeight);
 
         lastTextHeightPosition = text.getPosition().y;
         lastTextHeightSize = text.getGlobalBounds().height;
@@ -398,6 +403,7 @@ void Menu::itemMenu(const Player * p)
 {
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+    c_CharacterSize = app.getSize().x / 40;
 
     c_ItemMenuSprite.setScale(app.getSize().x * 2/10 / c_ItemMenuSprite.getLocalBounds().width,
                                app.getSize().y * 2/10 / c_ItemMenuSprite.getLocalBounds().height);
@@ -417,10 +423,9 @@ void Menu::itemMenu(const Player * p)
         c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
         nbrTextToDraw = 2;
     }
+    uint16_t heighToDraw = height / (nbrTextToDraw + 1);
 
-    uint16_t lastTextHeightSize = 0; // hauteur du dernier texte affiché
-    uint16_t lastTextHeightPosition = posY + height / 10; // position du dernier texte affiché
-
+    uint16_t k =0;
     for(uint16_t i = c_ItemMenuTexts.size() - nbrTextToDraw; i < c_ItemMenuTexts.size(); ++i)
     {
         if(i == 0)
@@ -433,8 +438,8 @@ void Menu::itemMenu(const Player * p)
                 c_ItemMenuTexts[i].setString(sf::String("Utilisez"));
         }
 
-        c_ItemMenuTexts[i].setPosition(posX + width / 17
-                                       , lastTextHeightPosition + lastTextHeightSize + (height * 2.5/10 - lastTextHeightSize) * (i != 0));
+        c_ItemMenuTexts[i].setPosition(posX + width / 17, posY + heighToDraw * (k+1) - c_ItemMenuTexts[i].getLocalBounds().height/2 - c_ItemMenuTexts[i].getLocalBounds().top);
+        c_ItemMenuTexts[i].setCharacterSize(c_CharacterSize);
 
         if(i == c_ItemMenuSelected)
             c_ItemMenuTexts[i].setColor(sf::Color::Red);
@@ -444,10 +449,9 @@ void Menu::itemMenu(const Player * p)
         c_ItemMenuRects.push_back(sf::IntRect(c_ItemMenuTexts[i].getPosition().x, c_ItemMenuTexts[i].getPosition().y
                             , width * 16/17, height * 2.5/10)); // rectangle de collision
 
-        lastTextHeightPosition = c_ItemMenuTexts[i].getPosition().y;
-        lastTextHeightSize = c_ItemMenuTexts[i].getGlobalBounds().height;
-
         app.draw(c_ItemMenuTexts[i]);
+
+        k++;
     }
 
     app.setView(lastView);
@@ -457,44 +461,152 @@ void Menu::inventoryMenu(const Player * p)
 {
     sf::View lastView = app.getView();
     app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+    c_CharacterSize = app.getSize().x / 40;
 
     c_InventorySprite.setScale(app.getSize().x * 3/10 / c_InventorySprite.getLocalBounds().width,
                                app.getSize().y * 6/10 / c_InventorySprite.getLocalBounds().height);
     c_InventorySprite.setPosition(app.getSize().x * 6/10, app.getSize().y * 2/10);
     app.draw(c_InventorySprite);
-
-    uint16_t posX = c_InventorySprite.getPosition().x;
-    uint16_t posY = c_InventorySprite.getPosition().y;
     uint16_t width = c_InventorySprite.getGlobalBounds().width - c_InventorySprite.getGlobalBounds().width / 31; // width sans ombre
     uint16_t height = c_InventorySprite.getGlobalBounds().height - c_InventorySprite.getGlobalBounds().height / 50; // height sans ombre
+    uint16_t posX = c_InventorySprite.getPosition().x + width / 18;
+    uint16_t posY = c_InventorySprite.getPosition().y + height / 27;
 
     const Bag * bag = p->getBag();
     uint16_t lastTextHeightSize = 0; // hauteur du dernier texte affiché
-    uint16_t lastTextHeightPosition = posY + height / 27; // position du dernier texte affiché
+    uint16_t lastTextHeightPosition = posY; // position du dernier texte affiché
     c_InventoryNbrItems = bag->getNbrItems();
     c_InventoryRects.clear();
 
+    uint16_t gapHeight = height * 1/27;
+
     for(uint16_t i = c_InventoryFirst; i < c_InventoryNbrItems - c_InventoryFirst; ++i)
     { // affichage de tous les items du bag
-        sf::Text text(sf::String(bag->getItem(i)->getName()), itemsFont, 30);
-        text.setPosition(posX + width / 18, lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_InventoryFirst) != 0)) );
+        const Item * item = bag->getItem(i);
+        sf::Text text(sf::String(item->getName()), itemsFont, c_CharacterSize);
+        text.setOrigin(text.getLocalBounds().left, text.getLocalBounds().top + text.getLocalBounds().height/2);
+        text.setPosition(posX, height * 1/27 + lastTextHeightPosition + lastTextHeightSize + ((gapHeight - lastTextHeightSize) * ((i - c_InventoryFirst) != 0)));
 
         if(i == c_InventorySelected)
+        {
+            c_ItemInfosSprite.setScale(app.getSize().x * 2/10 / c_ItemInfosSprite.getLocalBounds().width,
+                               app.getSize().y * 2/10 / c_ItemInfosSprite.getLocalBounds().height);
+            c_ItemInfosSprite.setPosition(c_InventoryRects[c_InventorySelected].left - c_ItemInfosSprite.getGlobalBounds().width * 7/8
+                                 , c_InventoryRects[c_InventorySelected].top - c_ItemInfosSprite.getGlobalBounds().height);// place le menu au niveau de l'affichage de l'item selectionné
+            app.draw(c_ItemInfosSprite);
+
+            uint16_t widthB = c_ItemInfosSprite.getGlobalBounds().width - c_ItemInfosSprite.getGlobalBounds().width / 27; // width sans ombre
+            uint16_t heightB = c_ItemInfosSprite.getGlobalBounds().height - c_ItemInfosSprite.getGlobalBounds().height / 19; // height sans ombre
+            uint16_t posXB = c_ItemInfosSprite.getPosition().x + widthB / 17;
+            uint16_t posYB = c_ItemInfosSprite.getPosition().y + heightB / 10;
+
+            sf::Color color(0, 0, 200); // couleur des infos
+
+            sf::Text typeT("Type :", menuFont, c_CharacterSize * 2/3);
+            sf::Text type("", menuFont, c_CharacterSize * 2/3);
+            sf::Text dirT("Directional :", menuFont, c_CharacterSize * 2/3);
+            sf::Text dir("", menuFont, c_CharacterSize * 2/3);
+            sf::Text zoneTypeT("Zone :", menuFont, c_CharacterSize * 2/3);
+            sf::Text zoneType("", menuFont, c_CharacterSize * 2/3);
+            switch(item->getItemType())
+            {
+                case EQUIPMENT: type.setString("Equipment"); break;
+                case CONSUMABLE: type.setString("Consumable"); break;
+                case TOOL: type.setString("Tool"); break;
+            }
+            switch(item->isDirectional())
+            {
+                case true: dir.setString("Yes"); break;
+                case false: dir.setString("No"); break;
+            }
+            switch(item->getZoneType())
+            {
+                case AOE: zoneType.setString("AOE"); break;
+                case LINE: zoneType.setString("Line"); break;
+            }
+            typeT.setOrigin(typeT.getLocalBounds().left, typeT.getLocalBounds().top + typeT.getLocalBounds().height/2);
+            type.setOrigin(type.getLocalBounds().left, type.getLocalBounds().top + type.getLocalBounds().height/2);
+            dirT.setOrigin(dirT.getLocalBounds().left, dirT.getLocalBounds().top + dirT.getLocalBounds().height/2);
+            dir.setOrigin(dir.getLocalBounds().left, dir.getLocalBounds().top + dir.getLocalBounds().height/2);
+            zoneTypeT.setOrigin(zoneTypeT.getLocalBounds().left, zoneTypeT.getLocalBounds().top + zoneTypeT.getLocalBounds().height/2);
+            zoneType.setOrigin(zoneType.getLocalBounds().left, zoneType.getLocalBounds().top + zoneType.getLocalBounds().height/2);
+            typeT.setPosition(posXB, posYB + heightB * 1/10);
+            type.setPosition(posXB + widthB * 16/18 - type.getGlobalBounds().width, posYB + heightB * 1/10);
+            dirT.setPosition(posXB, posYB + heightB * 2/10);
+            dir.setPosition(posXB + widthB * 16/18 - dir.getGlobalBounds().width, posYB + heightB * 2/10);
+            zoneTypeT.setPosition(posXB, posYB + heightB * 3/10);
+            zoneType.setPosition(posXB + widthB * 16/18 - zoneType.getGlobalBounds().width, posYB + heightB * 3/10);
+            typeT.setColor(sf::Color::Black);
+            type.setColor(color);
+            dirT.setColor(sf::Color::Black);
+            dir.setColor(color);
+            zoneTypeT.setColor(sf::Color::Black);
+            zoneType.setColor(color);
+
+            sf::Text rangeT("Range :", menuFont, c_CharacterSize * 2/3);
+            sf::Text range(nbrToString(item->getMinUseRange()) + " - " + nbrToString(item->getMaxUseRange()), menuFont, c_CharacterSize * 2/3);
+            rangeT.setOrigin(rangeT.getLocalBounds().left, rangeT.getLocalBounds().top + rangeT.getLocalBounds().height/2);
+            range.setOrigin(range.getLocalBounds().left, range.getLocalBounds().top + range.getLocalBounds().height/2);
+            rangeT.setPosition(posXB, posYB + heightB * 4/10);
+            range.setPosition(posXB + widthB * 16/18 - range.getGlobalBounds().width, posYB + heightB * 4/10);
+            rangeT.setColor(sf::Color::Black);
+            range.setColor(color);
+
+            for(uint16_t i = 0; i < item->getNbrEffect(); i++)
+            {
+                sf::Text eType("", menuFont, c_CharacterSize * 2/3);
+                sf::Text value(nbrToString(item->getEffect(i).value), menuFont, c_CharacterSize * 2/3);
+                sf::Text eRange(nbrToString(item->getEffect(i).minEffectRange) + " - " + nbrToString(item->getEffect(i).maxEffectRange), menuFont, c_CharacterSize * 2/3);
+
+                switch(item->getEffect(i).type)
+                {
+                    case HEAL: eType.setString("Heal : ");
+                        value.setColor(sf::Color(0, 100, 0));
+                        break;
+                    case DAMAGE: eType.setString("Damage : ");
+                        value.setColor(sf::Color(200, 0, 0));
+                        break;
+                }
+                eType.setOrigin(eType.getLocalBounds().left, eType.getLocalBounds().top + eType.getLocalBounds().height/2);
+                value.setOrigin(value.getLocalBounds().left, value.getLocalBounds().top + value.getLocalBounds().height/2);
+                eRange.setOrigin(eRange.getLocalBounds().left, eRange.getLocalBounds().top + eRange.getLocalBounds().height/2);
+                eType.setPosition(posXB, range.getPosition().y + heightB * (2+i)/10);
+                value.setPosition(posXB + eType.getGlobalBounds().width + widthB * 1/18, range.getPosition().y + heightB * (2+i)/10);
+                eRange.setPosition(posXB + widthB * 16/18 - eRange.getGlobalBounds().width, range.getPosition().y + heightB * (2+i)/10);
+                eType.setColor(sf::Color::Black);
+                eRange.setColor(color);
+
+                app.draw(eType);
+                app.draw(value);
+                app.draw(eRange);
+            }
+
+            app.draw(typeT);
+            app.draw(type);
+            app.draw(dirT);
+            app.draw(dir);
+            app.draw(zoneTypeT);
+            app.draw(zoneType);
+            app.draw(rangeT);
+            app.draw(range);
+
             text.setColor(sf::Color::Red);
+        }
         else
             text.setColor(sf::Color::Black);
 
-        sf::Text nbrT(nbrToString(bag->getNbrOfItem(i)), itemsFont, 30);
-        nbrT.setPosition(posX + width * 16/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
-                         , lastTextHeightPosition + lastTextHeightSize + ((height * 2/27 - lastTextHeightSize) * ((i - c_InventoryFirst) != 0)) );
+        sf::Text nbrT(nbrToString(bag->getNbrOfItem(i)), itemsFont, c_CharacterSize);
+        nbrT.setOrigin(nbrT.getLocalBounds().left, nbrT.getLocalBounds().top + nbrT.getLocalBounds().height/2);
+        nbrT.setPosition(posX + width * 15/18 - width / 18 / 2 - nbrT.getGlobalBounds().width / 2
+                         , height * 1/27 + lastTextHeightPosition + lastTextHeightSize + (gapHeight - lastTextHeightSize) * ((i - c_InventoryFirst) != 0));
         nbrT.setColor(sf::Color::Black);
 
-        sf::IntRect rect(text.getPosition().x, text.getPosition().y
-                            , width * 11/18, height * 2/27);
+        sf::IntRect rect(text.getPosition().x, text.getPosition().y - gapHeight/2
+                            , width * 11/18, gapHeight);
 
         lastTextHeightPosition = text.getPosition().y;
         lastTextHeightSize = text.getGlobalBounds().height;
-        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 26/27)
+        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 25/27)
         {
             c_InventoryNbrShown = i-1; // on s'arrête avant d'écrire n'importe ou
             break;
