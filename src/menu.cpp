@@ -34,6 +34,10 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
         c_ItemMenuTexts.push_back(sf::Text(sf::String("Utilisez"), menuFont, 30));
         c_ItemMenuTexts.push_back(sf::Text(sf::String("Raccourci"), menuFont, 30));
         c_ItemMenuTexts.push_back(sf::Text(sf::String("Détruire"), menuFont, 30));
+
+        c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
+        c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
+        c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
     }
 
     if(c_ShortCutTexture.loadFromFile("image\\shortCut.jpg"))
@@ -414,17 +418,21 @@ void Menu::itemMenu(const Player * p)
     uint16_t width = c_ItemMenuSprite.getGlobalBounds().width - c_ItemMenuSprite.getGlobalBounds().width / 27; // width sans ombre
     uint16_t height = c_ItemMenuSprite.getGlobalBounds().height - c_ItemMenuSprite.getGlobalBounds().height / 19; // height sans ombre
 
-    c_ItemMenuRects.clear();
     uint16_t nbrTextToDraw = 3;
     if(!p->getItem(c_InventorySelected)->isUsable())
     {
-        c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
-        nbrTextToDraw = 2;
+        c_ItemMenuRects[0] = sf::IntRect(0,0,0,0);
+        nbrTextToDraw--;
+    }
+    if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT)
+    {
+        c_ItemMenuRects[1] = sf::IntRect(0,0,0,0);
+        nbrTextToDraw--;
     }
     uint16_t heighToDraw = height / (nbrTextToDraw + 1);
 
     uint16_t k =0;
-    for(uint16_t i = c_ItemMenuTexts.size() - nbrTextToDraw; i < c_ItemMenuTexts.size(); ++i)
+    for(uint16_t i = 0; i < c_ItemMenuTexts.size(); ++i)
     {
         if(i == 0)
         {
@@ -435,6 +443,9 @@ void Menu::itemMenu(const Player * p)
             else
                 c_ItemMenuTexts[i].setString(sf::String("Utilisez"));
         }
+        else if(i == 1)
+            if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT)
+                continue; // on ne peut pas utiliser de raccouri pour une arme
 
         c_ItemMenuTexts[i].setPosition(posX + width / 17, posY + heighToDraw * (k+1) - c_ItemMenuTexts[i].getLocalBounds().height/2 - c_ItemMenuTexts[i].getLocalBounds().top);
         c_ItemMenuTexts[i].setCharacterSize(c_CharacterSize);
@@ -444,8 +455,8 @@ void Menu::itemMenu(const Player * p)
         else
             c_ItemMenuTexts[i].setColor(sf::Color::Black);
 
-        c_ItemMenuRects.push_back(sf::IntRect(c_ItemMenuTexts[i].getPosition().x, c_ItemMenuTexts[i].getPosition().y
-                            , width * 16/17, height * 2.5/10)); // rectangle de collision
+        c_ItemMenuRects[i] = sf::IntRect(c_ItemMenuTexts[i].getPosition().x, c_ItemMenuTexts[i].getPosition().y
+                            , width * 16/17, height * 2.5/10); // rectangle de collision
 
         app.draw(c_ItemMenuTexts[i]);
 
