@@ -2,9 +2,13 @@
 
 Player::Player(const std::string & name, float maxLife, Direction dir, float speed, const sf::Vector2f & pos)
  : Character(PLAYER, name, maxLife, dir, speed, pos), c_WeaponEquipped(NULL), c_CanUseWeapon(true), c_WeaponCDTime(0)
+ , c_MaxEquippedItem(NBRSLOT)
 {
     c_Sprite.setTexture(Entity::playerTextures);
     setDirection(c_Direction); // pour initialiser le sprite
+
+    for(uint16_t i = 0; i < c_MaxEquippedItem; i++)
+        c_EquippedItems.push_back(NULL);
 }
 
 bool Player::takeItem(const Item * item, uint16_t nbr)
@@ -63,11 +67,11 @@ void Player::removeItem(const Item * item, uint16_t nbr)
     Character::removeItem(item, nbr);
 }
 
-void Player::setShortCut(const Item * item, sf::Keyboard::Key key)
+void Player::setEquippedItem(const Item * item, uint16_t i)
 {
     if(c_Bag->findItem(item) >= 0)
     {
-        c_Shortcuts[key] = item;
+        c_EquippedItems[i] = item;
     }
 }
 
@@ -76,15 +80,15 @@ bool Player::canUseItem(const Item * item) const
     return c_CanUseItem.at(item->getItemId());
 }
 
-const Item * Player::getItemShortCut(sf::Keyboard::Key key)
+const Item * Player::getEquippedItem(uint16_t i) const
 {
-    int16_t itemIndex = c_Bag->findItem(c_Shortcuts[key]);
+    int16_t itemIndex = c_Bag->findItem(c_EquippedItems[i]);
     if(itemIndex != -1)
         return c_Bag->getItem(itemIndex);
     return NULL;
 }
-int16_t Player::getItemIndexShortCut(sf::Keyboard::Key key)
+int16_t Player::getBagIndexOfEquippedItem(uint16_t i) const
 {
-    return c_Bag->findItem(c_Shortcuts[key]);
+    return c_Bag->findItem(c_EquippedItems[i]);
 }
 

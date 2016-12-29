@@ -62,10 +62,10 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(25), c_ActualLevel(0
         }
     }
 
-    c_ShortCutKeys[0] = sf::Keyboard::Num1;
-    c_ShortCutKeys[1] = sf::Keyboard::Num2;
-    c_ShortCutKeys[2] = sf::Keyboard::Num3;
-    c_ShortCutKeys[3] = sf::Keyboard::Num4;
+    c_ItemShortCuts.push_back(sf::Keyboard::Num1);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num2);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num3);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num4);
 }
 Game::~Game()
 {
@@ -95,10 +95,10 @@ void Game::loop()
                 useItem(c_Player, c_Player->getBag()->getItem(c_Menu.getItemToUse()), focusedCell->getC(), focusedCell->getL());
             }
 
-            sf::Keyboard::Key key;
-            if((key = c_Menu.getKeyToShortCut()) != sf::Keyboard::Unknown) // gestion des raccourcis
+            uint16_t keyIndex;
+            if((keyIndex = c_Menu.getKeyIndexToShortCut()) != -1) // gestion des raccourcis
             {
-                c_Player->setShortCut(c_Player->getItem(c_Menu.getItemToShortCut()), key);
+                c_Player->setEquippedItem(c_Player->getItem(c_Menu.getItemToShortCut()), keyIndex);
             }
 
             BagCell itemToTake; itemToTake.item = NULL; itemToTake.nbr = 0;
@@ -258,7 +258,7 @@ void Game::save(const std::string & fileName)
     file << NBRSLOT << "\n";
     for(uint16_t i = 0; i < NBRSLOT; i++)
     {
-        file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
+        file << c_ItemShortCuts[i] << " " << c_Player->getEquippedItem(i) << "\n";
     }
 
     file << "end";
@@ -326,8 +326,8 @@ void Game::load(const std::string & fileName)
             {
                 uint16_t key, itemId;
                 file >> key >> itemId;
-                c_ShortCutKeys[i] = (sf::Keyboard::Key)key;
-                c_Player->setShortCut(Item::getItemFromId((ItemId)itemId), (sf::Keyboard::Key)key);
+                c_ItemShortCuts[i] = (sf::Keyboard::Key)key;
+                c_Player->setEquippedItem(Item::getItemFromId((ItemId)itemId), i);
             }
         }
     }while(type != "end");
@@ -584,10 +584,10 @@ void Game::eventManage()
 
         for(uint16_t i = 0; i < NBRSLOT; ++i)
         {
-            if(keyboard.isKeyPressed(c_ShortCutKeys[i]))
+            if(keyboard.isKeyPressed(c_ItemShortCuts[i]))
             {
-                if(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]) != -1 && c_Player->canUseItem(c_Player->getItemShortCut(c_ShortCutKeys[i])))
-                    c_Menu.setShowingCellChoice(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]));
+                if(c_Player->getBagIndexOfEquippedItem(i) != -1 && c_Player->canUseItem(c_Player->getEquippedItem(i)))
+                    c_Menu.setShowingCellChoice(c_Player->getBagIndexOfEquippedItem(i));
             }
         }
         if(keyboard.isKeyPressed(sf::Keyboard::Space))

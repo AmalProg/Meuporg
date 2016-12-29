@@ -23,16 +23,18 @@ class Player : public Character
         void weaponUsed() { c_CanUseWeapon = false; c_LastWeaponUseTime = sf::Time::Zero; }
         void itemUsed(const Item * item);
 
-        void setShortCut(const Item * item, sf::Keyboard::Key key);
+        void setEquippedItem(const Item * item, uint16_t i);
 
-        const Item * getItemShortCut(sf::Keyboard::Key key);
-        int16_t getItemIndexShortCut(sf::Keyboard::Key key);
+        const Item * getEquippedItem(uint16_t i) const;
+        int16_t getBagIndexOfEquippedItem(uint16_t i) const;
         const Item * getWeaponEquipped() const { return c_WeaponEquipped; }
         bool canUseWeapon() const { return c_CanUseWeapon; }
         bool canUseItem(const Item * item) const;
+        uint16_t getNbrMaxEquippedItems() const { return c_MaxEquippedItem; }
 
     private:
-        std::map< sf::Keyboard::Key, const Item * > c_Shortcuts; //
+        std::vector< const Item * > c_EquippedItems;
+        uint16_t c_MaxEquippedItem;
         const Item * c_WeaponEquipped;
 
         sf::Time c_LastWeaponUseTime;

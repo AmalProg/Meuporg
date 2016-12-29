@@ -4,7 +4,7 @@ Menu::Menu(sf::RenderWindow & a) : app(a), c_CharacterSize(30),
 c_ShowingInventory(false), c_InventorySelected(-1), c_InventoryFirst(0), c_InventoryNbrShown(100), c_InventoryNbrItems(0),
 c_ShowingItemMenu(false), c_ItemMenuSelected(-1), c_ItemToDestroy(-1), c_ItemToUse(-1), c_ItemToEquip(-1),
 c_ShowingCellChoice(false), c_CellToFocus(NULL),
-c_ShowingShortCutChoice(false), c_ShortCutSelected(0), c_ItemToShortCut(-1), c_KeyToShortCut(sf::Keyboard::Unknown),
+c_ShowingShortCutChoice(false), c_ShortCutSelected(-1), c_ItemToShortCut(-1), c_KeyIndexToShortCut(-1),
 c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(0), c_LootBagNbrShown(100), c_LootBagNbrItems(0)
 {
     c_ItemToTake.item = NULL;
@@ -15,10 +15,15 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
     menuFont.loadFromFile("font\\mops.ttf");
 
     if(c_InventoryTexture.loadFromFile("image\\menu\\basicMenu.png"))
+    {
         c_InventorySprite.setTexture(c_InventoryTexture);
+        c_EquipedMenu.setTexture(c_InventoryTexture);
+    }
 
     if(c_LootBagTexture.loadFromFile("image\\menu\\basicMenu.png"))
+    {
         c_LootBagSprite.setTexture(c_LootBagTexture);
+    }
     if(c_ItemInfosTexture.loadFromFile("image\\menu\\itemMenu.png"))
         c_ItemInfosSprite.setTexture(c_ItemInfosTexture);
 
@@ -81,21 +86,21 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     case sf::Event::MouseWheelMoved:
         if(c_ShowingLootBag)
         {
-            if(c_LootBagFirst + event.mouseWheel.delta < 0)
+            c_LootBagFirst += event.mouseWheel.delta;
+
+            if(c_LootBagFirst > c_LootBagNbrItems - c_LootBagNbrShown)
+               c_LootBagFirst = c_LootBagNbrItems - c_LootBagNbrShown;
+            if(c_LootBagFirst < 0)
                 c_LootBagFirst = 0;
-            else if(c_LootBagFirst + event.mouseWheel.delta > c_LootBagNbrItems - c_LootBagNbrShown)
-                c_LootBagFirst = c_LootBagNbrItems - c_LootBagNbrShown;
-            else
-                c_LootBagFirst += event.mouseWheel.delta;
         }
         else if(c_ShowingInventory && !c_ShowingItemMenu)
         {
-            if(c_InventoryFirst + event.mouseWheel.delta < 0)
-                c_InventoryFirst = 0;
-            else if(c_InventoryFirst + event.mouseWheel.delta > c_InventoryNbrItems - c_InventoryNbrShown)
+            c_InventoryFirst += event.mouseWheel.delta;
+
+            if(c_InventoryFirst > c_InventoryNbrItems - c_InventoryNbrShown)
                 c_InventoryFirst = c_InventoryNbrItems - c_InventoryNbrShown;
-            else
-                c_InventoryFirst += event.mouseWheel.delta;
+            if(c_InventoryFirst < 0)
+                c_InventoryFirst = 0;
         }
         break;
 
@@ -144,18 +149,10 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                 }
                 else if(c_ShowingShortCutChoice)
                 {
-                    if(c_ShortCutSprite[c_ShortCutSelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_ShortCutSelected != -1 && c_ShortCutSprite[c_ShortCutSelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                     {
                         c_ItemToShortCut = c_InventorySelected;
-                        if(c_ShortCutSelected == 0)
-                            c_KeyToShortCut = sf::Keyboard::Num1;
-                        else if(c_ShortCutSelected == 1)
-                            c_KeyToShortCut = sf::Keyboard::Num2;
-                        else if(c_ShortCutSelected == 2)
-                            c_KeyToShortCut = sf::Keyboard::Num3;
-                        else if(c_ShortCutSelected == 3)
-                            c_KeyToShortCut = sf::Keyboard::Num4;
-
+                        c_KeyIndexToShortCut = c_ShortCutSelected;
 
                         c_ShowingInventory = false;
                         c_ShowingItemMenu = false;
@@ -251,6 +248,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     }
     else if(c_ShowingShortCutChoice)
     {
+        c_ShortCutSelected = -1;
         for(uint16_t i = 0; i < NBRSLOT; ++i)
         {
             if(c_ShortCutSprite[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
@@ -467,6 +465,7 @@ void Menu::inventoryMenu(const Player * p)
                                app.getSize().y * 6/10 / c_InventorySprite.getLocalBounds().height);
     c_InventorySprite.setPosition(app.getSize().x * 6/10, app.getSize().y * 2/10);
     app.draw(c_InventorySprite);
+
     uint16_t width = c_InventorySprite.getGlobalBounds().width - c_InventorySprite.getGlobalBounds().width / 31; // width sans ombre
     uint16_t height = c_InventorySprite.getGlobalBounds().height - c_InventorySprite.getGlobalBounds().height / 50; // height sans ombre
     uint16_t posX = c_InventorySprite.getPosition().x + width / 18;
@@ -489,106 +488,9 @@ void Menu::inventoryMenu(const Player * p)
 
         if(i == c_InventorySelected)
         {
-            c_ItemInfosSprite.setScale(app.getSize().x * 2/10 / c_ItemInfosSprite.getLocalBounds().width,
-                               app.getSize().y * 2/10 / c_ItemInfosSprite.getLocalBounds().height);
-            c_ItemInfosSprite.setPosition(c_InventoryRects[c_InventorySelected].left - c_ItemInfosSprite.getGlobalBounds().width * 7/8
-                                 , c_InventoryRects[c_InventorySelected].top - c_ItemInfosSprite.getGlobalBounds().height);// place le menu au niveau de l'affichage de l'item selectionné
-            app.draw(c_ItemInfosSprite);
-
-            uint16_t widthB = c_ItemInfosSprite.getGlobalBounds().width - c_ItemInfosSprite.getGlobalBounds().width / 27; // width sans ombre
-            uint16_t heightB = c_ItemInfosSprite.getGlobalBounds().height - c_ItemInfosSprite.getGlobalBounds().height / 19; // height sans ombre
-            uint16_t posXB = c_ItemInfosSprite.getPosition().x + widthB / 17;
-            uint16_t posYB = c_ItemInfosSprite.getPosition().y + heightB / 10;
-
-            sf::Color color(0, 0, 200); // couleur des infos
-
-            sf::Text typeT("Type :", menuFont, c_CharacterSize * 2/3);
-            sf::Text type("", menuFont, c_CharacterSize * 2/3);
-            sf::Text dirT("Directional :", menuFont, c_CharacterSize * 2/3);
-            sf::Text dir("", menuFont, c_CharacterSize * 2/3);
-            sf::Text zoneTypeT("Zone :", menuFont, c_CharacterSize * 2/3);
-            sf::Text zoneType("", menuFont, c_CharacterSize * 2/3);
-            switch(item->getItemType())
-            {
-                case EQUIPMENT: type.setString("Equipment"); break;
-                case CONSUMABLE: type.setString("Consumable"); break;
-                case TOOL: type.setString("Tool"); break;
-            }
-            switch(item->isDirectional())
-            {
-                case true: dir.setString("Yes"); break;
-                case false: dir.setString("No"); break;
-            }
-            switch(item->getZoneType())
-            {
-                case AOE: zoneType.setString("AOE"); break;
-                case LINE: zoneType.setString("Line"); break;
-            }
-            typeT.setOrigin(typeT.getLocalBounds().left, typeT.getLocalBounds().top + typeT.getLocalBounds().height/2);
-            type.setOrigin(type.getLocalBounds().left, type.getLocalBounds().top + type.getLocalBounds().height/2);
-            dirT.setOrigin(dirT.getLocalBounds().left, dirT.getLocalBounds().top + dirT.getLocalBounds().height/2);
-            dir.setOrigin(dir.getLocalBounds().left, dir.getLocalBounds().top + dir.getLocalBounds().height/2);
-            zoneTypeT.setOrigin(zoneTypeT.getLocalBounds().left, zoneTypeT.getLocalBounds().top + zoneTypeT.getLocalBounds().height/2);
-            zoneType.setOrigin(zoneType.getLocalBounds().left, zoneType.getLocalBounds().top + zoneType.getLocalBounds().height/2);
-            typeT.setPosition(posXB, posYB + heightB * 1/10);
-            type.setPosition(posXB + widthB * 16/18 - type.getGlobalBounds().width, posYB + heightB * 1/10);
-            dirT.setPosition(posXB, posYB + heightB * 2/10);
-            dir.setPosition(posXB + widthB * 16/18 - dir.getGlobalBounds().width, posYB + heightB * 2/10);
-            zoneTypeT.setPosition(posXB, posYB + heightB * 3/10);
-            zoneType.setPosition(posXB + widthB * 16/18 - zoneType.getGlobalBounds().width, posYB + heightB * 3/10);
-            typeT.setColor(sf::Color::Black);
-            type.setColor(color);
-            dirT.setColor(sf::Color::Black);
-            dir.setColor(color);
-            zoneTypeT.setColor(sf::Color::Black);
-            zoneType.setColor(color);
-
-            sf::Text rangeT("Range :", menuFont, c_CharacterSize * 2/3);
-            sf::Text range(nbrToString(item->getMinUseRange()) + " - " + nbrToString(item->getMaxUseRange()), menuFont, c_CharacterSize * 2/3);
-            rangeT.setOrigin(rangeT.getLocalBounds().left, rangeT.getLocalBounds().top + rangeT.getLocalBounds().height/2);
-            range.setOrigin(range.getLocalBounds().left, range.getLocalBounds().top + range.getLocalBounds().height/2);
-            rangeT.setPosition(posXB, posYB + heightB * 4/10);
-            range.setPosition(posXB + widthB * 16/18 - range.getGlobalBounds().width, posYB + heightB * 4/10);
-            rangeT.setColor(sf::Color::Black);
-            range.setColor(color);
-
-            for(uint16_t i = 0; i < item->getNbrEffect(); i++)
-            {
-                sf::Text eType("", menuFont, c_CharacterSize * 2/3);
-                sf::Text value(nbrToString(item->getEffect(i).value), menuFont, c_CharacterSize * 2/3);
-                sf::Text eRange(nbrToString(item->getEffect(i).minEffectRange) + " - " + nbrToString(item->getEffect(i).maxEffectRange), menuFont, c_CharacterSize * 2/3);
-
-                switch(item->getEffect(i).type)
-                {
-                    case HEAL: eType.setString("Heal : ");
-                        value.setColor(sf::Color(0, 100, 0));
-                        break;
-                    case DAMAGE: eType.setString("Damage : ");
-                        value.setColor(sf::Color(200, 0, 0));
-                        break;
-                }
-                eType.setOrigin(eType.getLocalBounds().left, eType.getLocalBounds().top + eType.getLocalBounds().height/2);
-                value.setOrigin(value.getLocalBounds().left, value.getLocalBounds().top + value.getLocalBounds().height/2);
-                eRange.setOrigin(eRange.getLocalBounds().left, eRange.getLocalBounds().top + eRange.getLocalBounds().height/2);
-                eType.setPosition(posXB, range.getPosition().y + heightB * (2+i)/10);
-                value.setPosition(posXB + eType.getGlobalBounds().width + widthB * 1/18, range.getPosition().y + heightB * (2+i)/10);
-                eRange.setPosition(posXB + widthB * 16/18 - eRange.getGlobalBounds().width, range.getPosition().y + heightB * (2+i)/10);
-                eType.setColor(sf::Color::Black);
-                eRange.setColor(color);
-
-                app.draw(eType);
-                app.draw(value);
-                app.draw(eRange);
-            }
-
-            app.draw(typeT);
-            app.draw(type);
-            app.draw(dirT);
-            app.draw(dir);
-            app.draw(zoneTypeT);
-            app.draw(zoneType);
-            app.draw(rangeT);
-            app.draw(range);
+            drawItemInfos(item, sf::Vector2f(c_InventoryRects[c_InventorySelected].left - c_ItemInfosSprite.getGlobalBounds().width * 7/8
+                            , c_InventoryRects[c_InventorySelected].top - c_ItemInfosSprite.getGlobalBounds().height));
+            // place le menu au niveau de l'affichage de l'item selectionné
 
             text.setColor(sf::Color::Red);
         }
@@ -618,7 +520,174 @@ void Menu::inventoryMenu(const Player * p)
         app.draw(nbrT); // nombre d'items
     }
 
+    c_EquipedMenu.setScale(app.getSize().x * 3/10 / c_EquipedMenu.getLocalBounds().width,
+                               app.getSize().y * 6/10 / c_EquipedMenu.getLocalBounds().height);
+    c_EquipedMenu.setPosition(app.getSize().x * 1/10, app.getSize().y * 2/10);
+    app.draw(c_EquipedMenu);
+
+    width = c_EquipedMenu.getGlobalBounds().width - c_EquipedMenu.getGlobalBounds().width / 31; // width sans ombre
+    height = c_EquipedMenu.getGlobalBounds().height - c_EquipedMenu.getGlobalBounds().height / 50; // height sans ombre
+    posX = c_EquipedMenu.getPosition().x + width / 18;
+    posY = c_EquipedMenu.getPosition().y + height / 27;
+
+    lastTextHeightSize = 0; // hauteur du dernier texte affiché
+    lastTextHeightPosition = posY; // position du dernier texte affiché
+
+    sf::Text equipT("Equipped Weapon", menuFont, c_CharacterSize);
+    sf::Text equip("", itemsFont, c_CharacterSize);
+    if(p->getWeaponEquipped() != NULL)
+        equip.setString(p->getWeaponEquipped()->getName());
+    else
+        equip.setString("- - -");
+    equipT.setOrigin(equipT.getLocalBounds().left, equipT.getLocalBounds().top + equipT.getLocalBounds().height/2);
+    equip.setOrigin(equip.getLocalBounds().left, equip.getLocalBounds().top + equip.getLocalBounds().height/2);
+    equipT.setPosition(posX + width * 17/18 - width / 2 - equipT.getGlobalBounds().width/2, posY + height * 1/27);
+    equip.setPosition(posX + width * 17/18 - width / 2 - equip.getGlobalBounds().width/2, posY + height * 3/27);
+    equipT.setColor(sf::Color::Black);
+    equip.setColor(sf::Color(0, 0, 200));
+
+    sf::Text itemsT("Equipped Items", menuFont, c_CharacterSize);
+    itemsT.setOrigin(itemsT.getLocalBounds().left, itemsT.getLocalBounds().top + itemsT.getLocalBounds().height/2);
+    itemsT.setPosition(posX + width * 17/18 - width / 2 - itemsT.getGlobalBounds().width/2, posY + height * 7/27);
+    itemsT.setColor(sf::Color::Black);
+    for(uint16_t i = 0; i < p->getNbrMaxEquippedItems(); i++)
+    {
+        sf::Text itemT("", itemsFont, c_CharacterSize);
+        if(p->getEquippedItem(i) != NULL)
+            itemT.setString(p->getEquippedItem(i)->getName());
+        else
+            itemT.setString("- - -");
+        itemT.setOrigin(itemT.getLocalBounds().left, itemT.getLocalBounds().top + itemT.getLocalBounds().height/2);
+        itemT.setPosition(posX + width * 17/18 - width / 2 - itemT.getGlobalBounds().width/2, itemsT.getGlobalBounds().top + height / 27 + height * (i+1) * 2/27);
+        itemT.setColor(sf::Color(0, 0, 200));
+
+        app.draw(itemT);
+    }
+
+    app.draw(equipT);
+    app.draw(equip);
+    app.draw(itemsT);
+
     app.setView(lastView);
+}
+
+void Menu::drawItemInfos(const Item * item, const sf::Vector2f & pos)
+{
+    c_ItemInfosSprite.setScale(app.getSize().x * 2/10 / c_ItemInfosSprite.getLocalBounds().width,
+                               app.getSize().y * 2/10 / c_ItemInfosSprite.getLocalBounds().height);
+    c_ItemInfosSprite.setPosition(pos);
+    app.draw(c_ItemInfosSprite);
+
+    uint16_t widthB = c_ItemInfosSprite.getGlobalBounds().width - c_ItemInfosSprite.getGlobalBounds().width / 27; // width sans ombre
+    uint16_t heightB = c_ItemInfosSprite.getGlobalBounds().height - c_ItemInfosSprite.getGlobalBounds().height / 19; // height sans ombre
+    uint16_t posXB = c_ItemInfosSprite.getPosition().x + widthB / 17;
+    uint16_t posYB = c_ItemInfosSprite.getPosition().y + heightB / 10;
+
+    sf::Color color(0, 0, 200); // couleur des infos
+
+    sf::Text typeT("Type :", menuFont, c_CharacterSize * 2/3);
+    sf::Text type("", menuFont, c_CharacterSize * 2/3);
+    sf::Text dirT("Directional :", menuFont, c_CharacterSize * 2/3);
+    sf::Text dir("", menuFont, c_CharacterSize * 2/3);
+    sf::Text zoneTypeT("Zone :", menuFont, c_CharacterSize * 2/3);
+    sf::Text zoneType("", menuFont, c_CharacterSize * 2/3);
+    switch(item->getItemType())
+    {
+        case EQUIPMENT:
+            type.setString("Equipment");
+            break;
+        case CONSUMABLE:
+            type.setString("Consumable");
+            break;
+        case TOOL:
+            type.setString("Tool");
+            break;
+    }
+    switch(item->isDirectional())
+    {
+        case true:
+            dir.setString("Yes");
+            break;
+        case false:
+            dir.setString("No");
+            break;
+    }
+    switch(item->getZoneType())
+    {
+        case AOE:
+            zoneType.setString("AOE");
+            break;
+        case LINE:
+            zoneType.setString("Line");
+            break;
+    }
+    typeT.setOrigin(typeT.getLocalBounds().left, typeT.getLocalBounds().top + typeT.getLocalBounds().height/2);
+    type.setOrigin(type.getLocalBounds().left, type.getLocalBounds().top + type.getLocalBounds().height/2);
+    dirT.setOrigin(dirT.getLocalBounds().left, dirT.getLocalBounds().top + dirT.getLocalBounds().height/2);
+    dir.setOrigin(dir.getLocalBounds().left, dir.getLocalBounds().top + dir.getLocalBounds().height/2);
+    zoneTypeT.setOrigin(zoneTypeT.getLocalBounds().left, zoneTypeT.getLocalBounds().top + zoneTypeT.getLocalBounds().height/2);
+    zoneType.setOrigin(zoneType.getLocalBounds().left, zoneType.getLocalBounds().top + zoneType.getLocalBounds().height/2);
+    typeT.setPosition(posXB, posYB + heightB * 1/10);
+    type.setPosition(posXB + widthB * 16/18 - type.getGlobalBounds().width, posYB + heightB * 1/10);
+    dirT.setPosition(posXB, posYB + heightB * 2/10);
+    dir.setPosition(posXB + widthB * 16/18 - dir.getGlobalBounds().width, posYB + heightB * 2/10);
+    zoneTypeT.setPosition(posXB, posYB + heightB * 3/10);
+    zoneType.setPosition(posXB + widthB * 16/18 - zoneType.getGlobalBounds().width, posYB + heightB * 3/10);
+    typeT.setColor(sf::Color::Black);
+    type.setColor(color);
+    dirT.setColor(sf::Color::Black);
+    dir.setColor(color);
+    zoneTypeT.setColor(sf::Color::Black);
+    zoneType.setColor(color);
+
+    sf::Text rangeT("Range :", menuFont, c_CharacterSize * 2/3);
+    sf::Text range(nbrToString(item->getMinUseRange()) + " - " + nbrToString(item->getMaxUseRange()), menuFont, c_CharacterSize * 2/3);
+    rangeT.setOrigin(rangeT.getLocalBounds().left, rangeT.getLocalBounds().top + rangeT.getLocalBounds().height/2);
+    range.setOrigin(range.getLocalBounds().left, range.getLocalBounds().top + range.getLocalBounds().height/2);
+    rangeT.setPosition(posXB, posYB + heightB * 4/10);
+    range.setPosition(posXB + widthB * 16/18 - range.getGlobalBounds().width, posYB + heightB * 4/10);
+    rangeT.setColor(sf::Color::Black);
+    range.setColor(color);
+
+    for(uint16_t i = 0; i < item->getNbrEffect(); i++)
+    {
+        sf::Text eType("", menuFont, c_CharacterSize * 2/3);
+        sf::Text value(nbrToString(item->getEffect(i).value), menuFont, c_CharacterSize * 2/3);
+        sf::Text eRange(nbrToString(item->getEffect(i).minEffectRange) + " - " + nbrToString(item->getEffect(i).maxEffectRange), menuFont, c_CharacterSize * 2/3);
+
+        switch(item->getEffect(i).type)
+        {
+        case HEAL:
+            eType.setString("Heal : ");
+            value.setColor(sf::Color(0, 100, 0));
+            break;
+        case DAMAGE:
+            eType.setString("Damage : ");
+            value.setColor(sf::Color(200, 0, 0));
+            break;
+        }
+        eType.setOrigin(eType.getLocalBounds().left, eType.getLocalBounds().top + eType.getLocalBounds().height/2);
+        value.setOrigin(value.getLocalBounds().left, value.getLocalBounds().top + value.getLocalBounds().height/2);
+        eRange.setOrigin(eRange.getLocalBounds().left, eRange.getLocalBounds().top + eRange.getLocalBounds().height/2);
+        eType.setPosition(posXB, range.getPosition().y + heightB * (2+i)/10);
+        value.setPosition(posXB + eType.getGlobalBounds().width + widthB * 1/18, range.getPosition().y + heightB * (2+i)/10);
+        eRange.setPosition(posXB + widthB * 16/18 - eRange.getGlobalBounds().width, range.getPosition().y + heightB * (2+i)/10);
+        eType.setColor(sf::Color::Black);
+        eRange.setColor(color);
+
+        app.draw(eType);
+        app.draw(value);
+        app.draw(eRange);
+    }
+
+    app.draw(typeT);
+    app.draw(type);
+    app.draw(dirT);
+    app.draw(dir);
+    app.draw(zoneTypeT);
+    app.draw(zoneType);
+    app.draw(rangeT);
+    app.draw(range);
 }
 
 void Menu::setShowingLootBag(LootBag * lB)

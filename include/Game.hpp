@@ -3,17 +3,15 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <SFML/Graphics.hpp>
 #include <math.h>
+#include "menu.hpp"
 #include "Map.hpp"
 #include "Item.hpp"
 class Cell;
-class Player;
 #include "RawText.hpp"
 #include "ChoiceText.hpp"
-#include "menu.hpp"
-
-#include <sstream>
 
 class Game
 {
@@ -53,7 +51,7 @@ class Game
 
         uint16_t c_ActualLevel;
 
-        sf::Keyboard::Key c_ShortCutKeys[NBRSLOT];
+        std::vector< sf::Keyboard::Key > c_ItemShortCuts;
 
         Menu c_Menu;
         RawText c_RawText;

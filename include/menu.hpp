@@ -24,7 +24,7 @@ class Menu
         int16_t getItemToEquip() { int16_t tmp = c_ItemToEquip; c_ItemToEquip = -1; return tmp; }
         const Cell * getCellToFocus() { const Cell * tmp = c_CellToFocus; c_CellToFocus = NULL; return tmp; }
         int16_t getItemToShortCut() { int16_t tmp = c_ItemToShortCut; c_ItemToShortCut = -1; return tmp; }
-        sf::Keyboard::Key getKeyToShortCut() { sf::Keyboard::Key tmp = c_KeyToShortCut; c_KeyToShortCut = sf::Keyboard::Unknown; return tmp; }
+        int16_t getKeyIndexToShortCut() { int16_t tmp = c_KeyIndexToShortCut; c_KeyIndexToShortCut = -1; return tmp; }
         BagCell getItemToTake() { BagCell tmp = c_ItemToTake; c_ItemToTake.item = NULL; c_ItemToTake.nbr = 0; return tmp; }
 
         bool isShowingInventory() const { return c_ShowingInventory; }
@@ -40,6 +40,8 @@ class Menu
         void shortCutMenu(const Map * m);
         void lootbagMenu();
 
+        void drawItemInfos(const Item * item, const sf::Vector2f & pos);
+
     private:
         sf::RenderWindow & app;
 
@@ -54,9 +56,11 @@ class Menu
         sf::Sprite c_InventorySprite;
         std::vector< sf::IntRect > c_InventoryRects;
         int16_t c_InventorySelected;
-        uint16_t c_InventoryFirst;
+        int16_t c_InventoryFirst;
         uint16_t c_InventoryNbrShown;
         uint16_t c_InventoryNbrItems;
+        sf::Sprite c_EquipedMenu;
+
         sf::Texture c_ItemInfosTexture;
         sf::Sprite c_ItemInfosSprite;
 
@@ -80,7 +84,7 @@ class Menu
         sf::Sprite c_ShortCutSprite[NBRSLOT];
         int16_t c_ShortCutSelected;
         int16_t c_ItemToShortCut;
-        sf::Keyboard::Key c_KeyToShortCut;
+        int16_t c_KeyIndexToShortCut;
 
         bool c_ShowingLootBag;
         sf::Texture c_LootBagTexture;
@@ -88,7 +92,7 @@ class Menu
         LootBag * c_LootBag;
         std::vector< sf::IntRect > c_LootBagRects;
         int16_t c_LootBagSelected;
-        uint16_t c_LootBagFirst;
+        int16_t c_LootBagFirst;
         uint16_t c_LootBagNbrShown;
         uint16_t c_LootBagNbrItems;
         BagCell c_ItemToTake;
