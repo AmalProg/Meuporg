@@ -19,6 +19,8 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(25), c_ActualLevel(0
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
     c_Player->takeItem(Item::getItemFromId(HEALPOTION), 50);
+    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
+    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -95,7 +97,7 @@ void Game::loop()
                 useItem(c_Player, c_Player->getBag()->getItem(c_Menu.getItemToUse()), focusedCell->getC(), focusedCell->getL());
             }
 
-            uint16_t keyIndex;
+            int16_t keyIndex;
             if((keyIndex = c_Menu.getKeyIndexToShortCut()) != -1) // gestion des raccourcis
             {
                 c_Player->setEquippedItem(c_Player->getItem(c_Menu.getItemToShortCut()), keyIndex);
