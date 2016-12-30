@@ -40,8 +40,9 @@ c_CellSize(cellSize)
             c_Map[i].push_back(new Cell(i, j));
     }
 
+    c_View.setViewport(sf::FloatRect(0, 0.1, 1, 0.901)); // 0.901 : il manque 1 pix autrement ....
     c_View.setCenter(sf::Vector2f(nbrC * cellSize / 2, nbrL * cellSize / 2));
-    c_View.setSize(app.getSize().x, app.getSize().y);
+    c_View.setSize(app.getSize().x, app.getSize().y * 0.901);
 
     if(mapId == 0)
     {
@@ -74,15 +75,27 @@ void Map::moveMap()
 
     if(posX >= c_Map.size() * c_CellSize - c_View.getSize().x/2)
     {
-        c_PosToTransit.x = (c_Map.size() * c_CellSize - c_View.getSize().x/2); // place la map a droite
+        if(c_PosToTransit.x != (c_Map.size() * c_CellSize - c_View.getSize().x/2))
+        {
+            c_PosToTransit.x = (c_Map.size() * c_CellSize - c_View.getSize().x/2); // place la map a droite
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else if(posX <= c_View.getSize().x/2)
     {
-        c_PosToTransit.x = c_View.getSize().x/2; // place la map a gauche
+        if(c_PosToTransit.x != c_View.getSize().x/2)
+        {
+            c_PosToTransit.x = c_View.getSize().x/2; // place la map a gauche
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else if(posX != c_View.getCenter().x)
     {
-        c_PosToTransit.x = posX; // centre la map sur le joueur focus
+        if(c_PosToTransit.x != posX)
+        {
+            c_PosToTransit.x = posX; // centre la map sur le joueur focus
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else
         c_PosToTransit.x = c_View.getCenter().x;
@@ -92,31 +105,30 @@ void Map::moveMap()
 
     if(posY >= c_Map[0].size() * c_CellSize - c_View.getSize().y/2)
     {
-        c_PosToTransit.y = (c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
+        if(c_PosToTransit.y != (c_Map[0].size() * c_CellSize - c_View.getSize().y/2))
+        {
+            c_PosToTransit.y = (c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else if(posY <= c_View.getSize().y/2)
     {
-        c_PosToTransit.y = c_View.getSize().y/2; // place la map en haut
+        if(c_PosToTransit.y != c_View.getSize().y/2)
+        {
+            c_PosToTransit.y = c_View.getSize().y/2; // place la map en haut
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else if(posY != c_View.getCenter().y)
     {
-        c_PosToTransit.y = posY; // centre la map sur le joueur focus
+        if(c_PosToTransit.y != posY)
+        {
+            c_PosToTransit.y = posY; // centre la map sur le joueur focus
+            c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
+        }
     }
     else
         c_PosToTransit.y = c_View.getCenter().y;
-
-    uint16_t k = 10;
-    int16_t gapX = c_PosToTransit.x - c_View.getCenter().x;
-    int16_t gapY = c_PosToTransit.y - c_View.getCenter().y;
-    int16_t moveOnX = (gapX) / k;
-    int16_t moveOnY = (gapY) / k;
-
-    if(moveOnX == 0 && gapX != 0)
-        moveOnX = (gapX) / abs(gapX);
-    if(moveOnY == 0 && gapY != 0)
-        moveOnY = (gapY) / abs(gapY);
-
-    c_View.move(moveOnX, moveOnY);
 }
 
 void Map::removeLiving(uint16_t c, uint16_t l)
@@ -310,6 +322,31 @@ void Map::update(const sf::Time & elapsed)
     for(std::list< Obstacle * >::iterator it = c_Obstacles.begin(); it != c_Obstacles.end(); it++)
     {
         (*it)->update(elapsed);
+    }
+
+    int16_t moveOnX = 0;
+    int16_t moveOnY = 0;
+    int16_t gapX = c_PosToTransit.x - c_PosBefTransit.x;
+    int16_t gapY = c_PosToTransit.y - c_PosBefTransit.y;
+    float distGap = sqrt(gapX * gapX + gapY * gapY);
+    int16_t gapLeftX = c_PosToTransit.x - c_View.getCenter().x;
+    int16_t gapLeftY = c_PosToTransit.y - c_View.getCenter().y;
+    float speed = c_Focus->getSpeed();
+
+    if(gapLeftX != 0 || gapLeftY != 0)
+    {
+        c_SmoothMoveTime += elapsed;
+        if(c_SmoothMoveTime.asSeconds() * distGap * speed >= 1)
+        {
+            int16_t pixToMove = trunc(c_SmoothMoveTime.asSeconds() * distGap * speed);
+            if(gapLeftX != 0)
+                moveOnX = gapLeftX / abs(gapLeftX) * (pixToMove * (pixToMove <= abs(gapLeftX)) + abs(gapLeftX) * (pixToMove > abs(gapLeftX)));
+            if(gapLeftY != 0)
+                moveOnY = gapLeftY / abs(gapLeftY) * (pixToMove * (pixToMove <= abs(gapLeftY)) + abs(gapLeftY) * (pixToMove > abs(gapLeftY)));
+
+            c_SmoothMoveTime -= sf::seconds(pixToMove/(distGap*speed));
+        }
+        c_View.move(moveOnX, moveOnY);
     }
 }
 

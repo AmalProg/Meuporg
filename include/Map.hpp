@@ -129,7 +129,9 @@ class Map
 
         float c_CellSize;
 
+        sf::Vector2f c_PosBefTransit; // position avant le déplacement
         sf::Vector2f c_PosToTransit;
+        sf::Time c_SmoothMoveTime;
 
         uint32_t c_MapId;
         static std::map< uint32_t, Map * > mapsIds;

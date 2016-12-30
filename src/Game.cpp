@@ -13,7 +13,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
 
     c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
-    c_Player = new Player("Amal", 100, UP, 10.0);
+    c_Player = new Player("Amal", 100, UP, 5.0);
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
@@ -128,27 +128,6 @@ void Game::loop()
                 if((*it)->isActivated())
                 {
                     (*it)->setActivated(false); // on desactive l'escalier
-
-                    if((*it)->isRising() && c_ActualLevel == 0)
-                    {
-                        sf::Texture texture;
-                        texture.create(app.getSize().x, app.getSize().y);
-                        texture.update(app); // récupère l'affichage actuel pour l'afficher en fond
-
-                        std::vector< std::string > answers;
-                        answers.push_back("Oui");
-                        answers.push_back("Non");
-                        c_ChoiceText.newText("Voulez vous vraiment retourner à la surface ?"
-                                          , answers, texture, app, true);
-
-                        if(c_ChoiceText.getChoice() == 0)
-                            c_RawText.newText("Je suis désolé mais ce n'est pas possible.Retourné à votre tâche !", texture, app);
-                        else
-                            c_RawText.newText("C'est bien ! Ne faites pas l'enfant.", texture, app);
-
-
-                        break;
-                    }
 
                     Map * lastMap = c_Map;
                     lastMap->removeCharacter(c_Player); // on enlève player de la map actuelle
@@ -451,13 +430,36 @@ bool Game::movePlayer(Player * p, Direction d)
     int16_t newL = l + (d == DOWN) - (d == UP); // nouvelle colonne
     int16_t newC = c + (d == RIGHT) - (d == LEFT); // nouvelle ligne
 
-    if(newL >= 0 and newL < c_Map->getNbrLine() and newC >= 0 and newC < c_Map->getNbrColumn())
+    if(newL >= 0 && newL < c_Map->getNbrLine() && newC >= 0 && newC < c_Map->getNbrColumn())
     { // si on ne sort pas de la Map
         Cell * newCell = c_Map->getCell(newC, newL);
-        if(newCell->isWalkable())
+
+        if(newCell->isWalkable() && c_Player->isMoveable())
         {// si l'on peut marcher sur la case
-            c_Map->moveLiving(p, newC, newL);
-            return true;
+            if(newCell->gotStairs() && ((Stairs*)newCell->getStairs())->isRising() && c_ActualLevel == 0)
+            {
+                sf::Texture texture;
+                texture.create(app.getSize().x, app.getSize().y);
+                texture.update(app); // récupère l'affichage actuel pour l'afficher en fond
+
+                std::vector< std::string > answers;
+                answers.push_back("Oui");
+                answers.push_back("Non");
+                c_ChoiceText.newText("Voulez vous vraiment retourner à la surface ?"
+                                        , answers, texture, app, true);
+
+                if(c_ChoiceText.getChoice() == 0)
+                    c_RawText.newText("Je suis désolé mais ce n'est pas possible.Retourné à votre tâche !", texture, app);
+                else
+                    c_RawText.newText("C'est bien ! Ne faites pas l'enfant.", texture, app);
+
+                return false;
+            }
+            else
+            {
+                c_Map->moveLiving(p, newC, newL);
+                return true;
+            }
         }
         else
         {
