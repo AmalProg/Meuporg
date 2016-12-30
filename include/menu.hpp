@@ -24,7 +24,7 @@ class Menu
         int16_t getItemToEquip() { int16_t tmp = c_ItemToEquip; c_ItemToEquip = -1; return tmp; }
         const Cell * getCellToFocus() { const Cell * tmp = c_CellToFocus; c_CellToFocus = NULL; return tmp; }
         int16_t getItemToShortCut() { int16_t tmp = c_ItemToShortCut; c_ItemToShortCut = -1; return tmp; }
-        sf::Keyboard::Key getKeyToShortCut() { sf::Keyboard::Key tmp = c_KeyToShortCut; c_KeyToShortCut = sf::Keyboard::Unknown; return tmp; }
+        int16_t getKeyIndexToShortCut() { int16_t tmp = c_KeyIndexToShortCut; c_KeyIndexToShortCut = -1; return tmp; }
         BagCell getItemToTake() { BagCell tmp = c_ItemToTake; c_ItemToTake.item = NULL; c_ItemToTake.nbr = 0; return tmp; }
 
         bool isShowingInventory() const { return c_ShowingInventory; }
@@ -40,25 +40,49 @@ class Menu
         void shortCutMenu(const Map * m);
         void lootbagMenu();
 
+        void drawItemInfos(const Item * item, const sf::Vector2f & pos);
+        void drawInfosBar(const Player * p, uint16_t height);
+        void drawShortCuts(const Player * p, uint16_t height);
+
     private:
         sf::RenderWindow & app;
 
-        sf::Font arial;
+        sf::Font itemsFont;
+        sf::Font menuFont;
+
+        uint16_t c_CharacterSize;
+
+        sf::Texture c_BarTexture;
+        sf::Sprite c_BarSprite;
+        sf::RectangleShape c_LifeBar;
+        sf::RectangleShape c_OutLifeBar;
+
+        sf::Texture c_IconMenuTexture;
+        std::vector< sf::Sprite > c_IconMenuSprite;
 
         bool c_ShowingInventory;
         sf::Texture c_InventoryTexture;
         sf::Sprite c_InventorySprite;
-        std::vector< sf::Text > c_InventoryTexts;
-        uint16_t c_InventorySelected;
-        uint16_t c_InventoryFirst;
+        std::vector< sf::IntRect > c_InventoryRects;
+        int16_t c_InventorySelected;
+        int16_t c_InventoryFirst;
         uint16_t c_InventoryNbrShown;
         uint16_t c_InventoryNbrItems;
+        sf::Sprite c_EquipedMenu;
+
+        sf::Texture c_ItemInfosTexture;
+        sf::Sprite c_ItemInfosSprite;
+        bool c_ShowingShortCutChoice;
+        int16_t c_ShortCutSelected;
+        int16_t c_ItemToShortCut;
+        int16_t c_KeyIndexToShortCut;
 
         bool c_ShowingItemMenu;
         sf::Texture c_ItemMenuTexture;
         sf::Sprite c_ItemMenuSprite;
-        sf::Text c_ItemMenuTexts[4];
-        uint16_t c_ItemMenuSelected;
+        std::vector< sf::Text > c_ItemMenuTexts;
+        std::vector< sf::IntRect > c_ItemMenuRects;
+        int16_t c_ItemMenuSelected;
         int16_t c_ItemToDestroy;
         int16_t c_ItemToUse;
         int16_t c_ItemToEquip;
@@ -68,20 +92,13 @@ class Menu
         Cell * c_CellChoiceSelected;
         Cell * c_CellToFocus;
 
-        bool c_ShowingShortCutChoice;
-        sf::Texture c_ShortCutTexture;
-        sf::Sprite c_ShortCutSprite[NBRSLOT];
-        int16_t c_ShortCutSelected;
-        int16_t c_ItemToShortCut;
-        sf::Keyboard::Key c_KeyToShortCut;
-
         bool c_ShowingLootBag;
         sf::Texture c_LootBagTexture;
         sf::Sprite c_LootBagSprite;
         LootBag * c_LootBag;
-        std::vector< sf::Text > c_LootBagTexts;
+        std::vector< sf::IntRect > c_LootBagRects;
         int16_t c_LootBagSelected;
-        uint16_t c_LootBagFirst;
+        int16_t c_LootBagFirst;
         uint16_t c_LootBagNbrShown;
         uint16_t c_LootBagNbrItems;
         BagCell c_ItemToTake;

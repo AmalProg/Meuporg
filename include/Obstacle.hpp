@@ -7,6 +7,7 @@
 #include "Entity.hpp"
 #include "living.hpp"
 #include "Map.hpp"
+#include "movingtexture.hpp"
 
 class Obstacle : public Entity
 {
@@ -25,23 +26,19 @@ class Obstacle : public Entity
         bool isVisionBlocking() const { return c_VisionBlocking; }
         bool isAttackBlocking() const { return c_AttackBlocking; }
 
-        virtual void draw(sf::RenderWindow & app, uint16_t cellSize);
-
-        virtual void realTimeAction(Map * m, Player * p) {} // activé dans diverses cas en fonction de positions de certains objets etc ...
-        virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
-        virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
-        virtual void walkAction(Map * mape, Living * l) {} // activé lorsqu'on marche sur l'obstacle
-        virtual void firstStepAction(Map * mape, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
-        virtual void lastStepAction(Map * mape, Living * l) {} // activé lorsqu'on sort juste de la cell
+        virtual void realTimeAction(Map * m, Player * p) {} // activÃ© dans diverses cas en fonction de positions de certains objets etc ...
+        virtual void speakAction(Map * mape, Player * p) {} // activÃ© si l'on essaye de "parler" a l'obstacle
+        virtual void touchAction(Map * mape, Player * p) {} // activÃ© lorsqu'on essaye de marcher sur l'obstacle
+        virtual void walkAction(Map * mape, Living * l) {} // activÃ© lorsqu'on marche sur l'obstacle
+        virtual void firstStepAction(Map * mape, Living * l) {} // activÃ© lorsqu'on pose notre premier pas sur la cell
+        virtual void lastStepAction(Map * mape, Living * l) {} // activÃ© lorsqu'on sort juste de la cell
 
     protected:
-        sf::RectangleShape c_Shape;
-
         bool c_Walkable; // peut on marcher dessus ?
         bool c_IsCover; // recouvre le sol de la cell
         bool c_IsFiller; // prend toute la place de la cell
         bool c_VisionBlocking; // bloque-t-il la vision
-        bool c_AttackBlocking; // peut on tirer à travers ?
+        bool c_AttackBlocking; // peut on tirer Ã  travers ?
 };
 
 class Grass : public Obstacle
@@ -49,7 +46,7 @@ class Grass : public Obstacle
 public:
     Grass(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(GRASS, pos, true, false, false, false, true)
     {
-        c_Shape.setFillColor(sf::Color::Green);
+        c_Sprite.setTextureRect(sf::IntRect(0, 0, 512, 512));
     }
 };
 
@@ -57,9 +54,18 @@ class Water : public Obstacle
 {
 public:
     Water(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(WATER, pos, false, false, true, false, true)
+    , c_Rect(0.75)
     {
-        c_Shape.setFillColor(sf::Color(0, 0, 175));
+        c_Rect.addRect(sf::IntRect(0, 512, 512, 512));
+        c_Rect.addRect(sf::IntRect(512, 512, 512, 512));
+        c_Rect.addRect(sf::IntRect(1024, 512, 512, 512));
+        c_Sprite.setTextureRect(c_Rect.getRect());
     }
+
+    void update(const sf::Time & elapsed) { c_Rect.update(elapsed); c_Sprite.setTextureRect(c_Rect.getRect()); }
+
+private:
+    MovingTexture c_Rect;
 };
 
 class Sand : public Obstacle
@@ -67,7 +73,7 @@ class Sand : public Obstacle
 public:
     Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SAND, pos, true, false, false, false, true)
     {
-        c_Shape.setFillColor(sf::Color(180, 180, 40));
+        c_Sprite.setTextureRect(sf::IntRect(1024, 0, 512, 512));
     }
 
     virtual void firstStepAction(Map * mape, Living * l) { l->setSpeed(l->getSpeed() * 0.5); }
@@ -79,17 +85,21 @@ class Soil : public Obstacle
 public:
     Soil(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SOIL, pos, true, false, false, false, true)
     {
-        c_Shape.setFillColor(sf::Color(50, 25, 0));
+        c_Sprite.setTextureRect(sf::IntRect(512, 0, 512, 512));
     }
 };
 
 class Fire : public Obstacle
 {
 public:
+
     Fire(uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Obstacle(FIRE, pos, true, false, false, false, true), c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
     {
-        c_Shape.setFillColor(sf::Color(200, 100, 0));
+        c_Rect.addRect(sf::IntRect(0, 1024, 512, 512));
+        c_Rect.addRect(sf::IntRect(512, 1024, 512, 512));
+        c_Rect.addRect(sf::IntRect(1024, 1024, 512, 512));
+        c_Sprite.setTextureRect(c_Rect.getRect());
     }
 
     void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; }
@@ -102,11 +112,10 @@ public:
     uint16_t getDamagePerTick() const { return c_DamagePerTick; }
 
 private:
-    sf::Time c_SwitchTime;
-    bool c_FirstStateOfFire;
+    MovingTexture c_Rect;
 
-    static sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
-    static float c_DamageTickTime; // temps entre chaque tick de dégats
+    static sf::Time c_LastTickTime; // temps Ã©coulÃ© depuis le denrier tick
+    static float c_DamageTickTime; // temps entre chaque tick de dÃ©gats
     static bool c_Ticking;
 
     uint16_t c_DamagePerTick;
@@ -117,7 +126,7 @@ class Rock : public Obstacle
 public:
     Rock(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(ROCK, pos, false, true, true, true, false)
     {
-        c_Shape.setFillColor(sf::Color(120, 120 ,120));
+        c_Sprite.setTextureRect(sf::IntRect(1536, 0, 512, 512));
     }
 };
 
@@ -141,7 +150,9 @@ class LockedDoor : public Door
 public:
     LockedDoor(bool isLocked = true, bool isOpen = false, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Door(isOpen, LOCKEDDOOR, pos), c_IsLocked(isLocked)
-    {}
+    {
+        c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
+    }
 
     virtual void touchAction(Map * mape, Player * p);
     virtual void speakAction(Map * mape, Player * p);
@@ -160,6 +171,7 @@ public:
     : Obstacle(STAIRS, pos, true, false, false, false, false), c_LinkedMapId(linkedMapId), c_IsActivated(false)
     , c_IsRising(isRising)
     {
+        c_Sprite.setTextureRect(sf::IntRect(1024, 1536, 512, 512));
     }
 
     virtual void firstStepAction(Map * mape, Living * l)

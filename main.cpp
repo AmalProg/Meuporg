@@ -6,7 +6,7 @@
 
 int main()
 {
-    sf::RenderWindow app(sf::VideoMode(800, 600, 32), "Meuporg", sf::Style::Close);
+    sf::RenderWindow app(sf::VideoMode(1200, 900, 32), "Meuporg", sf::Style::Close);
     app.setFramerateLimit(60);
 
     srand(time(NULL));

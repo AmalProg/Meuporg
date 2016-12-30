@@ -5,14 +5,14 @@ Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable,
  : Entity(typeId, pos), c_Walkable(walkable), c_VisionBlocking(visionBlocking), c_AttackBlocking(attackBlocking)
  ,  c_IsFiller(filler), c_IsCover(cover)
 {
-    c_Shape.setFillColor(sf::Color::Black);
+    c_Sprite.setTexture(Entity::obstacleTexture);
 }
-
-void Obstacle::draw(sf::RenderWindow & app, uint16_t cellSize)
+/***/
+void Fire::update(const sf::Time & elapsed)
 {
-    c_Shape.setSize(sf::Vector2f(cellSize, cellSize));
-    c_Shape.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
-    app.draw(c_Shape);
+    c_LastTickTime += elapsed;
+    c_Rect.update(elapsed);
+    c_Sprite.setTextureRect(c_Rect.getRect());
 }
 /***/
 sf::Time Fire::c_LastTickTime;
@@ -58,18 +58,18 @@ Door::Door(bool isOpen, EntityTypeId typeId, const sf::Vector2f & pos)
 {
     if(c_IsOpen)
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
+        c_Sprite.setTextureRect(sf::IntRect(0, 1536, 512, 512));
     }
     else
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30));
+        c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
     }
 }
 void Door::speakAction(Map * mape, Player * p)
 {
     if(c_IsOpen)
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30));
+        c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
         c_IsOpen = false;
         setWalkable(false);
         mape->getCell(c_Position.x, c_Position.y)->stateTest();
@@ -77,7 +77,7 @@ void Door::speakAction(Map * mape, Player * p)
     }
     else
     {
-        c_Shape.setFillColor(sf::Color(200, 150 ,30, 100));
+        c_Sprite.setTextureRect(sf::IntRect(0, 1536, 512, 512));
         c_IsOpen = true;
         setWalkable(true);
         mape->getCell(c_Position.x, c_Position.y)->stateTest();
@@ -88,7 +88,7 @@ void Door::touchAction(Map * mape, Player * p)
 {
     if(!c_IsOpen)
     {
-        std::cout << "Cette porte est actuellement fermée !\n";
+        std::cout << "Cette porte est actuellement fermÃ©e !\n";
     }
 }
 /***/
@@ -107,7 +107,7 @@ void LockedDoor::speakAction(Map * mape, Player * p)
             {
                 c_IsLocked = false;
                 p->removeItem(Item::getItemFromId(KEY), 1);
-                std::cout << "Vous  déverouillez la porte.\n";
+                std::cout << "Vous  dÃ©verouillez la porte.\n";
             }
         }
     }
@@ -115,7 +115,7 @@ void LockedDoor::speakAction(Map * mape, Player * p)
 void LockedDoor::touchAction(Map * mape, Player * p)
 {
     if(c_IsLocked)
-        std::cout << "Cette porte est actuellement fermée à clef!" << '\n';
+        std::cout << "Cette porte est actuellement fermÃ©e Ã  clef!" << '\n';
     else
         Door::touchAction(mape, p);
 }

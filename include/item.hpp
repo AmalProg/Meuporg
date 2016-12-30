@@ -56,6 +56,8 @@ class Item
         uint16_t getMaxUseRange() const {return c_MaxUseRange;}
         uint16_t getMinUseRange() const {return c_MinUseRange;}
         float getCDTime() const { return c_CDTime; }
+        bool isDirectional() const { return c_Directional; }
+        ZoneType getZoneType() const { return c_ZoneType; }
 
         static const Item * getItemFromId(ItemId id);
         static void initItems();

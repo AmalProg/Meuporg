@@ -8,3 +8,22 @@ Entity::Entity(EntityTypeId typeId, const sf::Vector2f & pos) : c_Position(pos)
     c_EntityId = Entity::entityNbr;
     Entity::entityNbr++;
 }
+
+sf::Texture Entity::obstacleTexture;
+sf::Texture Entity::lootbagTexture;
+sf::Texture Entity::playerTextures;
+sf::Texture Entity::monstersTextures;
+void Entity::initTextures()
+{
+    Entity::obstacleTexture.loadFromFile("image\\map\\obstacleTextures.png");
+    Entity::lootbagTexture.loadFromFile("image\\map\\lootbagTexture.png");
+    Entity::playerTextures.loadFromFile("image\\map\\playerTextures.png");
+    Entity::monstersTextures.loadFromFile("image\\map\\monstersTextures.png");
+}
+
+void Entity::draw(sf::RenderWindow & app, uint16_t cellSize)
+{
+    c_Sprite.setScale(cellSize / c_Sprite.getLocalBounds().width, cellSize / c_Sprite.getLocalBounds().height);
+    c_Sprite.setPosition(cellSize * c_Position.x, cellSize * c_Position.y);
+    app.draw(c_Sprite);
+}

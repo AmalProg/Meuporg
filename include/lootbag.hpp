@@ -16,10 +16,7 @@ class LootBag : public Bag, public Entity
         virtual bool addItem(const Item * item, uint16_t nbr);
         virtual void removeItem(uint16_t i, uint16_t nbr);
 
-        void draw(sf::RenderWindow & app, uint16_t cellSize);
-
     private:
-        sf::RectangleShape c_Shape;
 };
 
 #endif // LOOTBAG_HPP

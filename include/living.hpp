@@ -2,6 +2,7 @@
 #define LIVING_HPP
 
 #include <iostream>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "Entity.hpp"
@@ -24,15 +25,16 @@ class Living : public Entity
         virtual void touchAction() {}; // activé lorsqu'on essaye de marcher sur l'obstacle
         virtual void realTimeAction(Map * m, Player * p) {}; // activé dans diverses cas en fonction de positions de certains objets etc ...
 
-        void draw(sf::RenderWindow & app, uint16_t cellSize);
+        virtual void draw(sf::RenderWindow & app, uint16_t cellSize);
         virtual void update(const sf::Time & elapsed);
 
         void setMaxLife(float l) {c_MaxLife = l; if(c_Life > c_MaxLife) c_Life = c_MaxLife; }
-        void setDirection(Direction dir)  { c_Direction = dir; }
+        void setDirection(Direction dir);
         void setKiller(Living * l) { c_Killer = l; }
         void setSpeed(float s) { c_Speed = s; }
-        void setPosition(uint16_t i, uint16_t j);
-        void setPosition(const sf::Vector2f & position);
+        void setPosition(uint16_t i, uint16_t j, uint16_t cellSize);
+        void setPosition(const sf::Vector2f & position, uint16_t cellSize);
+        void moveTo(uint16_t i, uint16_t j, uint16_t cellSize);
 
         std::string getName() const {return c_Name;}
         float getMaxLife() const {return c_MaxLife;}
@@ -55,8 +57,9 @@ class Living : public Entity
         float c_Speed; // en cell / s
         bool c_IsMoveable;
         sf::Time c_SpeedTime;
-
-        sf::RectangleShape c_Shape;
+        sf::Vector2f c_PosToMove; // position ou l'on veux aller avec moveTo
+        sf::Time c_SmoothMoveTime;
+        uint16_t c_CellSize; // taille des cellules de la map
 };
 
 #endif // LIVING_HPP

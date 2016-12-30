@@ -1,23 +1,26 @@
 #include "Game.hpp"
 
-Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
+Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
  c_NbrLoops(0)
 {
     Item::initItems();
+    Entity::initTextures();
 
     c_Font.loadFromFile("arial.ttf");
     c_FpsTxt.setString("0");
     c_FpsTxt.setFont(c_Font);
-    c_FpsTxt.setColor(sf::Color::Black);
+    c_FpsTxt.setColor(sf::Color::Red);
 
-    c_Map = new Map(app);
+    c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
-    c_Player = new Player("Amal");
+    c_Player = new Player("Amal", 100, UP, 10.0);
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
     c_Player->takeItem(Item::getItemFromId(HEALPOTION), 50);
+    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
+    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -61,10 +64,10 @@ Game::Game(sf::RenderWindow & a) : app(a), c_ActualLevel(0), c_Menu(app), c_RawT
         }
     }
 
-    c_ShortCutKeys[0] = sf::Keyboard::Num1;
-    c_ShortCutKeys[1] = sf::Keyboard::Num2;
-    c_ShortCutKeys[2] = sf::Keyboard::Num3;
-    c_ShortCutKeys[3] = sf::Keyboard::Num4;
+    c_ItemShortCuts.push_back(sf::Keyboard::Num1);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num2);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num3);
+    c_ItemShortCuts.push_back(sf::Keyboard::Num4);
 }
 Game::~Game()
 {
@@ -94,10 +97,10 @@ void Game::loop()
                 useItem(c_Player, c_Player->getBag()->getItem(c_Menu.getItemToUse()), focusedCell->getC(), focusedCell->getL());
             }
 
-            sf::Keyboard::Key key;
-            if((key = c_Menu.getKeyToShortCut()) != sf::Keyboard::Unknown) // gestion des raccourcis
+            int16_t keyIndex;
+            if((keyIndex = c_Menu.getKeyIndexToShortCut()) != -1) // gestion des raccourcis
             {
-                c_Player->setShortCut(c_Player->getItem(c_Menu.getItemToShortCut()), key);
+                c_Player->setEquippedItem(c_Player->getItem(c_Menu.getItemToShortCut()), keyIndex);
             }
 
             BagCell itemToTake; itemToTake.item = NULL; itemToTake.nbr = 0;
@@ -155,7 +158,7 @@ void Game::loop()
 
                     if(c_Map == NULL)
                     {
-                        c_Map = new Map(app);
+                        c_Map = new Map(app, lastMap->getCellSize());
                         c_ActualLevel++;
                         genNextMap(c_Map, lastMap, c_ActualLevel);
                         (*it)->setLinkedMapId(c_Map->getMapId());
@@ -202,14 +205,13 @@ void Game::loop()
 
             c_Map->moveMap(); // déplace la map par rapport au focus
             c_Map->draw(); // draw the map
-            drawShortCuts(); // draw shortcuts logo
 
             sf::View lastView = app.getView();
+
+            c_Menu.draw(c_Map, c_Player); // draw actives menus
+
             app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
             app.draw(c_FpsTxt);
-
-            app.setView(c_Map->getView());
-            c_Menu.draw(c_Map, c_Player); // draw actives menus
 
             app.display();
         }
@@ -257,7 +259,7 @@ void Game::save(const std::string & fileName)
     file << NBRSLOT << "\n";
     for(uint16_t i = 0; i < NBRSLOT; i++)
     {
-        file << c_ShortCutKeys[i] << " " << c_Player->getItemShortCut(c_ShortCutKeys[i]) << "\n";
+        file << c_ItemShortCuts[i] << " " << c_Player->getEquippedItem(i) << "\n";
     }
 
     file << "end";
@@ -286,7 +288,7 @@ void Game::load(const std::string & fileName)
             {
                 file >> mapId;
 
-                Map * m = new Map(app, mapId);
+                Map * m = new Map(app, app.getSize().x / c_NbrCellsToDraw, mapId);
                 m->load(file);
                 c_Maps.push_back(m);
 
@@ -325,8 +327,8 @@ void Game::load(const std::string & fileName)
             {
                 uint16_t key, itemId;
                 file >> key >> itemId;
-                c_ShortCutKeys[i] = (sf::Keyboard::Key)key;
-                c_Player->setShortCut(Item::getItemFromId((ItemId)itemId), (sf::Keyboard::Key)key);
+                c_ItemShortCuts[i] = (sf::Keyboard::Key)key;
+                c_Player->setEquippedItem(Item::getItemFromId((ItemId)itemId), i);
             }
         }
     }while(type != "end");
@@ -584,10 +586,10 @@ void Game::eventManage()
 
         for(uint16_t i = 0; i < NBRSLOT; ++i)
         {
-            if(keyboard.isKeyPressed(c_ShortCutKeys[i]))
+            if(keyboard.isKeyPressed(c_ItemShortCuts[i]))
             {
-                if(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]) != -1 && c_Player->canUseItem(c_Player->getItemShortCut(c_ShortCutKeys[i])))
-                    c_Menu.setShowingCellChoice(c_Player->getItemIndexShortCut(c_ShortCutKeys[i]));
+                if(c_Player->getBagIndexOfEquippedItem(i) != -1 && c_Player->canUseItem(c_Player->getEquippedItem(i)))
+                    c_Menu.setShowingCellChoice(c_Player->getBagIndexOfEquippedItem(i));
             }
         }
         if(keyboard.isKeyPressed(sf::Keyboard::Space))
@@ -661,27 +663,6 @@ void Game::actionEventTest()
             (*it)->speakAction(c_Map, c_Player);
         }
     }
-}
-
-void Game::drawShortCuts()
-{
-    sf::View lastView = app.getView();
-    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
-
-    static sf::Texture shortCutTexture;
-    if(shortCutTexture.loadFromFile("image\\shortCut.jpg"))
-    {
-        sf::Sprite shortCutSprite(shortCutTexture);
-        for(uint16_t i = 0; i < NBRSLOT; ++i)
-        {
-            shortCutSprite.setPosition(c_Map->getCellSize()/2 + i * c_Map->getCellSize(), c_Map->getCellSize()/2);
-            app.draw(shortCutSprite);
-        }
-    }
-    else
-        std::cerr << "file image\\shortCut not loaded" << "\n";
-
-    app.setView(lastView);
 }
 
 
