@@ -94,7 +94,8 @@ class Fire : public Obstacle
 public:
 
     Fire(uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
+    : Obstacle(FIRE, pos, true, false, false, true, false), c_DamagePerTick(damageDealt),
+        c_Rect(0.20, true)
     {
         c_Rect.addRect(sf::IntRect(0, 1024, 512, 512));
         c_Rect.addRect(sf::IntRect(512, 1024, 512, 512));
@@ -102,10 +103,9 @@ public:
         c_Sprite.setTextureRect(c_Rect.getRect());
     }
 
-    void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; }
+    void update(const sf::Time & elapsed);
     static void updateTick(const sf::Time & elapsed);
 
-    virtual void realTimeAction(Map * m, Player * p);
     virtual void walkAction(Map * mape, Living * l);
 
     float getDamageTickTime() const { return c_DamageTickTime; }

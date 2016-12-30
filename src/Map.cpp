@@ -256,10 +256,10 @@ void Map::draw()
                 if(c_Map[i][j]->isFilled())
                     c_Map[i][j]->getFiller()->draw(app, c_CellSize);
                 if(c_Map[i][j]->gotLootBag())
-                    c_Map[i][j]->getLootBag()->draw(app, getCellSize());
+                    c_Map[i][j]->getLootBag()->draw(app, c_CellSize);
                 if(c_Map[i][j]->getLiving() != NULL)
                 {
-                    c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
+                    c_Map[i][j]->getLiving()->draw(app, c_CellSize);
                 }
 
                 /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);

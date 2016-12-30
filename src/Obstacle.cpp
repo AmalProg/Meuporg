@@ -10,11 +10,9 @@ Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable,
 /***/
 void Fire::update(const sf::Time & elapsed)
 {
-    c_LastTickTime += elapsed;
     c_Rect.update(elapsed);
     c_Sprite.setTextureRect(c_Rect.getRect());
 }
-/***/
 sf::Time Fire::c_LastTickTime;
 float Fire::c_DamageTickTime = 0.5;
 bool Fire::c_Ticking = false;
@@ -22,26 +20,10 @@ void Fire::updateTick(const sf::Time & elapsed)
 {
     c_LastTickTime += elapsed;
     c_Ticking = false;
-    if(c_LastTickTime.asSeconds() > c_DamageTickTime)
+    if(c_LastTickTime.asSeconds() >= c_DamageTickTime)
     {
         c_Ticking = true;
         c_LastTickTime = sf::Time::Zero;
-    }
-}
-void Fire::realTimeAction(Map * m, Player * p)
-{
-    float randSwitchTime = 0.20 + (rand() % 31) / 100.f;
-    if(c_FirstStateOfFire && c_SwitchTime.asSeconds() > randSwitchTime)
-    {
-        c_Shape.setFillColor(sf::Color(255, 155, 0));
-        c_FirstStateOfFire = false;
-        c_SwitchTime -= sf::seconds(randSwitchTime);
-    }
-    else if(c_SwitchTime.asSeconds() > randSwitchTime)
-    {
-        c_Shape.setFillColor(sf::Color(200, 100, 0));
-        c_FirstStateOfFire = true;
-        c_SwitchTime -= sf::seconds(randSwitchTime);
     }
 }
 void Fire::walkAction(Map * mape, Living * l)
