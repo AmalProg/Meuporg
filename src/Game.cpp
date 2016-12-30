@@ -9,7 +9,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     c_Font.loadFromFile("arial.ttf");
     c_FpsTxt.setString("0");
     c_FpsTxt.setFont(c_Font);
-    c_FpsTxt.setColor(sf::Color::Black);
+    c_FpsTxt.setColor(sf::Color::Red);
 
     c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
@@ -207,11 +207,11 @@ void Game::loop()
             c_Map->draw(); // draw the map
 
             sf::View lastView = app.getView();
+
+            c_Menu.draw(c_Map, c_Player); // draw actives menus
+
             app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
             app.draw(c_FpsTxt);
-
-            app.setView(c_Map->getView());
-            c_Menu.draw(c_Map, c_Player); // draw actives menus
 
             app.display();
         }
