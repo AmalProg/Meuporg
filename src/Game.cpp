@@ -1,6 +1,6 @@
 #include "Game.hpp"
 
-Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(25), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
+Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0), c_Menu(app), c_RawText(RawText()), c_ChoiceText(ChoiceText()),
  c_NbrLoops(0)
 {
     Item::initItems();
@@ -205,7 +205,6 @@ void Game::loop()
 
             c_Map->moveMap(); // déplace la map par rapport au focus
             c_Map->draw(); // draw the map
-            drawShortCuts(); // draw shortcuts logo
 
             sf::View lastView = app.getView();
             app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
@@ -668,27 +667,6 @@ void Game::actionEventTest()
             (*it)->speakAction(c_Map, c_Player);
         }
     }
-}
-
-void Game::drawShortCuts()
-{
-    sf::View lastView = app.getView();
-    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
-
-    static sf::Texture shortCutTexture;
-    if(shortCutTexture.loadFromFile("image\\shortCut.jpg"))
-    {
-        sf::Sprite shortCutSprite(shortCutTexture);
-        for(uint16_t i = 0; i < NBRSLOT; ++i)
-        {
-            shortCutSprite.setPosition(c_Map->getCellSize()/2 + i * c_Map->getCellSize(), c_Map->getCellSize()/2);
-            app.draw(shortCutSprite);
-        }
-    }
-    else
-        std::cerr << "file image\\shortCut not loaded" << "\n";
-
-    app.setView(lastView);
 }
 
 

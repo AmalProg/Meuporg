@@ -10,9 +10,27 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
     c_ItemToTake.item = NULL;
     c_ItemToTake.nbr = 0;
 
-    arial.loadFromFile("arial.ttf");
     itemsFont.loadFromFile("font\\FantaisieArtistique.ttf");
     menuFont.loadFromFile("font\\mops.ttf");
+
+    c_OutLifeBar.setOutlineThickness(3);
+    c_OutLifeBar.setOutlineColor(sf::Color(150, 0, 0));
+    c_OutLifeBar.setSize(sf::Vector2f(300, 30));
+    c_OutLifeBar.setFillColor(sf::Color(0,0,0,0));
+    c_LifeBar.setFillColor(sf::Color::Red);
+    c_LifeBar.setSize(sf::Vector2f(300, 30));
+
+    if(c_BarTexture.loadFromFile("image\\menu\\barTexture.png"))
+        c_BarSprite.setTexture(c_BarTexture);
+
+    if(c_IconMenuTexture.loadFromFile("image\\menu\\iconMenu.png"))
+    {
+        for(uint16_t i = 0; i < NBRSLOT+1; ++i)
+        {
+            c_IconMenuSprite.push_back(sf::Sprite());
+            c_IconMenuSprite[i].setTexture(c_IconMenuTexture);
+        }
+    }
 
     if(c_InventoryTexture.loadFromFile("image\\menu\\basicMenu.png"))
     {
@@ -21,9 +39,8 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
     }
 
     if(c_LootBagTexture.loadFromFile("image\\menu\\basicMenu.png"))
-    {
         c_LootBagSprite.setTexture(c_LootBagTexture);
-    }
+
     if(c_ItemInfosTexture.loadFromFile("image\\menu\\itemMenu.png"))
         c_ItemInfosSprite.setTexture(c_ItemInfosTexture);
 
@@ -39,20 +56,14 @@ c_ShowingLootBag(false), c_LootBag(NULL), c_LootBagSelected(-1), c_LootBagFirst(
         c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
         c_ItemMenuRects.push_back(sf::IntRect(0,0,0,0));
     }
-
-    if(c_ShortCutTexture.loadFromFile("image\\shortCut.jpg"))
-    {
-        for(uint16_t i = 0; i < NBRSLOT; ++i)
-        {
-            c_ShortCutSprite[i].setTexture(c_ShortCutTexture);
-        }
-    }
 }
 
 void Menu::draw(const Map * m, const Player * p)
 {
     sf::View lastView = app.getView();
-    app.setView(sf::View(sf::FloatRect(0, 0, 800, 600)));
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+    drawInfosBar(p, (1 - m->getView().getViewport().height) * app.getSize().y);
 
     if(c_ShowingInventory)
         inventoryMenu(p);
@@ -76,13 +87,13 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     sf::Mouse mouse;
 
     float viewMultX = m->getView().getSize().x / (float)app.getSize().x;
-    float viewMultY = m->getView().getSize().y / (float)app.getSize().y;
+    float viewMultY = m->getView().getSize().y / (m->getView().getViewport().height * (float)app.getSize().y);
     float cellSizeDrawnX = (float)m->getCellSize() / viewMultX;
     float cellSizeDrawnY = (float)m->getCellSize() / viewMultY;
     float mapSizeDrawnX = m->getView().getSize().x / 2.f ;
     float mapSizeDrawnY = m->getView().getSize().y / 2.f;
     int32_t x = ((float)mouse.getPosition(app).x + (m->getView().getCenter().x - mapSizeDrawnX) / viewMultX) / cellSizeDrawnX;
-    int32_t y = ((float)mouse.getPosition(app).y + (m->getView().getCenter().y - mapSizeDrawnY) / viewMultY) / cellSizeDrawnY;
+    int32_t y = (((float)mouse.getPosition(app).y - (1 - m->getView().getViewport().height) * app.getSize().y + (m->getView().getCenter().y - mapSizeDrawnY) / viewMultY)) / cellSizeDrawnY;
     // coordonnées en terme de cell de la souris
 
     switch(event.type)
@@ -153,12 +164,11 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                 }
                 else if(c_ShowingShortCutChoice)
                 {
-                    if(c_ShortCutSelected != -1 && c_ShortCutSprite[c_ShortCutSelected].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_ShortCutSelected != -1 && c_IconMenuSprite[c_ShortCutSelected+1].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                     {
                         c_ItemToShortCut = c_InventorySelected;
                         c_KeyIndexToShortCut = c_ShortCutSelected;
 
-                        c_ShowingInventory = false;
                         c_ShowingItemMenu = false;
                         c_ShowingShortCutChoice = false;
                     }
@@ -186,17 +196,11 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                                 c_ShowingItemMenu = false;
                                 c_ShowingCellChoice = true;
                             }
-                            else
-                                std::cout << "Cet item est en CD !" << "\n";
-
                             if(p->getItem(c_InventorySelected)->getItemType() == EQUIPMENT)
                             {
-                                c_ShowingInventory = false;
                                 c_ShowingItemMenu = false;
                                 c_ItemToEquip = c_InventorySelected;
                             }
-                            else
-                                std::cout << "Cet item est en CD !" << "\n";
 
                         }
                         if(c_ItemMenuSelected == 1)
@@ -253,10 +257,10 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     else if(c_ShowingShortCutChoice)
     {
         c_ShortCutSelected = -1;
-        for(uint16_t i = 0; i < NBRSLOT; ++i)
+        for(uint16_t i = 1; i < c_IconMenuSprite.size(); ++i)
         {
-            if(c_ShortCutSprite[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
-                c_ShortCutSelected = i;
+            if(c_IconMenuSprite[i].getGlobalBounds().contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                c_ShortCutSelected = i-1;
         }
     }
     else if(c_ShowingCellChoice)
@@ -297,17 +301,114 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     }
 }
 
+void Menu::drawInfosBar(const Player * p, uint16_t height)
+{
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+    c_CharacterSize = app.getSize().x / 40;
+
+    c_BarSprite.setScale(app.getSize().x / c_BarSprite.getLocalBounds().width,
+                               app.getSize().y * 1/10 / c_BarSprite.getLocalBounds().height);
+    c_BarSprite.setPosition(0, 0);
+    c_BarSprite.setColor(sf::Color(100, 50, 0));
+    app.draw(c_BarSprite);
+
+    drawShortCuts(p, height);
+
+    sf::Text life(nbrToString(p->getLife()) + " / " + nbrToString(p->getMaxLife()), menuFont, c_CharacterSize);
+    life.setOrigin(life.getLocalBounds().left, life.getLocalBounds().top + life.getLocalBounds().height/2);
+    c_LifeBar.setSize(sf::Vector2f(p->getLife()/p->getMaxLife()*300.f, c_LifeBar.getSize().y));
+    c_OutLifeBar.setOrigin(c_OutLifeBar.getLocalBounds().left, c_OutLifeBar.getLocalBounds().top + c_OutLifeBar.getLocalBounds().height/2);
+    c_LifeBar.setOrigin(c_LifeBar.getLocalBounds().left, c_LifeBar.getLocalBounds().top + c_LifeBar.getLocalBounds().height/2);
+    c_LifeBar.setScale(app.getSize().x * 1/4 / c_OutLifeBar.getLocalBounds().width,
+                               app.getSize().y * 1/30 / c_OutLifeBar.getLocalBounds().height);
+    c_OutLifeBar.setScale(app.getSize().x * 1/4 / c_OutLifeBar.getLocalBounds().width,
+                               app.getSize().y * 1/30 / c_OutLifeBar.getLocalBounds().height);
+    c_OutLifeBar.setPosition(app.getSize().x * 3/4 - c_OutLifeBar.getSize().x/2
+                          , height/2);
+    life.setPosition(c_OutLifeBar.getPosition().x + c_OutLifeBar.getSize().x/2 - life.getGlobalBounds().width/2
+                        , height/2);
+    c_LifeBar.setPosition(app.getSize().x * 3/4 + c_OutLifeBar.getOutlineThickness() - c_OutLifeBar.getSize().x/2
+                          , height / 2);
+    life.setColor(sf::Color::Black);
+
+    app.draw(c_OutLifeBar);
+    app.draw(c_LifeBar);
+    app.draw(life);
+
+    app.setView(lastView);
+}
+
+void Menu::drawShortCuts(const Player * p, uint16_t height)
+{
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
+    sf::Text cd("", menuFont, c_CharacterSize);
+    cd.setColor(sf::Color::Black);
+    if(p->getWeaponEquipped() != NULL)
+    {
+        std::string cdS("");
+        if(p->getWeaponActualCdTime() != 0)
+        {
+            cdS = nbrToString(p->getWeaponActualCdTime());
+            cdS.resize(3);
+        }
+        cd.setString(cdS);
+    }
+    else
+        cd.setString("");
+    cd.setOrigin(cd.getLocalBounds().left, cd.getLocalBounds().top + cd.getLocalBounds().height/2);
+    c_IconMenuSprite[0].setScale(app.getSize().x * 1/18.75 / c_IconMenuSprite[0].getLocalBounds().width,
+                               app.getSize().y * 1/14.06 / c_IconMenuSprite[0].getLocalBounds().height);
+    c_IconMenuSprite[0].setPosition(c_IconMenuSprite[0].getGlobalBounds().width/2
+                                 , height/2 - c_IconMenuSprite[0].getGlobalBounds().height/2); // pour l'arme
+    cd.setPosition(c_IconMenuSprite[0].getPosition().x + c_IconMenuSprite[0].getGlobalBounds().width/2 - cd.getGlobalBounds().width/2
+                       , c_IconMenuSprite[0].getPosition().y + c_IconMenuSprite[0].getGlobalBounds().height/2);
+
+    app.draw(c_IconMenuSprite[0]);
+    app.draw(cd);
+
+    for(uint16_t i = 1; i < c_IconMenuSprite.size(); ++i)
+    {
+        const Item * item = p->getEquippedItem(i-1);
+
+        if(item != NULL)
+        {
+            std::string cdS("");
+            if(p->getItemActualCdTime(item) != 0)
+            {
+                cdS = nbrToString(p->getItemActualCdTime(item));
+                cdS.resize(3);
+            }
+            cd.setString(cdS);
+        }
+        else
+            cd.setString("");
+        cd.setOrigin(cd.getLocalBounds().left, cd.getLocalBounds().top + cd.getLocalBounds().height/2);
+        c_IconMenuSprite[i].setColor(sf::Color(255, 255, 255));
+        c_IconMenuSprite[i].setPosition(c_IconMenuSprite[i].getGlobalBounds().width * (3 + i)
+                                 , height/2 - c_IconMenuSprite[i].getGlobalBounds().height/2);
+        cd.setPosition(c_IconMenuSprite[i].getPosition().x + c_IconMenuSprite[i].getGlobalBounds().width/2 - cd.getGlobalBounds().width/2
+                       , c_IconMenuSprite[i].getPosition().y + c_IconMenuSprite[i].getGlobalBounds().height/2);
+
+        app.draw(c_IconMenuSprite[i]);
+        app.draw(cd);
+    }
+
+    app.setView(lastView);
+}
+
 void Menu::shortCutMenu(const Map * m)
 {
-    for(uint16_t i = 0; i < NBRSLOT; ++i)
+    for(uint16_t i = 1; i < c_IconMenuSprite.size(); ++i)
     {
-        if(i == c_ShortCutSelected)
-            c_ShortCutSprite[i].setColor(sf::Color::Red);
+        if(i-1 == c_ShortCutSelected)
+            c_IconMenuSprite[i].setColor(sf::Color::Red);
         else
-            c_ShortCutSprite[i].setColor(sf::Color(150, 150, 150));
-        c_ShortCutSprite[i].setPosition(m->getCellSize()/2 + i * m->getCellSize(), m->getCellSize()/2);
+            c_IconMenuSprite[i].setColor(sf::Color(100, 100, 100));
 
-        app.draw(c_ShortCutSprite[i]);
+        app.draw(c_IconMenuSprite[i]);
     }
 }
 

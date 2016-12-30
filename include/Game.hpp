@@ -39,8 +39,6 @@ class Game
 
         void genNextMap(Map * map, Map * lastMap, uint16_t lvl);
 
-        void drawShortCuts();
-
     private:
         sf::RenderWindow & app;
         uint16_t c_NbrCellsToDraw; // nbr de cells à affiher sur la fenêtre

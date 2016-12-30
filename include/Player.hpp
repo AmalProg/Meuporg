@@ -31,16 +31,17 @@ class Player : public Character
         bool canUseWeapon() const { return c_CanUseWeapon; }
         bool canUseItem(const Item * item) const;
         uint16_t getNbrMaxEquippedItems() const { return c_MaxEquippedItem; }
+        float getItemActualCdTime(const Item * item) const;
+        float getWeaponActualCdTime() const;
 
     private:
         std::vector< const Item * > c_EquippedItems;
         uint16_t c_MaxEquippedItem;
         const Item * c_WeaponEquipped;
-
         sf::Time c_LastWeaponUseTime;
         bool c_CanUseWeapon;
         float c_WeaponCDTime;
-        std::map< ItemId, sf::Time > c_LastItemUseTimes;
+        std::map< ItemId, sf::Time > c_LastItemUseTimes; // temps depuis la dernière utilisation
         std::map< ItemId, bool > c_CanUseItem;
         std::map< ItemId, float > c_ItemsCDTime;
 };

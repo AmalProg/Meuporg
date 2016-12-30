@@ -24,17 +24,15 @@ void Player::update(const sf::Time & elapsed)
     {
         const Item * item = c_Bag->getItem(i);
         c_LastItemUseTimes[item->getItemId()] += elapsed;
-        if(elapsed.asSeconds() < c_ItemsCDTime[item->getItemId()] && c_LastItemUseTimes[item->getItemId()].asSeconds() > c_ItemsCDTime[item->getItemId()])
+        if(c_LastItemUseTimes[item->getItemId()].asSeconds() >= c_ItemsCDTime[item->getItemId()])
         {
-            c_LastItemUseTimes[item->getItemId()] = sf::seconds(c_ItemsCDTime[item->getItemId()]);
             c_CanUseItem[item->getItemId()] = true;
         }
     }
 
     c_LastWeaponUseTime += elapsed;
-    if(elapsed.asSeconds() < c_WeaponCDTime && c_LastWeaponUseTime.asSeconds() > c_WeaponCDTime)
+    if(c_LastWeaponUseTime.asSeconds() >= c_WeaponCDTime)
     {
-        c_LastWeaponUseTime = sf::seconds(c_WeaponCDTime);
         c_CanUseWeapon = true;
     }
 
@@ -78,6 +76,20 @@ void Player::setEquippedItem(const Item * item, uint16_t i)
 bool Player::canUseItem(const Item * item) const
 {
     return c_CanUseItem.at(item->getItemId());
+}
+float Player::getItemActualCdTime(const Item * item) const
+{
+    float cd = c_ItemsCDTime.at(item->getItemId()) - c_LastItemUseTimes.at(item->getItemId()).asSeconds();
+    if(cd < 0)
+        return 0;
+    return cd;
+}
+float Player::getWeaponActualCdTime() const
+{
+    float cd = c_WeaponCDTime - c_LastWeaponUseTime.asSeconds();
+    if(cd < 0)
+        return 0;
+    return cd;
 }
 
 const Item * Player::getEquippedItem(uint16_t i) const

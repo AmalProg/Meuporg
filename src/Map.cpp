@@ -17,7 +17,8 @@ std::string nbrToString(float nbr)
 
 Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
-    c_View.setSize(app.getSize().x, app.getSize().y);
+    c_View.setViewport(sf::FloatRect(0, 0.1, 1, 0.901)); // 0.901 : il manque 1 pix autrement ....
+    c_View.setSize(app.getSize().x, app.getSize().y * 0.901);
 
     if(mapId == 0)
     {
