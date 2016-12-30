@@ -14,15 +14,35 @@ void Fire::update(const sf::Time & elapsed)
     c_Rect.update(elapsed);
     c_Sprite.setTextureRect(c_Rect.getRect());
 }
-void Fire::realTimeAction(Map * m, Player * p)
+/***/
+sf::Time Fire::c_LastTickTime;
+float Fire::c_DamageTickTime = 0.5;
+bool Fire::c_Ticking = false;
+void Fire::updateTick(const sf::Time & elapsed)
 {
+    c_LastTickTime += elapsed;
+    c_Ticking = false;
     if(c_LastTickTime.asSeconds() > c_DamageTickTime)
     {
         c_Ticking = true;
-        c_LastTickTime -= sf::seconds(c_DamageTickTime);
+        c_LastTickTime = sf::Time::Zero;
     }
-    else
-        c_Ticking = false;
+}
+void Fire::realTimeAction(Map * m, Player * p)
+{
+    float randSwitchTime = 0.20 + (rand() % 31) / 100.f;
+    if(c_FirstStateOfFire && c_SwitchTime.asSeconds() > randSwitchTime)
+    {
+        c_Shape.setFillColor(sf::Color(255, 155, 0));
+        c_FirstStateOfFire = false;
+        c_SwitchTime -= sf::seconds(randSwitchTime);
+    }
+    else if(c_SwitchTime.asSeconds() > randSwitchTime)
+    {
+        c_Shape.setFillColor(sf::Color(200, 100, 0));
+        c_FirstStateOfFire = true;
+        c_SwitchTime -= sf::seconds(randSwitchTime);
+    }
 }
 void Fire::walkAction(Map * mape, Living * l)
 {
@@ -30,7 +50,6 @@ void Fire::walkAction(Map * mape, Living * l)
     {
         l->takeDamages(c_DamagePerTick);
         std::cout << "Fire made " << c_DamagePerTick << " damages done on " << l->getName() << "\n";
-        c_Ticking = false;
     }
 }
 /***/
@@ -69,7 +88,7 @@ void Door::touchAction(Map * mape, Player * p)
 {
     if(!c_IsOpen)
     {
-        std::cout << "Cette porte est actuellement fermée !\n";
+        std::cout << "Cette porte est actuellement fermÃ©e !\n";
     }
 }
 /***/
@@ -88,7 +107,7 @@ void LockedDoor::speakAction(Map * mape, Player * p)
             {
                 c_IsLocked = false;
                 p->removeItem(Item::getItemFromId(KEY), 1);
-                std::cout << "Vous  déverouillez la porte.\n";
+                std::cout << "Vous  dÃ©verouillez la porte.\n";
             }
         }
     }
@@ -96,7 +115,7 @@ void LockedDoor::speakAction(Map * mape, Player * p)
 void LockedDoor::touchAction(Map * mape, Player * p)
 {
     if(c_IsLocked)
-        std::cout << "Cette porte est actuellement fermée à clef!" << '\n';
+        std::cout << "Cette porte est actuellement fermÃ©e Ã  clef!" << '\n';
     else
         Door::touchAction(mape, p);
 }

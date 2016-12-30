@@ -26,19 +26,19 @@ class Obstacle : public Entity
         bool isVisionBlocking() const { return c_VisionBlocking; }
         bool isAttackBlocking() const { return c_AttackBlocking; }
 
-        virtual void realTimeAction(Map * m, Player * p) {} // activé dans diverses cas en fonction de positions de certains objets etc ...
-        virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
-        virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
-        virtual void walkAction(Map * mape, Living * l) {} // activé lorsqu'on marche sur l'obstacle
-        virtual void firstStepAction(Map * mape, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
-        virtual void lastStepAction(Map * mape, Living * l) {} // activé lorsqu'on sort juste de la cell
+        virtual void realTimeAction(Map * m, Player * p) {} // activÃ© dans diverses cas en fonction de positions de certains objets etc ...
+        virtual void speakAction(Map * mape, Player * p) {} // activÃ© si l'on essaye de "parler" a l'obstacle
+        virtual void touchAction(Map * mape, Player * p) {} // activÃ© lorsqu'on essaye de marcher sur l'obstacle
+        virtual void walkAction(Map * mape, Living * l) {} // activÃ© lorsqu'on marche sur l'obstacle
+        virtual void firstStepAction(Map * mape, Living * l) {} // activÃ© lorsqu'on pose notre premier pas sur la cell
+        virtual void lastStepAction(Map * mape, Living * l) {} // activÃ© lorsqu'on sort juste de la cell
 
     protected:
         bool c_Walkable; // peut on marcher dessus ?
         bool c_IsCover; // recouvre le sol de la cell
         bool c_IsFiller; // prend toute la place de la cell
         bool c_VisionBlocking; // bloque-t-il la vision
-        bool c_AttackBlocking; // peut on tirer à travers ?
+        bool c_AttackBlocking; // peut on tirer Ã  travers ?
 };
 
 class Grass : public Obstacle
@@ -92,9 +92,9 @@ public:
 class Fire : public Obstacle
 {
 public:
-    Fire(float damageTickTime = 0.5, uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
-    : Obstacle(FIRE, pos, true, false, false, true, false), c_Rect(0.20 + (rand() % 31) / 100.f, true),
-    c_DamageTickTime(damageTickTime), c_DamagePerTick(damageDealt), c_Ticking(false)
+
+    Fire(uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Obstacle(FIRE, pos, true, false, false, false, true), c_DamagePerTick(damageDealt), c_FirstStateOfFire(true)
     {
         c_Rect.addRect(sf::IntRect(0, 1024, 512, 512));
         c_Rect.addRect(sf::IntRect(512, 1024, 512, 512));
@@ -102,7 +102,8 @@ public:
         c_Sprite.setTextureRect(c_Rect.getRect());
     }
 
-    void update(const sf::Time & elapsed);
+    void update(const sf::Time & elapsed) { c_SwitchTime += elapsed; }
+    static void updateTick(const sf::Time & elapsed);
 
     virtual void realTimeAction(Map * m, Player * p);
     virtual void walkAction(Map * mape, Living * l);
@@ -113,9 +114,9 @@ public:
 private:
     MovingTexture c_Rect;
 
-    sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
-    float c_DamageTickTime; // temps entre chaque tick de dégats
-    bool c_Ticking;
+    static sf::Time c_LastTickTime; // temps Ã©coulÃ© depuis le denrier tick
+    static float c_DamageTickTime; // temps entre chaque tick de dÃ©gats
+    static bool c_Ticking;
 
     uint16_t c_DamagePerTick;
 };

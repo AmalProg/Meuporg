@@ -47,7 +47,7 @@ class Map
         void removeMonster(Monster * m);
         bool addCharacter(Character * cha, uint16_t c, uint16_t l);
         void removeCharacter(Character * cha);
-        bool addLootBag(LootBag * lB,  uint16_t c, uint16_t l);
+        void addLootBag(LootBag * lB,  uint16_t c, uint16_t l);
         void removeLootBag(const LootBag * lB, uint16_t c, uint16_t l);
 
         void generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL);

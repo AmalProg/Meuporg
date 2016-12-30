@@ -17,7 +17,6 @@ void Living::update(const sf::Time & elapsed)
     if(c_SpeedTime.asSeconds() > 1.f / c_Speed)
         c_IsMoveable = true;
 
-
     int16_t moveOnX;
     int16_t moveOnY;
     int16_t gapX = (c_PosToMove.x - c_Sprite.getPosition().x);
@@ -37,6 +36,7 @@ void Living::update(const sf::Time & elapsed)
     }
 
     c_Sprite.move(moveOnX, moveOnY);
+
 }
 
 void Living::moveTo(uint16_t i, uint16_t j, uint16_t cellSize)

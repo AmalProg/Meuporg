@@ -12,8 +12,8 @@
 class Player : public Character
 {
     public:
-        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 10.0,
-               const sf::Vector2f & pos = sf::Vector2f(0, 0));
+        Player(const std::string & name = "unknow", float maxLife = 100, Direction dir = DOWN, float speed = 10.0, 
+                const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
         bool takeItem(const Item * item, uint16_t nbr); // rammasse un 'nbr' d''item'
         void update(const sf::Time & elapsed);
@@ -41,7 +41,7 @@ class Player : public Character
         sf::Time c_LastWeaponUseTime;
         bool c_CanUseWeapon;
         float c_WeaponCDTime;
-        std::map< ItemId, sf::Time > c_LastItemUseTimes; // temps depuis la dernière utilisation
+        std::map< ItemId, sf::Time > c_LastItemUseTimes; // temps depuis la derniï¿½re utilisation
         std::map< ItemId, bool > c_CanUseItem;
         std::map< ItemId, float > c_ItemsCDTime;
 };

@@ -33,7 +33,7 @@ Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_Ce
 Map::Map(uint16_t nbrC, uint16_t nbrL, sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a),
 c_CellSize(cellSize)
 {
-    for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
+    for(uint16_t i = 0; i < nbrC; i++) // crÃ©er une map de cases vide
     { // colonnes
         c_Map.push_back(std::vector < Cell *>());
         for(uint16_t j = 0; j < nbrL; j++) // lignes
@@ -205,17 +205,27 @@ void Map::removeCharacter(Character * cha)
     c_Characters.erase(it);
     removeLiving(cha->getPosition().x, cha->getPosition().y);
 }
-bool Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
+void Map::addLootBag(LootBag * lB,  uint16_t c, uint16_t l)
 {
-    c_Map[c][l]->addLootBag(lB); // on donne l'ID de l'obstacle
-    c_LootBags.push_back(lB);
-    lB->setPosition(sf::Vector2f(c, l));
-
-    return true;
+    LootBag * lBag = c_Map[c][l]->getLootBag();
+    if(lBag != NULL)
+    {
+        for(uint16_t i = 0; i < lB->getNbrItems(); i++)
+        {
+            lBag->addItem(lB->getItem(i), lB->getNbrOfItem(i));
+        }
+        delete lB;
+    }
+    else
+    {
+        c_Map[c][l]->addLootBag(lB); // on donne l'ID de l'obstacle
+        c_LootBags.push_back(lB);
+        lB->setPosition(sf::Vector2f(c, l));
+    }
 }
 void Map::removeLootBag(const LootBag * lB, uint16_t c, uint16_t l)
 {
-    c_Map[c][l]->removeLootBag(lB);
+    c_Map[c][l]->removeLootBag();
     std::list< LootBag * >::iterator it = std::find(c_LootBags.begin(), c_LootBags.end(), lB);
     c_LootBags.erase(it);
 }
@@ -245,11 +255,11 @@ void Map::draw()
                     c_Map[i][j]->getStairs()->draw(app, c_CellSize);
                 if(c_Map[i][j]->isFilled())
                     c_Map[i][j]->getFiller()->draw(app, c_CellSize);
-
-                std::list< LootBag * > lBs = c_Map[i][j]->getLootBags();
-                for(std::list< LootBag * >::iterator it = lBs.begin(); it != lBs.end(); ++it)
+                if(c_Map[i][j]->gotLootBag())
+                    c_Map[i][j]->getLootBag()->draw(app, getCellSize());
+                if(c_Map[i][j]->getLiving() != NULL)
                 {
-                    (*it)->draw(app, c_CellSize);
+                    c_Map[i][j]->getLiving()->draw(app, CELLSIZE);
                 }
 
                 /*sf::Text t(nbrToString(c_Map[i][j]->getC()), font, 10);
@@ -305,7 +315,7 @@ void Map::update(const sf::Time & elapsed)
 
 void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
 {
-    for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
+    for(uint16_t i = 0; i < nbrC; i++) // crÃ©er une map de cases vide
     { // colonnes
         c_Map.push_back(std::vector < Cell *>());
         for(uint16_t j = 0; j < nbrL; j++) // lignes
@@ -332,7 +342,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
 
                 Cell * cell = getCell(c, l);
 
-                if(addObstacleOnCell(id, cell)) // si le nomùbre à changé (normalement +1)
+                if(addObstacleOnCell(id, cell)) // si le nomÃ¹bre Ã  changÃ© (normalement +1)
                 {
                     expandEntity(id, cell, expand);
                     occurencesNbr++; // on ajoute une occurence
@@ -370,14 +380,14 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
     fillSeparatedCells(toCheck, toNotCheck);
 
     uint16_t xRise, yRise;
-    uint16_t i = 0; // nbr de fois passé dans la boucle
-    uint16_t wallGap = 4; // écart au mur maximum
+    uint16_t i = 0; // nbr de fois passÃ© dans la boucle
+    uint16_t wallGap = 4; // Ã©cart au mur maximum
     while(true)
-    { // place un escalier remontant à la map précédente
+    { // place un escalier remontant Ã  la map prÃ©cÃ©dente
         xRise = rand() % getNbrColumn();
         yRise = rand() % getNbrLine();
         if(xRise < wallGap || yRise < wallGap || getNbrColumn() - xRise < wallGap || getNbrLine() - yRise < wallGap)
-        { // si l'écart maximum aux murs est respecté
+        { // si l'Ã©cart maximum aux murs est respectÃ©
             if(getCell(xRise, yRise)->isWalkable())
             {
                 addStairs(new Stairs(0, true), xRise, yRise);
@@ -385,14 +395,14 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
             }
         }
         i++;
-        if(i % 30 == 0) // tous les 50 essais on incrémente wallGap
+        if(i % 30 == 0) // tous les 50 essais on incrÃ©mente wallGap
             wallGap++;
     }
 
-    uint16_t stairsGap = sqrt(getNbrColumn() * getNbrColumn() + getNbrColumn() * getNbrColumn()) * 2/3; // écart entre les duex escaliers
-    i = 0; // nbr de fois passé dans la boucle
+    uint16_t stairsGap = sqrt(getNbrColumn() * getNbrColumn() + getNbrColumn() * getNbrColumn()) * 2/3; // Ã©cart entre les duex escaliers
+    i = 0; // nbr de fois passÃ© dans la boucle
     while(true)
-    { // place un escalier protégé par une porte fermée a clef
+    { // place un escalier protÃ©gÃ© par une porte fermÃ©e a clef
         uint16_t x = rand() % getNbrColumn();
         uint16_t y = rand() % getNbrLine();
         if(getCell(x, y)->isWalkable() && getCellDist(getCell(x, y), getCell(xRise, yRise)) > stairsGap)
@@ -402,7 +412,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
             break;
         }
         i--;
-        if(i % 30 == 0) // tous les 10 essais on incrémente wallGap
+        if(i % 30 == 0) // tous les 10 essais on incrÃ©mente wallGap
             stairsGap++;
     }
 
@@ -425,7 +435,7 @@ void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
                 uint16_t l = rand() % getNbrLine();
                 Cell * cell = getCell(c, l);
 
-                if(addLivingOnCell(id, cell)) // si le nombre à changé (normalement +1)
+                if(addLivingOnCell(id, cell)) // si le nombre Ã  changÃ© (normalement +1)
                     occurencesNbr++; //on ajoute une occurence
 
                 nbrTry++;
@@ -459,7 +469,7 @@ void Map::save(std::ofstream & file)
                         file << ((Stairs*)(*it))->isRising() << " " << ((Stairs*)(*it))->getLinkedMapId() << " ";
                         break;
                     case FIRE:
-                        file << ((Fire*)(*it))->getDamageTickTime() << " " << ((Fire*)(*it))->getDamagePerTick() << " ";
+                        file << " " << ((Fire*)(*it))->getDamagePerTick() << " ";
                         break;
 
                     default:
@@ -526,7 +536,7 @@ void Map::save(std::ofstream & file)
 void Map::load(std::ifstream & file)
 {
     if(!c_Map.empty())
-        std::cerr << "Une map est déjà chargé, nous ne pouvons pas en charger une autre par dessus" << "\n";
+        std::cerr << "Une map est dÃ©jÃ  chargÃ©, nous ne pouvons pas en charger une autre par dessus" << "\n";
 
     std::string type;
     do
@@ -538,7 +548,7 @@ void Map::load(std::ifstream & file)
             uint16_t nbrC, nbrL;
             file >> nbrC >> nbrL; // nbrOfCol, nbrOfLin
 
-            for(uint16_t i = 0; i < nbrC; i++) // créer une map de cases vide
+            for(uint16_t i = 0; i < nbrC; i++) // crÃ©er une map de cases vide
             { // colonnes
                 c_Map.push_back(std::vector < Cell *>());
                 for(uint16_t j = 0; j < nbrL; j++) // lignes
@@ -588,8 +598,8 @@ void Map::load(std::ifstream & file)
                         {
                             uint16_t dmgPerTick;
                             float dmgTickTime;
-                            file >> dmgTickTime >> dmgPerTick;
-                            Fire * fire = new Fire(dmgTickTime, dmgPerTick);
+                            file >> dmgPerTick;
+                            Fire * fire = new Fire(dmgPerTick);
                             addObstacle(fire, i, j);
                         }break;
 
@@ -704,7 +714,7 @@ void Map::expandEntity(EntityTypeId id, Cell * cell, float expandValue)
 
     bool eTable[4];
     for(uint16_t i = 0; i < 4; i++)
-        eTable[i] = true; // l'expansion sur la cellule i va bien être effectuée
+        eTable[i] = true; // l'expansion sur la cellule i va bien Ãªtre effectuÃ©e
 
     if(expandValue < 1)
     {
@@ -882,7 +892,7 @@ void Map::standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i target
     sf::Vector2i mapCalculCol; // dimensions pour les calculs de voisins
     sf::Vector2i mapCalculLine;
 
-    // verification que les cells peuvent bien être dans la taille de la map
+    // verification que les cells peuvent bien Ãªtre dans la taille de la map
     if(targetColumns.x <= 0) { targetColumns.x = 0; mapCalculCol.x = targetColumns.x; }
     else mapCalculCol.x = targetColumns.x - 1;
     if(targetLines.x <= 0) { targetLines.x = 0; mapCalculLine.x = targetLines.x; }
@@ -892,14 +902,14 @@ void Map::standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i target
     if(targetLines.y >= getNbrLine()-1) { targetLines.y = getNbrLine()-1; mapCalculLine.y = targetLines.y; }
     else mapCalculLine.y = targetLines.y + 1;
 
-    std::vector< std::vector< bool > > idMap(getNbrColumn(), std::vector< bool >(getNbrLine())); // tableau booléen donnant les cell possédant l'id
+    std::vector< std::vector< bool > > idMap(getNbrColumn(), std::vector< bool >(getNbrLine())); // tableau boolÃ©en donnant les cell possÃ©dant l'id
     std::vector< std::vector< uint16_t > > neighbourMap(getNbrColumn(), std::vector< uint16_t >(getNbrLine())); // tableau du nombre de voisins par case
 
     for(uint16_t i = mapCalculCol.x; i <= mapCalculCol.y; i++)
-    { // on standardize sur les colonnes et lines données en paramêtre
+    { // on standardize sur les colonnes et lines donnÃ©es en paramÃªtre
         for(uint16_t j = mapCalculLine.x; j <= mapCalculLine.y; j++)
         {
-            idMap[i][j] = false; // initialisation à false
+            idMap[i][j] = false; // initialisation Ã  false
             neighbourMap[i][j] = 8 - 3 * (i == 0 || i == getNbrColumn()-1) - 3 * (j == 0 || j == getNbrLine()-1)
             + 1 * ((i == 0 && j == 0) || (i == getNbrColumn()-1 && j == getNbrLine()-1) || (i == 0 && j == getNbrLine()-1) || (i == getNbrColumn()-1 && j == 0));
 
@@ -920,16 +930,16 @@ void Map::standardize(EntityTypeId id, uint16_t switchFloor, sf::Vector2i target
     {
         for(uint16_t j = targetLines.x; j <= targetLines.y; j++)
         {
-            if(!idMap[i][j]) // si on est pas du type à harmoniser
+            if(!idMap[i][j]) // si on est pas du type Ã  harmoniser
             {
                 uint16_t nbrNeighbourId = 0;
                 for(int16_t x = -1; x <= 1; x++)
                     for(int16_t y = -1; y <= 1; y++)
                         if(i+x >= 0 && j+y >= 0 && i+x < getNbrColumn() && j+y < getNbrLine())
                             if(idMap[i+x][j+y])
-                                nbrNeighbourId++; // on compte le nbr de voisin du type à harmoniser
+                                nbrNeighbourId++; // on compte le nbr de voisin du type Ã  harmoniser
 
-                if(nbrNeighbourId >= round(switchFloor / 8.f * neighbourMap[i][j])) // si il y a plus de voisin du type à harmoniser que un ratio des cells voisines
+                if(nbrNeighbourId >= round(switchFloor / 8.f * neighbourMap[i][j])) // si il y a plus de voisin du type Ã  harmoniser que un ratio des cells voisines
                 {
                      if(addObstacleOnCell(id, getCell(i, j)))
                      {
@@ -959,7 +969,7 @@ std::vector< std::vector< Cell * > > Map::getTypesGroups(std::map< EntityTypeId,
                 if(typesToNotCheck[(*it)->getEntityTypeId()])
                 {
                     toCheck = false;
-                    break; // on arrête de chercher si il y a un seul noToCheck
+                    break; // on arrÃªte de chercher si il y a un seul noToCheck
                 }
                 if(typesToCheck[(*it)->getEntityTypeId()])
                     toCheck = true;
@@ -1003,7 +1013,7 @@ void Map::fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std:
             continue; // on ne modifie pas le groupe de cells le plus grand
 
         std::map< EntityTypeId, uint16_t > typesNbr; // nombre de cells entourantes pour chaque type
-        std::map< uint16_t, std::map< uint16_t, bool > > neighbourChecked; // cells autour du groupe deja checkée
+        std::map< uint16_t, std::map< uint16_t, bool > > neighbourChecked; // cells autour du groupe deja checkÃ©e
         for(uint16_t j = 0; j < cellsGroups[i].size(); j++)
         {
             Cell * cell = cellsGroups[i][j];
@@ -1020,7 +1030,7 @@ void Map::fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std:
                         it  != neighbours[k]->getObstacles().end();  it++)
                     {
                         if(!typesToCheck[(*it)->getEntityTypeId()])
-                        { // ça doit être un type différent de ce que l'on a cherché pour faire les groupes
+                        { // Ã§a doit Ãªtre un type diffÃ©rent de ce que l'on a cherchÃ© pour faire les groupes
                             if(typesNbr[(*it)->getEntityTypeId()])
                                 typesNbr[(*it)->getEntityTypeId()]++;
                             else
@@ -1031,7 +1041,7 @@ void Map::fillSeparatedCells(std::map< EntityTypeId, bool > & typesToCheck, std:
                 }
             }
         }
-        EntityTypeId idMaxObstacles; // id de l'obstacle avec le plus présence autour du groupe
+        EntityTypeId idMaxObstacles; // id de l'obstacle avec le plus prÃ©sence autour du groupe
         uint16_t nbrMaxObstacles = 0; // nbr d'obstacles
         for(std::map< EntityTypeId, uint16_t >::const_iterator it = typesNbr.begin();
                 it != typesNbr.end(); it++)
@@ -1076,13 +1086,13 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
     c_Map[c][l]->setLiving(li); // on donne son Id de joueur
     li->moveTo(c, l, c_CellSize);
 
-    Cell * lastCell = getCell(aC, aL); // gestion des events de sortie sur la cell ou l'on était
+    Cell * lastCell = getCell(aC, aL); // gestion des events de sortie sur la cell ou l'on Ã©tait
     for(std::list< Obstacle * >::const_iterator it = lastCell->getObstacles().begin(); it != lastCell->getObstacles().end(); ++it)
     {
         (*it)->lastStepAction(this, li);
     }
 
-    Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
+    Cell * cell = getCell(c, l); // gestion des events d'entrÃ© sur la nouvelle cell
     for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
     {
         (*it)->firstStepAction(this, li);
@@ -1162,7 +1172,7 @@ void Map::pathMap(std::vector < std::vector < int16_t > > * distMap, const std::
     for(uint16_t i = 0; i < actualCs.size(); i++)
     {
         std::vector< const Cell * > neigbours;
-        neigbours.push_back(getRCell(actualCs[i])); // les quatres cells adjacentes de chaques cellules ajoutées précédement
+        neigbours.push_back(getRCell(actualCs[i])); // les quatres cells adjacentes de chaques cellules ajoutÃ©es prÃ©cÃ©dement
         neigbours.push_back(getLCell(actualCs[i]));
         neigbours.push_back(getDCell(actualCs[i]));
         neigbours.push_back(getUCell(actualCs[i]));
@@ -1370,7 +1380,7 @@ std::vector < Cell *> Map::getCellsOnLineOfSight(Cell * c1, Cell * c2) const
 
                 if(((kLT <= 0 || kLT >= 1) || (iLT <= 0 || iLT >= 1)) && ((kRT <= 0 || kRT >= 1) || (iRT <= 0 || iRT >= 1))
                    && ((kRB <= 0 || kRB >= 1) || (iRB <= 0 || iRB >= 1)) && ((kLB <= 0 || kLB >= 1) || (iLB <= 0 || iLB >= 1)))
-                    continue; // si pas de collision entre la ligne de vue et la cellule on passe à la suivante
+                    continue; // si pas de collision entre la ligne de vue et la cellule on passe Ã  la suivante
                 cells.push_back(getCell(i, j)); // sinon ajout au cellules sur la ligne de vue
             }
         }
