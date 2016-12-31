@@ -162,12 +162,15 @@ void Game::loop()
             }
         }
 
-        static float fpsValue = 0;
+        static float fpsValue = 1;
         { // event managing
             if(c_NbrLoops % 50 == 2)
                 fpsValue = c_GameClock.getElapsedTime().asSeconds();
 
-            update(c_GameClock.restart());
+            if(c_GameClock.getElapsedTime().asSeconds() < 1.f/5)
+                update(c_GameClock.restart());
+            else
+                c_GameClock.restart();
 
             eventManage();
             deathManage();

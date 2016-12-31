@@ -188,6 +188,10 @@ bool Map::addMonster(Monster * m, uint16_t c, uint16_t l)
         c_Livings.push_back(m);
         m->setPosition(c, l, c_CellSize);
 
+        Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
+        for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
+            (*it)->firstStepAction(this, m);
+
         return true;
     }
     return false;
@@ -206,6 +210,10 @@ bool Map::addCharacter(Character * cha, uint16_t c, uint16_t l)
         c_Characters.push_back(cha);
         c_Livings.push_back(cha);
         cha->setPosition(c, l, c_CellSize);
+
+        Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
+        for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
+            (*it)->firstStepAction(this, cha);
 
         return true;
     }
@@ -1125,15 +1133,11 @@ void Map::moveLiving(Living * li, uint16_t c, uint16_t l)
 
     Cell * lastCell = getCell(aC, aL); // gestion des events de sortie sur la cell ou l'on était
     for(std::list< Obstacle * >::const_iterator it = lastCell->getObstacles().begin(); it != lastCell->getObstacles().end(); ++it)
-    {
         (*it)->lastStepAction(this, li);
-    }
 
     Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
     for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
-    {
         (*it)->firstStepAction(this, li);
-    }
 }
 void Map::sideStepLiving(Living * li, uint16_t c, uint16_t l)
 {
