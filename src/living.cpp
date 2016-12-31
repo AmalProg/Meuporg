@@ -40,6 +40,8 @@ void Living::update(const sf::Time & elapsed)
         }
         c_Sprite.move(moveOnX, moveOnY);
     }
+    else
+        c_SmoothMoveTime = sf::Time::Zero;
 }
 
 void Living::moveTo(uint16_t i, uint16_t j, uint16_t cellSize)

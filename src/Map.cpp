@@ -75,7 +75,7 @@ void Map::moveMap()
 
     if(posX >= c_Map.size() * c_CellSize - c_View.getSize().x/2)
     {
-        if(c_PosToTransit.x != (c_Map.size() * c_CellSize - c_View.getSize().x/2))
+        if(round(c_PosToTransit.x) != round(c_Map.size() * c_CellSize - c_View.getSize().x/2))
         {
             c_PosToTransit.x = (c_Map.size() * c_CellSize - c_View.getSize().x/2); // place la map a droite
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -83,7 +83,7 @@ void Map::moveMap()
     }
     else if(posX <= c_View.getSize().x/2)
     {
-        if(c_PosToTransit.x != c_View.getSize().x/2)
+        if(round(c_PosToTransit.x) != round(c_View.getSize().x/2))
         {
             c_PosToTransit.x = c_View.getSize().x/2; // place la map a gauche
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -91,7 +91,7 @@ void Map::moveMap()
     }
     else if(posX != c_View.getCenter().x)
     {
-        if(c_PosToTransit.x != posX)
+        if(round(c_PosToTransit.x) != round(posX))
         {
             c_PosToTransit.x = posX; // centre la map sur le joueur focus
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -105,7 +105,7 @@ void Map::moveMap()
 
     if(posY >= c_Map[0].size() * c_CellSize - c_View.getSize().y/2)
     {
-        if(c_PosToTransit.y != (c_Map[0].size() * c_CellSize - c_View.getSize().y/2))
+        if(round(c_PosToTransit.y) != round(c_Map[0].size() * c_CellSize - c_View.getSize().y/2))
         {
             c_PosToTransit.y = (c_Map[0].size() * c_CellSize - c_View.getSize().y/2); // place la map en bas
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -113,7 +113,7 @@ void Map::moveMap()
     }
     else if(posY <= c_View.getSize().y/2)
     {
-        if(c_PosToTransit.y != c_View.getSize().y/2)
+        if(round(c_PosToTransit.y) != round(c_View.getSize().y/2))
         {
             c_PosToTransit.y = c_View.getSize().y/2; // place la map en haut
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -121,7 +121,7 @@ void Map::moveMap()
     }
     else if(posY != c_View.getCenter().y)
     {
-        if(c_PosToTransit.y != posY)
+        if(round(c_PosToTransit.y) != round(posY))
         {
             c_PosToTransit.y = posY; // centre la map sur le joueur focus
             c_PosBefTransit = sf::Vector2f(c_View.getCenter().x, c_View.getCenter().y);
@@ -356,6 +356,8 @@ void Map::update(const sf::Time & elapsed)
         }
         c_View.move(moveOnX, moveOnY);
     }
+    else
+        c_SmoothMoveTime = sf::Time::Zero;
 }
 
 void Map::generateMap(const GenInfo & genInfos, uint16_t nbrC, uint16_t nbrL)
