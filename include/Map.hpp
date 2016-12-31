@@ -35,8 +35,9 @@ class Map
         ~Map();
 
         void moveMap(); // déplace la map en fonction du focus sur la vue
-        void moveLiving(Living * p, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
-        void setFocus(Living * p);
+        void moveLiving(Living * li, uint16_t c, uint16_t l); // déplace le joueur sur la case donnée
+        void sideStepLiving(Living * li, uint16_t c, uint16_t l);
+        void setFocus(Living * li);
         void draw();
         void update(const sf::Time & elapsed);
 

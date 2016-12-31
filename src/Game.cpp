@@ -554,35 +554,48 @@ void Game::eventManage()
     }
 
     sf::Keyboard keyboard;
+    sf::Mouse mouse;
 
     if(!c_Menu.isShowingInventory() && !c_Menu.isShowingLootBag())
     {
         if(keyboard.isKeyPressed(sf::Keyboard::Z))
         {
-            if(c_Player->getDirection() != UP)
+            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == LEFT
+               || c_Player->getDirection() == RIGHT))
+                movePlayer(c_Player, UP);
+            else if(c_Player->getDirection() != UP)
                 c_Player->setDirection(UP);
-            if(c_Player->isMoveable())
+            else if(c_Player->isMoveable())
                movePlayer(c_Player, UP);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::S))
         {
-            if(c_Player->getDirection() != DOWN)
+            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == LEFT
+               || c_Player->getDirection() == RIGHT))
+                movePlayer(c_Player, DOWN);
+            else if(c_Player->getDirection() != DOWN)
                 c_Player->setDirection(DOWN);
-            if(c_Player->isMoveable())
+            else if(c_Player->isMoveable())
                 movePlayer(c_Player, DOWN);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::Q))
         {
-            if(c_Player->getDirection() != LEFT)
+            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == UP
+               || c_Player->getDirection() == DOWN))
+                movePlayer(c_Player, LEFT);
+            else if(c_Player->getDirection() != LEFT)
                 c_Player->setDirection(LEFT);
-            if(c_Player->isMoveable())
+            else if(c_Player->isMoveable())
                 movePlayer(c_Player, LEFT);
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::D))
         {
-            if(c_Player->getDirection() != RIGHT)
+            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == UP
+               || c_Player->getDirection() == DOWN))
+                movePlayer(c_Player, RIGHT);
+            else if(c_Player->getDirection() != RIGHT)
                 c_Player->setDirection(RIGHT);
-            if(c_Player->isMoveable())
+            else if(c_Player->isMoveable())
                 movePlayer(c_Player, RIGHT);
         }
 
