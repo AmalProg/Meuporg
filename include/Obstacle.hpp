@@ -27,11 +27,11 @@ class Obstacle : public Entity
         bool isAttackBlocking() const { return c_AttackBlocking; }
 
         virtual void realTimeAction(Map * m, Player * p) {} // activé dans diverses cas en fonction de positions de certains objets etc ...
-        virtual void speakAction(Map * mape, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
-        virtual void touchAction(Map * mape, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
-        virtual void walkAction(Map * mape, Living * l) {} // activé lorsqu'on marche sur l'obstacle
-        virtual void firstStepAction(Map * mape, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
-        virtual void lastStepAction(Map * mape, Living * l) {} // activé lorsqu'on sort juste de la cell
+        virtual void speakAction(Map * m, Player * p) {} // activé si l'on essaye de "parler" a l'obstacle
+        virtual void touchAction(Map * m, Player * p) {} // activé lorsqu'on essaye de marcher sur l'obstacle
+        virtual void walkAction(Map * m, Living * l) {} // activé lorsqu'on marche sur l'obstacle
+        virtual void firstStepAction(Map * m, Living * l) {} // activé lorsqu'on pose notre premier pas sur la cell
+        virtual void lastStepAction(Map * m, Living * l) {} // activé lorsqu'on sort juste de la cell
 
     protected:
         bool c_Walkable; // peut on marcher dessus ?
@@ -71,13 +71,39 @@ private:
 class Sand : public Obstacle
 {
 public:
-    Sand(const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(SAND, pos, true, false, false, false, true)
+    Sand(EntityTypeId typeId = SAND, const sf::Vector2f & pos = sf::Vector2f(0, 0)) : Obstacle(typeId, pos, true, false, false, false, true)
     {
         c_Sprite.setTextureRect(sf::IntRect(1024, 0, 512, 512));
     }
 
-    virtual void firstStepAction(Map * mape, Living * l) { l->setSpeed(l->getSpeed() * 0.5); }
-    virtual void lastStepAction(Map * mape, Living * l) { l->setSpeed(l->getSpeed() * 2); }
+    virtual void firstStepAction(Map * m, Living * l) { l->setSpeed(l->getSpeed() * 0.5); }
+    virtual void lastStepAction(Map * m, Living * l) { l->setSpeed(l->getSpeed() * 2); }
+};
+
+class QuickSand : public Sand
+{
+public:
+    QuickSand(uint16_t damagePerTick = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
+    : Sand(QUICKSAND, pos), c_DamagePerTick(damagePerTick)
+    {
+        c_Sprite.setColor(sf::Color(200, 200, 0));
+    }
+
+    static void updateTick(const sf::Time & elapsed);
+
+    virtual void walkAction(Map * m, Living * l);
+    virtual void firstStepAction(Map * m, Living * l);
+
+private:
+    static std::map< uint32_t, sf::Time > c_StepTimes;
+    static std::map< uint32_t, bool > c_AreStepping;
+    static float c_TimeToGetStuck;
+
+    static std::map< uint32_t, sf::Time > c_LastTickTime; // temps écoulé depuis le denrier tick
+    static float c_DamageTickTime; // temps entre chaque tick de dégats
+    static std::map< uint32_t, bool > c_Ticking;
+
+    uint16_t c_DamagePerTick;
 };
 
 class Soil : public Obstacle
@@ -92,7 +118,6 @@ public:
 class Fire : public Obstacle
 {
 public:
-
     Fire(uint16_t damageDealt = 5, const sf::Vector2f & pos = sf::Vector2f(0, 0))
     : Obstacle(FIRE, pos, true, false, false, true, false), c_DamagePerTick(damageDealt),
         c_Rect(0.20, true)
@@ -106,7 +131,7 @@ public:
     void update(const sf::Time & elapsed);
     static void updateTick(const sf::Time & elapsed);
 
-    virtual void walkAction(Map * mape, Living * l);
+    virtual void walkAction(Map * m, Living * l);
 
     float getDamageTickTime() const { return c_DamageTickTime; }
     uint16_t getDamagePerTick() const { return c_DamagePerTick; }
@@ -135,8 +160,8 @@ class Door : public Obstacle
 public:
     Door(bool isOpen = false, EntityTypeId typeId = DOOR, const sf::Vector2f & pos = sf::Vector2f(0, 0));
 
-    virtual void speakAction(Map * mape, Player * p);
-    virtual void touchAction(Map * mape, Player * p);
+    virtual void speakAction(Map * m, Player * p);
+    virtual void touchAction(Map * m, Player * p);
 
     bool isOpen() const { return c_IsOpen; }
     void setOpen(bool isOpen) { c_IsOpen = isOpen; }
@@ -154,8 +179,8 @@ public:
         c_Sprite.setTextureRect(sf::IntRect(512, 1536, 512, 512));
     }
 
-    virtual void touchAction(Map * mape, Player * p);
-    virtual void speakAction(Map * mape, Player * p);
+    virtual void touchAction(Map * m, Player * p);
+    virtual void speakAction(Map * m, Player * p);
 
     bool isLocked() const { return c_IsLocked; }
     void setLock(bool isLocked) { c_IsLocked = isLocked; }
@@ -174,7 +199,7 @@ public:
         c_Sprite.setTextureRect(sf::IntRect(1024, 1536, 512, 512));
     }
 
-    virtual void firstStepAction(Map * mape, Living * l)
+    virtual void firstStepAction(Map * m, Living * l)
     {
         if(l->getEntityTypeId() == PLAYER)
             c_IsActivated = true;

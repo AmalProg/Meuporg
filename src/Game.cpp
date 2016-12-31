@@ -26,7 +26,8 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
     genInfo.addObstacleInfos(SOIL, 7.5, 1);
-    genInfo.addObstacleInfos(SAND, 3.25, 2);
+    //genInfo.addObstacleInfos(SAND, 3.25, 2);
+    genInfo.addObstacleInfos(QUICKSAND, 3.25, 2);
     genInfo.addObstacleInfos(ROCK, 2.5, 2);
     genInfo.addObstacleInfos(ROCK, 3.25, 4);
     genInfo.addObstacleInfos(ROCK, 7.5, 2);
@@ -479,6 +480,7 @@ bool Game::movePlayer(Player * p, Direction d)
 
 void Game::update(const sf::Time & elapsed)
 {
+    QuickSand::updateTick(elapsed);
     Fire::updateTick(elapsed);
     c_Map->update(elapsed);
 }

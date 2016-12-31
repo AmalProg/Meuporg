@@ -819,6 +819,9 @@ void Map::setObstacleOnCell(EntityTypeId id, Cell * cell)
     case SAND:
         addObstacle(new Sand(), c, l);
         break;
+    case QUICKSAND:
+        addObstacle(new QuickSand(), c, l);
+        break;
     case SOIL:
         addObstacle(new Soil(), c, l);
         break;
@@ -867,6 +870,13 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
             return true;
         }
         break;
+    case QUICKSAND:
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        {
+            addObstacle(new QuickSand(), c, l);
+            return true;
+        }
+        break;
     case SOIL:
         if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
         {
@@ -875,7 +885,7 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
         }
         break;
     case FIRE:
-        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() != WATER)
+        if(!cell->isFilled() && cell->getCover()->getEntityTypeId() != WATER)
         {
             addObstacle(new Fire(), c, l);
             return true;
