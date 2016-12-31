@@ -101,7 +101,6 @@ private:
 
     static std::map< uint32_t, sf::Time > c_LastTickTime; // temps écoulé depuis le denrier tick
     static float c_DamageTickTime; // temps entre chaque tick de dégats
-    static std::map< uint32_t, bool > c_Ticking;
 
     uint16_t c_DamagePerTick;
 };
@@ -132,6 +131,7 @@ public:
     static void updateTick(const sf::Time & elapsed);
 
     virtual void walkAction(Map * m, Living * l);
+    virtual void firstStepAction(Map * m, Living * l);
 
     float getDamageTickTime() const { return c_DamageTickTime; }
     uint16_t getDamagePerTick() const { return c_DamagePerTick; }
@@ -139,9 +139,8 @@ public:
 private:
     MovingTexture c_Rect;
 
-    static sf::Time c_LastTickTime; // temps écoulé depuis le denrier tick
+    static std::map< uint32_t, sf::Time > c_LastTickTime; // temps écoulé depuis le denrier tick
     static float c_DamageTickTime; // temps entre chaque tick de dégats
-    static bool c_Ticking;
 
     uint16_t c_DamagePerTick;
 };

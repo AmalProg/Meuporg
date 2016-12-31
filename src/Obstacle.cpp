@@ -10,10 +10,9 @@ Obstacle::Obstacle(EntityTypeId typeId, const sf::Vector2f & pos, bool walkable,
 /***/
 std::map< uint32_t, sf::Time > QuickSand::c_StepTimes;
 std::map< uint32_t, bool > QuickSand::c_AreStepping;
-float QuickSand::c_TimeToGetStuck = 1.f;
+float QuickSand::c_TimeToGetStuck = 2.f;
 std::map< uint32_t, sf::Time > QuickSand::c_LastTickTime;
 float QuickSand::c_DamageTickTime = 0.5;
-std::map< uint32_t, bool > QuickSand::c_Ticking;
 void QuickSand::updateTick(const sf::Time & elapsed)
 {
     for(std::map< uint32_t, sf::Time >::iterator it = c_StepTimes.begin(); it != c_StepTimes.end(); it++)
@@ -30,13 +29,7 @@ void QuickSand::updateTick(const sf::Time & elapsed)
     {
         if((*it).second.asSeconds() >= c_TimeToGetStuck)
         {
-            c_LastTickTime[(*it).first] += elapsed;
-            c_Ticking[(*it).first] = false;
-            if(c_LastTickTime[(*it).first].asSeconds() >= c_DamageTickTime)
-            {
-                c_Ticking[(*it).first] = true;
-                c_LastTickTime[(*it).first] = sf::Time::Zero;
-            }
+            c_LastTickTime[(*it).first] -= elapsed;
         }
     }
 }
@@ -50,8 +43,9 @@ void QuickSand::walkAction(Map * m, Living * l)
 {
     c_AreStepping[l->getEntityId()] = true;
 
-    if(c_Ticking[l->getEntityId()])
+    if(c_LastTickTime[l->getEntityId()].asSeconds() <= 0)
     {
+        c_LastTickTime[l->getEntityId()] = sf::seconds(c_DamageTickTime);
         l->takeDamages(c_DamagePerTick);
         std::cout << "QuickSand made " << c_DamagePerTick << " damages done on " << l->getName() << "\n";
     }
@@ -62,26 +56,27 @@ void Fire::update(const sf::Time & elapsed)
     c_Rect.update(elapsed);
     c_Sprite.setTextureRect(c_Rect.getRect());
 }
-sf::Time Fire::c_LastTickTime;
+std::map< uint32_t, sf::Time > Fire::c_LastTickTime;
 float Fire::c_DamageTickTime = 0.5;
-bool Fire::c_Ticking = false;
 void Fire::updateTick(const sf::Time & elapsed)
 {
-    c_LastTickTime += elapsed;
-    c_Ticking = false;
-    if(c_LastTickTime.asSeconds() >= c_DamageTickTime)
+    for(std::map< uint32_t, sf::Time >::iterator it = c_LastTickTime.begin(); it != c_LastTickTime.end(); it++)
     {
-        c_Ticking = true;
-        c_LastTickTime = sf::Time::Zero;
+        c_LastTickTime[(*it).first] -= elapsed;
     }
 }
 void Fire::walkAction(Map * m, Living * l)
 {
-    if(c_Ticking)
+    if(c_LastTickTime[l->getEntityId()].asSeconds() <= 0)
     {
+        c_LastTickTime[l->getEntityId()] = sf::seconds(c_DamageTickTime);
         l->takeDamages(c_DamagePerTick);
         std::cout << "Fire made " << c_DamagePerTick << " damages done on " << l->getName() << "\n";
     }
+}
+void Fire::firstStepAction(Map * m, Living * l)
+{
+    c_LastTickTime[l->getEntityId()]; // crée un imer pour ce Living si il n'existe pas déjà
 }
 /***/
 Door::Door(bool isOpen, EntityTypeId typeId, const sf::Vector2f & pos)
