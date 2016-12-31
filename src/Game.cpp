@@ -13,7 +13,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
 
     c_Map = new Map(app, app.getSize().x / c_NbrCellsToDraw);
     c_Maps.push_back(c_Map);
-    c_Player = new Player("Amal", 100, UP, 5.0);
+    c_Player = new Player("Amal", 100, UP, 7.5);
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
@@ -26,7 +26,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     genInfo.addObstacleInfos(GRASS, 0, -1);
     genInfo.addObstacleInfos(WATER, 7.5, 1);
     genInfo.addObstacleInfos(SOIL, 7.5, 1);
-    //genInfo.addObstacleInfos(SAND, 3.25, 2);
+    genInfo.addObstacleInfos(SAND, 3.25, 2);
     genInfo.addObstacleInfos(QUICKSAND, 3.25, 2);
     genInfo.addObstacleInfos(ROCK, 2.5, 2);
     genInfo.addObstacleInfos(ROCK, 3.25, 4);

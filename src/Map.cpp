@@ -17,8 +17,8 @@ std::string nbrToString(float nbr)
 
 Map::Map(sf::RenderWindow & a, uint16_t cellSize, uint32_t mapId) : app(a), c_CellSize(cellSize)
 {
-    c_View.setViewport(sf::FloatRect(0, 0.1, 1, 0.901)); // 0.901 : il manque 1 pix autrement ....
-    c_View.setSize(app.getSize().x, app.getSize().y * 0.901);
+    c_View.setViewport(sf::FloatRect(0, 0.1f, 1, 0.9f)); // 0.901 : il manque 1 pix autrement ....
+    c_View.setSize(app.getSize().x, app.getSize().y * 0.9f);
 
     if(mapId == 0)
     {
@@ -40,9 +40,9 @@ c_CellSize(cellSize)
             c_Map[i].push_back(new Cell(i, j));
     }
 
-    c_View.setViewport(sf::FloatRect(0, 0.1, 1, 0.901)); // 0.901 : il manque 1 pix autrement ....
+    c_View.setViewport(sf::FloatRect(0, 0.1, 1, 0.9)); // 0.901 : il manque 1 pix autrement ....
     c_View.setCenter(sf::Vector2f(nbrC * cellSize / 2, nbrL * cellSize / 2));
-    c_View.setSize(app.getSize().x, app.getSize().y * 0.901);
+    c_View.setSize(app.getSize().x, app.getSize().y * 0.9);
 
     if(mapId == 0)
     {
@@ -213,7 +213,10 @@ bool Map::addCharacter(Character * cha, uint16_t c, uint16_t l)
 
         Cell * cell = getCell(c, l); // gestion des events d'entré sur la nouvelle cell
         for(std::list< Obstacle * >::const_iterator it = cell->getObstacles().begin(); it != cell->getObstacles().end(); ++it)
-            (*it)->firstStepAction(this, cha);
+        {
+            if((*it)->getEntityTypeId() != STAIRS)
+                (*it)->firstStepAction(this, cha);
+        }
 
         return true;
     }
@@ -864,7 +867,8 @@ bool Map::addObstacleOnCell(EntityTypeId id, Cell * cell)
         }
         break;
     case SAND:
-        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS)
+        if(!cell->isCovered() || cell->getCover()->getEntityTypeId() == GRASS
+           || cell->getCover()->getEntityTypeId() == SAND)
         {
             addObstacle(new Sand(), c, l);
             return true;
