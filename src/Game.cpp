@@ -565,43 +565,63 @@ void Game::eventManage()
     {
         if(keyboard.isKeyPressed(sf::Keyboard::Z))
         {
-            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == LEFT
-               || c_Player->getDirection() == RIGHT))
-                movePlayer(c_Player, UP);
-            else if(c_Player->getDirection() != UP)
-                c_Player->setDirection(UP);
+            if(mouse.isButtonPressed(sf::Mouse::Right))
+            {
+                if(c_Player->getDirection() != DOWN)
+                    movePlayer(c_Player, UP);
+            }
             else if(c_Player->isMoveable())
-               movePlayer(c_Player, UP);
+            {
+                if(c_Player->getDirection() != UP)
+                    c_Player->setDirection(UP);
+                else
+                   movePlayer(c_Player, UP);
+            }
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::S))
         {
-            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == LEFT
-               || c_Player->getDirection() == RIGHT))
-                movePlayer(c_Player, DOWN);
-            else if(c_Player->getDirection() != DOWN)
-                c_Player->setDirection(DOWN);
+            if(mouse.isButtonPressed(sf::Mouse::Right))
+            {
+                if(c_Player->getDirection() != UP)
+                    movePlayer(c_Player, DOWN);
+            }
             else if(c_Player->isMoveable())
-                movePlayer(c_Player, DOWN);
+            {
+                if(c_Player->getDirection() != DOWN)
+                    c_Player->setDirection(DOWN);
+                else
+                    movePlayer(c_Player, DOWN);
+            }
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::Q))
         {
-            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == UP
-               || c_Player->getDirection() == DOWN))
-                movePlayer(c_Player, LEFT);
-            else if(c_Player->getDirection() != LEFT)
-                c_Player->setDirection(LEFT);
+            if(mouse.isButtonPressed(sf::Mouse::Right))
+            {
+                if(c_Player->getDirection() != RIGHT)
+                    movePlayer(c_Player, LEFT);
+            }
             else if(c_Player->isMoveable())
-                movePlayer(c_Player, LEFT);
+            {
+                if(c_Player->getDirection() != LEFT)
+                c_Player->setDirection(LEFT);
+                else
+                    movePlayer(c_Player, LEFT);
+            }
         }
         else if(keyboard.isKeyPressed(sf::Keyboard::D))
         {
-            if(mouse.isButtonPressed(sf::Mouse::Right) && (c_Player->getDirection() == UP
-               || c_Player->getDirection() == DOWN))
-                movePlayer(c_Player, RIGHT);
-            else if(c_Player->getDirection() != RIGHT)
-                c_Player->setDirection(RIGHT);
+            if(mouse.isButtonPressed(sf::Mouse::Right))
+            {
+                if(c_Player->getDirection() != LEFT)
+                    movePlayer(c_Player, RIGHT);
+            }
             else if(c_Player->isMoveable())
-                movePlayer(c_Player, RIGHT);
+            {
+                if(c_Player->getDirection() != RIGHT)
+                    c_Player->setDirection(RIGHT);
+                else
+                    movePlayer(c_Player, RIGHT);
+            }
         }
 
         for(uint16_t i = 0; i < NBRSLOT; ++i)
