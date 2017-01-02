@@ -29,25 +29,31 @@ std::list< Cell * > Item::getTargetableCells(const Map * m, const Living * liv, 
 
 void Item::initItems()
 {
-    c_Items[HEALPOTION] = new Item(HEALPOTION, "Heal Potion", CONSUMABLE, 1, 0, true, false, AOE, 0.2);
-    c_Items[HEALPOTION]->addEffect(EffectStats(HEAL, 5, 0, 0));
-
     c_Items[WOODENSWORD] = new Item(WOODENSWORD, "WoodSword", EQUIPMENT, 1, 1, true, true, LINE, 0.5);
-    c_Items[WOODENSWORD]->addEffect(EffectStats(DAMAGE, 5, 0, 0));
+    c_Items[WOODENSWORD]->addEffect(Effect(DAMAGE, 5, 0, 0));
 
     c_Items[STONESWORD] = new Item(STONESWORD, "StoneSword", EQUIPMENT, 1, 1, true, true, LINE, 0.7);
-    c_Items[STONESWORD]->addEffect(EffectStats(DAMAGE, 10, 0, 0));
+    c_Items[STONESWORD]->addEffect(Effect(DAMAGE, 10, 0, 0));
 
     c_Items[LONGSWORD] = new Item(LONGSWORD, "LongSword", EQUIPMENT, 2, 1, true, true, LINE, 1.2);
-    c_Items[LONGSWORD]->addEffect(EffectStats(DAMAGE, 10, 0, 0));
+    c_Items[LONGSWORD]->addEffect(Effect(DAMAGE, 10, 0, 0));
 
-    c_Items[GRENADE] = new Item(GRENADE, "Grenade", CONSUMABLE, 3, 0, true, false, AOE, 1.0);
-    c_Items[GRENADE]->addEffect(EffectStats(DAMAGE, 10, 2, 0));
+    c_Items[HEALPOTION1] = new Item(HEALPOTION1, "Heal Potion 1", CONSUMABLE, 1, 0, true, false, AOE, 0.2);
+    c_Items[HEALPOTION1]->addEffect(Effect(HEAL, 5, 0, 0));
+    c_Items[HEALPOTION2] = new Item(HEALPOTION2, "Heal Potion 2", CONSUMABLE, 2, 0, true, false, AOE, 0.75);
+    c_Items[HEALPOTION2]->addEffect(Effect(HEAL, 30, 0, 0));
+    c_Items[HEALPOTION3] = new Item(HEALPOTION3, "Heal Potion 3", CONSUMABLE, 2, 0, true, false, AOE, 2.0);
+    c_Items[HEALPOTION3]->addEffect(Effect(HEAL, 100, 1, 0));
+
+    c_Items[DAMAGEPOTION1] = new Item(DAMAGEPOTION1, "Damage Potion 1", CONSUMABLE, 3, 0, true, false, AOE, 5.0);
+    c_Items[DAMAGEPOTION1]->addEffect(Effect(DAMAGE, 10, 1, 0));
+    c_Items[DAMAGEPOTION2] = new Item(DAMAGEPOTION2, "Damage Potion 2", CONSUMABLE, 4, 0, true, false, AOE, 5.0);
+    c_Items[DAMAGEPOTION2]->addEffect(Effect(DAMAGE, 50, 1, 0));
+    c_Items[DAMAGEPOTION3] = new Item(DAMAGEPOTION3, "Damage Potion 3", CONSUMABLE, 4, 0, true, false, AOE, 5.0);
+    c_Items[DAMAGEPOTION3]->addEffect(Effect(DAMAGE, 100, 2, 0));
 
     c_Items[KEY] = new Item(KEY, "Key", TOOL);
-
-    c_Items[CRAP] = new Item(CRAP, "Crap", TOOL);
-
+    c_Items[BONE] = new Item(BONE, "Bone", TOOL);
     c_Items[TEETH] = new Item(TEETH, "Teeth", TOOL);
 }
 

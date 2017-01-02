@@ -26,7 +26,7 @@ class Game
         void load(const std::string & fileName);
 
         bool movePlayer(Player * p, Direction d);
-        bool useItem(Player * p, const Item * item, uint16_t c, uint16_t l);
+        void useItem(Player * p, const Item * item, uint16_t c, uint16_t l);
         void useWeapon(Player * p, const Item * item, const std::list<Cell *> & cellsF);
 
     private:

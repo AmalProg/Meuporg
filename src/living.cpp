@@ -42,6 +42,11 @@ void Living::update(const sf::Time & elapsed)
     }
     else
         c_SmoothMoveTime = sf::Time::Zero;
+
+    for(std::list< const Effect * >::const_iterator it = c_Effects.begin(); it != c_Effects.end(); it++)
+    {
+        c_EffectsTime[(*it)->getId()] -= elapsed;
+    }
 }
 
 void Living::moveTo(uint16_t i, uint16_t j, uint16_t cellSize)
@@ -92,3 +97,55 @@ void Living::setDirection(Direction dir)
     c_Direction = dir;
 }
 
+void Living::addEffect(const Effect * effect)
+{
+    c_Effects.push_back(effect);
+    c_EffectsTime[effect->getId()] = sf::seconds(effect->getDuration());
+    c_EffectsTickTime[effect->getId()] = sf::seconds(effect->getTickTime());
+}
+
+void Living::realTimeAction(Map * m, Player * p)
+{
+    std::vector< std::list< const Effect * >::iterator > effectsToDestroy;
+
+    for(std::list< const Effect * >::iterator it = c_Effects.begin(); it != c_Effects.end(); it++)
+    {
+        uint16_t valueThisTick = 0;
+        if((*it)->getDuration() == 0)
+            valueThisTick = (*it)->getValue();
+        else if(c_EffectsTickTime[(*it)->getId()].asSeconds() <= 0)
+            valueThisTick = (*it)->getValue() * (*it)->getTickTime() / (*it)->getDuration();
+
+        bool effectFade = false;
+        if(c_EffectsTime[(*it)->getId()].asSeconds() <= 0)
+        {
+            effectFade = true;
+            effectsToDestroy.push_back(it);
+        }
+
+        switch((*it)->getType())
+        {
+        case HEAL:
+            heal(valueThisTick);
+            break;
+
+        case DAMAGE:
+            takeDamages(valueThisTick);
+            if(isDead())
+                setKiller((*it)->getLauncher());
+            break;
+
+        case SPEED:
+            c_Speed += valueThisTick;
+            if(effectFade)
+                c_Speed -= (*it)->getValue();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    for(uint16_t i = 0; i < effectsToDestroy.size(); i++)
+        c_Effects.erase(effectsToDestroy[i]);
+}

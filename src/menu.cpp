@@ -764,10 +764,10 @@ void Menu::drawItemInfos(const Item * item, const sf::Vector2f & pos)
     for(uint16_t i = 0; i < item->getNbrEffect(); i++)
     {
         sf::Text eType("", menuFont, c_CharacterSize * 2/3);
-        sf::Text value(nbrToString(item->getEffect(i).value), menuFont, c_CharacterSize * 2/3);
-        sf::Text eRange(nbrToString(item->getEffect(i).minEffectRange) + " - " + nbrToString(item->getEffect(i).maxEffectRange), menuFont, c_CharacterSize * 2/3);
+        sf::Text value(nbrToString(item->getEffect(i).getValue()), menuFont, c_CharacterSize * 2/3);
+        sf::Text eRange(nbrToString(item->getEffect(i).getMinEffectRange()) + " - " + nbrToString(item->getEffect(i).getMaxEffectRange()), menuFont, c_CharacterSize * 2/3);
 
-        switch(item->getEffect(i).type)
+        switch(item->getEffect(i).getType())
         {
         case HEAL:
             eType.setString("Heal : ");

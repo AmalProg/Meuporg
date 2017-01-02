@@ -1,7 +1,8 @@
 #ifndef ITEM_HPP
 #define ITEM_HPP
 
-enum ItemId {HEALPOTION = 0, WOODENSWORD, STONESWORD, LONGSWORD, GRENADE, TEETH, KEY, CRAP};
+enum ItemId {WOODENSWORD = 0, STONESWORD, LONGSWORD, HEALPOTION1, HEALPOTION2, HEALPOTION3
+, DAMAGEPOTION1, DAMAGEPOTION2, DAMAGEPOTION3,  TEETH, KEY, BONE};
 // putain de problèmes d'inclusion multiples donc je le place là
 
 #include <iostream>
@@ -9,20 +10,8 @@ enum ItemId {HEALPOTION = 0, WOODENSWORD, STONESWORD, LONGSWORD, GRENADE, TEETH,
 #include <list>
 class Cell;
 #include "Map.hpp"
+#include "effect.hpp"
 class Living;
-
-enum EffectType{HEAL, DAMAGE};
-class EffectStats // les stats d'un effet en particulier
-{
-public:
-    EffectStats(EffectType t, float v, uint16_t maxR, uint16_t minR)
-    : type(t), value(v), maxEffectRange(maxR), minEffectRange(minR) {}
-
-    EffectType type; // type de l'effet
-    float value; // valeur de l'effet
-    uint16_t maxEffectRange; // range d'application de l'effet max
-    uint16_t minEffectRange; // range d'application de l'effet min
-};
 
 enum ItemType {CONSUMABLE, EQUIPMENT, TOOL};
 enum ZoneType {LINE = 0, AOE};
@@ -36,7 +25,7 @@ class Item
 
         void draw(sf::RenderWindow * app) {};
 
-        void addEffect(const EffectStats & effect) {c_Effects.push_back(effect);}
+        void addEffect(const Effect & effect) {c_Effects.push_back(effect);}
 
         void setIsUsable(bool isUsable) { c_IsUsable = isUsable; }
         void setDirectional(bool directional) { c_Directional = directional;}
@@ -50,7 +39,7 @@ class Item
         const std::string & getName() const { return c_Name; }
         virtual std::list< Cell * > getTargetableCells(const Map * m, const Living * liv, uint16_t c, uint16_t l) const;
         bool isUsable() const { return c_IsUsable; }
-        const EffectStats & getEffect(uint16_t i) const {return c_Effects[i];}
+        const Effect & getEffect(uint16_t i) const {return c_Effects[i];}
         uint16_t getNbrEffect() const {return c_Effects.size();}
         ItemType getItemType() const {return c_ItemType;}
         uint16_t getMaxUseRange() const {return c_MaxUseRange;}
@@ -72,7 +61,7 @@ class Item
         bool c_Directional;
         ZoneType c_ZoneType;
 
-        std::vector< EffectStats > c_Effects; // les stats des différents effets
+        std::vector< Effect > c_Effects; // les stats des différents effets
         ItemType c_ItemType;
         uint16_t c_MaxUseRange; // range d'utilisation max
         uint16_t c_MinUseRange; // range d'utilisation min

@@ -17,10 +17,8 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
-    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
-    c_Player->takeItem(Item::getItemFromId(HEALPOTION), 50);
-    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
-    c_Player->takeItem(Item::getItemFromId(GRENADE), 50);
+    c_Player->takeItem(Item::getItemFromId(DAMAGEPOTION1), 50);
+    c_Player->takeItem(Item::getItemFromId(HEALPOTION1), 50);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);
@@ -53,7 +51,7 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     LootBag * basicBag = new LootBag;
     basicBag->addItem(Item::getItemFromId(KEY), 3);
     basicBag->addItem(Item::getItemFromId(WOODENSWORD), 1);
-    basicBag->addItem(Item::getItemFromId(HEALPOTION), 2);
+    basicBag->addItem(Item::getItemFromId(HEALPOTION1), 2);
     while(true)
     { // place le lootBag de base aleatoirement sur la map
         x = rand() % c_Map->getNbrColumn();
@@ -346,7 +344,7 @@ void Game::genNextMap(Map * map, Map * lastMap, uint16_t lvl)
     }
 }
 
-bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
+void Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
 {
     Living * lAffected = NULL;
 
@@ -355,33 +353,12 @@ bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
     { // si on peut utiliser l'item a cette distance
         for(uint16_t i = 0; i < item->getNbrEffect(); i++)
         { // on gère chaque effet de l'item
-            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell(c, l, item->getEffect(i).maxEffectRange, item->getEffect(i).minEffectRange);
+            const Effect * effect = &item->getEffect(i);
+            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell(c, l, effect->getMaxEffectRange(), effect->getMinEffectRange());
             for(std::list< Cell * >::iterator it = cellsAffected.begin(); it != cellsAffected.end(); it++)
             {
-                switch(item->getEffect(i).type)
-                {
-                case HEAL:
-                    if((lAffected = (*it)->getLiving()) != NULL)
-                    { // si il y a un joueur sur cette case
-                        lAffected->heal(item->getEffect(i).value);
-                        std::cout << "Healing of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
-                    }
-                    break;
-
-                case DAMAGE:
-                    if((lAffected = (*it)->getLiving()) != NULL)
-                    { // si il y a un joueur sur cette case
-                        lAffected->takeDamages(item->getEffect(i).value);
-                        std::cout << "Damage of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
-                        if(lAffected->isDead())
-                            lAffected->setKiller(p);
-                    }
-                    break;
-
-
-                default:
-                    break;
-                }
+                if((lAffected = (*it)->getLiving()) != NULL)
+                    lAffected->addEffect(effect);
             }
         }
 
@@ -391,9 +368,7 @@ bool Game::useItem(Player * p, const Item * item, uint16_t c, uint16_t l)
             p->removeItem(item, 1);
         }
         p->itemUsed(item);
-        return true;
     }
-    return false;
 }
 void Game::useWeapon(Player * p, const Item * item, const std::list<Cell *> & cellsF)
 {
@@ -403,24 +378,12 @@ void Game::useWeapon(Player * p, const Item * item, const std::list<Cell *> & ce
     {
         for(uint16_t i = 0; i < item->getNbrEffect(); i++)
         { // on gère chaque effet de l'item
-            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell((*it)->getC(), (*it)->getL(), item->getEffect(i).maxEffectRange, item->getEffect(i).minEffectRange);
+            const Effect * effect = &item->getEffect(i);
+            std::list< Cell * > cellsAffected = c_Map->getCellsBetweenDistFromCell((*it)->getC(), (*it)->getL(), effect->getMaxEffectRange(), effect->getMinEffectRange());
             for(std::list< Cell * >::iterator it = cellsAffected.begin(); it != cellsAffected.end(); it++)
             {
-                switch(item->getEffect(i).type)
-                {
-                case DAMAGE:
-                    if((lAffected = (*it)->getLiving()) != NULL)
-                    { // si il y a un joueur sur cette case
-                        lAffected->takeDamages(item->getEffect(i).value);
-                        std::cout << "Damage of " << item->getEffect(i).value <<  " done by " << p->getName() << " on " << lAffected->getName() << "\n";
-                        if(lAffected->isDead())
-                            lAffected->setKiller(p);
-                    }
-                    break;
-
-                default:
-                    break;
-                }
+                if((lAffected = (*it)->getLiving()) != NULL)
+                    lAffected->addEffect(effect);
             }
         }
     }
@@ -502,7 +465,7 @@ void Game::deathManage()
                 delete lB;
 
             if((*it)->getKiller() != NULL)
-                std::cout << (*it)->getName() << " est mort par " << (*it)->getKiller()->getName() << "\n";
+                std::cout << (*it)->getName() << " est mort par " << (*it)->getKiller()->getEntityId() << "\n";
 
             monstersToDelete.push_back((*it));
         }

@@ -128,13 +128,15 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
         }
     }
     attack(m, p);
+
+    Living::realTimeAction(m, p);
 }
 
 Sheep::Sheep(const std::string & name, AggroState aggroState, uint16_t aggroDist, float lostAggroTime, float maxLife,
       Direction dir, const sf::Vector2f & pos, const sf::Color & color, float speed, float delayAtkTime)
 : Monster(SHEEP, name, aggroState, aggroDist, lostAggroTime, maxLife, dir, pos, color, speed, delayAtkTime)
 {
-    c_LootTable.addItem(Item::getItemFromId(CRAP), 2, 80);
+    c_LootTable.addItem(Item::getItemFromId(BONE), 2, 5);
     c_Loots = new LootBag(c_LootTable.getLoots());
 }
 
@@ -156,6 +158,7 @@ Wolf::Wolf(const std::string & name, AggroState aggroState, uint16_t aggroDist, 
 : Monster(WOLF, name, aggroState, aggroDist, lostAggroTime, maxLife, dir, pos, color, speed, delayAtkTime)
 {
     c_LootTable.addItem(Item::getItemFromId(TEETH), 1, 30);
+    c_LootTable.addItem(Item::getItemFromId(BONE), 1, 5);
     c_Loots = new LootBag(c_LootTable.getLoots());
 
     c_Sprite.setColor(sf::Color(120, 120, 120));
