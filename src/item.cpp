@@ -45,6 +45,13 @@ void Item::initItems()
     c_Items[HEALPOTION3] = new Item(HEALPOTION3, "Heal Potion 3", CONSUMABLE, 2, 0, true, false, AOE, 2.0);
     c_Items[HEALPOTION3]->addEffect(Effect(HEAL, 100, 1, 0));
 
+    c_Items[SPEEDPOTION1] = new Item(SPEEDPOTION1, "Speed Potion 1", CONSUMABLE, 1, 0, true, false, AOE, 5.0);
+    c_Items[SPEEDPOTION1]->addEffect(Effect(SPEED, 1, 0, 0, 5, 0));
+    c_Items[SPEEDPOTION2] = new Item(SPEEDPOTION2, "Speed Potion 2", CONSUMABLE, 1, 0, true, false, AOE, 2.5);
+    c_Items[SPEEDPOTION2]->addEffect(Effect(SPEED, 2, 0, 0, 2.5, 0.5));
+    c_Items[SPEEDPOTION3] = new Item(SPEEDPOTION3, "Speed Potion 3", CONSUMABLE, 1, 0, true, false, AOE, 5.0);
+    c_Items[SPEEDPOTION3]->addEffect(Effect(SPEED, 5, 0, 0, 5, 1));
+
     c_Items[DAMAGEPOTION1] = new Item(DAMAGEPOTION1, "Damage Potion 1", CONSUMABLE, 3, 0, true, false, AOE, 5.0);
     c_Items[DAMAGEPOTION1]->addEffect(Effect(DAMAGE, 10, 1, 0));
     c_Items[DAMAGEPOTION2] = new Item(DAMAGEPOTION2, "Damage Potion 2", CONSUMABLE, 4, 0, true, false, AOE, 5.0);

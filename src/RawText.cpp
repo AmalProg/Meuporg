@@ -2,8 +2,7 @@
 
 RawText::RawText() : Text()
 {
-    c_Font.loadFromFile("arial.ttf");
-    c_CharSize = 25;
+    c_Font.loadFromFile("font\\lunchds.ttf");
 }
 
 void RawText::newText(const std::string & text, const sf::Texture & texture, sf::RenderWindow & app)
@@ -11,6 +10,7 @@ void RawText::newText(const std::string & text, const sf::Texture & texture, sf:
     c_ActualDisplay.setTexture(texture);
     c_ActualDisplay.setPosition(0, 0);
 
+    c_CharSize = app.getSize().x / 35; std::cout << c_CharSize << "\n";
     c_CutText = cutText(text, c_Font, c_CharSize, app.getSize().x);
     c_CurrentLine = 0;
     c_NbrLine = c_CutText.size();
@@ -70,9 +70,12 @@ void RawText::eventManage(sf::RenderWindow & app)
 
 void RawText::draw(sf::RenderWindow & app)
 {
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
     if(c_Drawing)
     {
-        c_NbrCaraLine = app.getSize().x / 14;
+        c_CharSize = app.getSize().x / 35;
         c_NbrLineDraw = app.getSize().y / 150;
 
         c_BackGround.setSize(sf::Vector2f(app.getSize().x - c_BackGround.getOutlineThickness()*2,
@@ -94,13 +97,7 @@ void RawText::draw(sf::RenderWindow & app)
 
         app.clear();
 
-        sf::View lastView = app.getView();
-        // changement de vue pour garder le texte au même endroit
-        // même avec changement de position de la vue principale
-        app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
-
         app.draw(c_ActualDisplay);
-
         app.draw(c_BackGround);
 
         for(int16_t i = c_CurrentLine; i < c_CurrentLine + c_NbrLineDraw; i++)
@@ -115,7 +112,9 @@ void RawText::draw(sf::RenderWindow & app)
             }
         }
 
-        app.setView(lastView);
+
         app.display();
     }
+
+    app.setView(lastView);
 }

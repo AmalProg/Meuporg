@@ -7,7 +7,7 @@ ChoiceText::ChoiceText() : Text()
     c_ChoiceBackGround.setOutlineColor(sf::Color::Black);
     c_CharSize = 25;
 
-    c_Font.loadFromFile("arial.ttf");
+    c_Font.loadFromFile("font\\lunchds.ttf");
 
     c_SelectedChoice = 0;
     c_FirstChoicesShown = 0;
@@ -21,6 +21,7 @@ void ChoiceText::newText(const std::string & question, std::vector< std::string 
     c_ActualDisplay.setTexture(texture);
     c_ActualDisplay.setPosition(0, 0);
 
+    c_CharSize = app.getSize().x / 35;
     c_CutText = cutText(question, c_Font, c_CharSize, app.getSize().x);
     c_Choices = choices;
     c_CurrentLine = 0;
@@ -137,9 +138,12 @@ void ChoiceText::eventManage(sf::RenderWindow & app)
 
 void ChoiceText::draw(sf::RenderWindow & app)
 {
+    sf::View lastView = app.getView();
+    app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
+
     if(c_Drawing)
     {
-        c_NbrCaraLine = app.getSize().x / 14;
+        c_CharSize = app.getSize().x / 35;
         c_NbrLineDraw = app.getSize().y / 150;
 
         c_BackGround.setSize(sf::Vector2f(app.getSize().x - c_BackGround.getOutlineThickness()*2,
@@ -175,13 +179,7 @@ void ChoiceText::draw(sf::RenderWindow & app)
 
         app.clear();
 
-        sf::View lastView = app.getView();
-        // changement de vue pour garder le texte au même endroit
-        // même avec changement de position de la vue principale
-        app.setView(sf::View(sf::FloatRect(0, 0, app.getSize().x, app.getSize().y)));
-
         app.draw(c_ActualDisplay);
-
         app.draw(c_BackGround);
         app.draw(c_ChoiceBackGround);
 
@@ -218,8 +216,10 @@ void ChoiceText::draw(sf::RenderWindow & app)
             }
         }
 
-        app.setView(lastView);
+
         app.display();
     }
+
+    app.setView(lastView);
 }
 

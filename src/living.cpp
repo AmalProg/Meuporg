@@ -46,6 +46,7 @@ void Living::update(const sf::Time & elapsed)
     for(std::list< const Effect * >::const_iterator it = c_Effects.begin(); it != c_Effects.end(); it++)
     {
         c_EffectsTime[(*it)->getId()] -= elapsed;
+        c_EffectsTickTime[(*it)->getId()] -= elapsed;
     }
 }
 
@@ -101,7 +102,7 @@ void Living::addEffect(const Effect * effect)
 {
     c_Effects.push_back(effect);
     c_EffectsTime[effect->getId()] = sf::seconds(effect->getDuration());
-    c_EffectsTickTime[effect->getId()] = sf::seconds(effect->getTickTime());
+    c_EffectsTickTime[effect->getId()] = sf::Time::Zero;
 }
 
 void Living::realTimeAction(Map * m, Player * p)
@@ -110,11 +111,22 @@ void Living::realTimeAction(Map * m, Player * p)
 
     for(std::list< const Effect * >::iterator it = c_Effects.begin(); it != c_Effects.end(); it++)
     {
-        uint16_t valueThisTick = 0;
+        float valueThisTick = 0;
         if((*it)->getDuration() == 0)
             valueThisTick = (*it)->getValue();
         else if(c_EffectsTickTime[(*it)->getId()].asSeconds() <= 0)
-            valueThisTick = (*it)->getValue() * (*it)->getTickTime() / (*it)->getDuration();
+        {
+            if((*it)->getTickTime() == 0)
+            {
+                valueThisTick = (*it)->getValue();
+                c_EffectsTickTime[(*it)->getId()] = sf::seconds((*it)->getDuration()*2); // l'effet ne sera pas réappliquer
+            }
+            else
+            {
+                valueThisTick = (*it)->getValue() * (*it)->getTickTime() / (*it)->getDuration();
+                c_EffectsTickTime[(*it)->getId()] = sf::seconds((*it)->getTickTime());
+            }
+        }
 
         bool effectFade = false;
         if(c_EffectsTime[(*it)->getId()].asSeconds() <= 0)

@@ -15,10 +15,19 @@ Game::Game(sf::RenderWindow & a) : app(a), c_NbrCellsToDraw(20), c_ActualLevel(0
     c_Maps.push_back(c_Map);
     c_Player = new Player("Amal", 100, UP, 7.5);
     c_Player->takeItem(Item::getItemFromId(KEY), 5);
+    c_Player->takeItem(Item::getItemFromId(BONE), 5);
+    c_Player->takeItem(Item::getItemFromId(TEETH), 5);
     c_Player->takeItem(Item::getItemFromId(WOODENSWORD), 1);
     c_Player->takeItem(Item::getItemFromId(LONGSWORD), 1);
-    c_Player->takeItem(Item::getItemFromId(DAMAGEPOTION1), 50);
-    c_Player->takeItem(Item::getItemFromId(HEALPOTION1), 50);
+    c_Player->takeItem(Item::getItemFromId(DAMAGEPOTION1), 5);
+    c_Player->takeItem(Item::getItemFromId(DAMAGEPOTION2), 5);
+    c_Player->takeItem(Item::getItemFromId(DAMAGEPOTION3), 5);
+    c_Player->takeItem(Item::getItemFromId(HEALPOTION1), 5);
+    c_Player->takeItem(Item::getItemFromId(HEALPOTION2), 5);
+    c_Player->takeItem(Item::getItemFromId(HEALPOTION3), 5);
+    c_Player->takeItem(Item::getItemFromId(SPEEDPOTION1), 5);
+    c_Player->takeItem(Item::getItemFromId(SPEEDPOTION2), 5);
+    c_Player->takeItem(Item::getItemFromId(SPEEDPOTION3), 5);
 
     GenInfo genInfo;
     genInfo.addObstacleInfos(GRASS, 0, -1);

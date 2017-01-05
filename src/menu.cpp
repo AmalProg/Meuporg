@@ -101,7 +101,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
     case sf::Event::MouseWheelMoved:
         if(c_ShowingLootBag)
         {
-            c_LootBagFirst += event.mouseWheel.delta;
+            c_LootBagFirst -= event.mouseWheel.delta;
 
             if(c_LootBagFirst > c_LootBagNbrItems - c_LootBagNbrShown)
                c_LootBagFirst = c_LootBagNbrItems - c_LootBagNbrShown;
@@ -110,7 +110,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
         }
         else if(c_ShowingInventory && !c_ShowingItemMenu)
         {
-            c_InventoryFirst += event.mouseWheel.delta;
+            c_InventoryFirst -= event.mouseWheel.delta;
 
             if(c_InventoryFirst > c_InventoryNbrItems - c_InventoryNbrShown)
                 c_InventoryFirst = c_InventoryNbrItems - c_InventoryNbrShown;
@@ -148,7 +148,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
             case sf::Mouse::Left:
                 if(c_ShowingLootBag)
                 {
-                    if(c_LootBagSelected != -1 && c_LootBagRects[c_LootBagSelected].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_LootBagSelected != -1 && c_LootBagRects[c_LootBagSelected-c_LootBagFirst].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                     {
                         c_ItemToTake.item = c_LootBag->getItem(c_LootBagSelected);
                         c_ItemToTake.nbr = c_LootBag->getNbrOfItem(c_LootBagSelected);
@@ -215,7 +215,7 @@ void Menu::manage(sf::Event & event, const Map * m, const Player * p)
                     }
                 }
                 else if(c_ShowingInventory) // choix d'un item dans l'inventaire
-                    if(c_InventoryNbrItems > 0 && c_InventorySelected != -1 && c_InventoryRects[c_InventorySelected].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
+                    if(c_InventoryNbrItems > 0 && c_InventorySelected != -1 && c_InventoryRects[c_InventorySelected-c_InventoryFirst].contains(mouse.getPosition(app).x, mouse.getPosition(app).y))
                         c_ShowingItemMenu = true;
 
                 break;
@@ -324,11 +324,11 @@ void Menu::drawInfosBar(const Player * p, uint16_t height)
                                app.getSize().y * 1/30 / c_OutLifeBar.getLocalBounds().height);
     c_OutLifeBar.setScale(app.getSize().x * 1/4 / c_OutLifeBar.getLocalBounds().width,
                                app.getSize().y * 1/30 / c_OutLifeBar.getLocalBounds().height);
-    c_OutLifeBar.setPosition(app.getSize().x * 3/4 - c_OutLifeBar.getSize().x/2
+    c_OutLifeBar.setPosition(app.getSize().x * 3/4 - c_OutLifeBar.getGlobalBounds().width/2
                           , height/2);
-    life.setPosition(c_OutLifeBar.getPosition().x + c_OutLifeBar.getSize().x/2 - life.getGlobalBounds().width/2
+    life.setPosition(c_OutLifeBar.getPosition().x + c_OutLifeBar.getGlobalBounds().width/2 - life.getGlobalBounds().width/2
                         , height/2);
-    c_LifeBar.setPosition(app.getSize().x * 3/4 + c_OutLifeBar.getOutlineThickness() - c_OutLifeBar.getSize().x/2
+    c_LifeBar.setPosition(app.getSize().x * 3/4 + c_OutLifeBar.getOutlineThickness() - c_OutLifeBar.getGlobalBounds().width/2
                           , height / 2);
     life.setColor(sf::Color::Black);
 
@@ -460,7 +460,7 @@ void Menu::lootbagMenu()
         lastTextHeightSize = text.getGlobalBounds().height;
         if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 26/27)
         {
-            c_LootBagNbrShown = i-1; // on s'arrête avant d'écrire n'importe ou
+            c_LootBagNbrShown = i-c_LootBagFirst; // on s'arrête avant d'écrire n'importe ou
             break;
         }
 
@@ -591,7 +591,7 @@ void Menu::inventoryMenu(const Player * p)
 
     uint16_t gapHeight = height * 1/27;
 
-    for(uint16_t i = c_InventoryFirst; i < c_InventoryNbrItems - c_InventoryFirst; ++i)
+    for(uint16_t i = c_InventoryFirst; i < c_InventoryNbrItems; ++i)
     { // affichage de tous les items du bag
         const Item * item = bag->getItem(i);
         sf::Text text(sf::String(item->getName()), itemsFont, c_CharacterSize);
@@ -600,8 +600,8 @@ void Menu::inventoryMenu(const Player * p)
 
         if(i == c_InventorySelected)
         {
-            drawItemInfos(item, sf::Vector2f(c_InventoryRects[c_InventorySelected].left - c_ItemInfosSprite.getGlobalBounds().width * 7/8
-                            , c_InventoryRects[c_InventorySelected].top - c_ItemInfosSprite.getGlobalBounds().height));
+            drawItemInfos(item, sf::Vector2f(c_InventoryRects[c_InventorySelected-c_InventoryFirst].left - c_ItemInfosSprite.getGlobalBounds().width * 7/8
+                            , c_InventoryRects[c_InventorySelected-c_InventoryFirst].top - c_ItemInfosSprite.getGlobalBounds().height));
             // place le menu au niveau de l'affichage de l'item selectionné
 
             text.setColor(sf::Color::Red);
@@ -620,9 +620,9 @@ void Menu::inventoryMenu(const Player * p)
 
         lastTextHeightPosition = text.getPosition().y;
         lastTextHeightSize = text.getGlobalBounds().height;
-        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 25/27)
+        if(lastTextHeightPosition + lastTextHeightSize >= posY + height * 26/27)
         {
-            c_InventoryNbrShown = i-1; // on s'arrête avant d'écrire n'importe ou
+            c_InventoryNbrShown = i-c_InventoryFirst; // on s'arrête avant d'écrire n'importe ou
             break;
         }
 
