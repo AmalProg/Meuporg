@@ -61,8 +61,6 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                     setDirection(UP);
 
                 m->moveLiving(this, path[0]->getC(), path[0]->getL());
-                c_LastAtkTime = sf::Time::Zero; // on attaque pas instantannément après un déplacement
-
             }
             else
             {
@@ -80,7 +78,6 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                 if(path.size() != 0 && path[0]->isWalkable())
                 {
                     m->moveLiving(this, path[0]->getC(), path[0]->getL());
-                    c_LastAtkTime = sf::Time::Zero; // on attaque pas instantannément après un déplcaement
                 }
             }
         }
@@ -97,31 +94,29 @@ void Monster::realTimeAction(Map * m, Player * p) // p est le joueur en train de
                     if(c_Position.y > 0)
                     {
                         cell = m->getUCell(myCell);
-                        setDirection(UP);
                     }
                     break;
                 case DOWN:
                     if(c_Position.y < m->getNbrLine()-1)
                     {
                         cell = m->getDCell(myCell);
-                        setDirection(DOWN);
                     }
                     break;
                 case LEFT:
                     if(c_Position.x > 0)
                     {
                         cell = m->getLCell(myCell);
-                        setDirection(LEFT);
                     }
                     break;
                 case RIGHT:
                     if(c_Position.x < m->getNbrColumn()-1)
                     {
                         cell = m->getRCell(myCell);
-                        setDirection(RIGHT);
                     }
                     break;
                 }
+
+                setDirection(dir);
                 if(cell != NULL && cell->isWalkable() && !cell->gotStairs())
                     m->moveLiving(this, cell->getC(), cell->getL());
             }

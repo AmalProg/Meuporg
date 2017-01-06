@@ -21,7 +21,7 @@ void Character::update(const sf::Time & elapsed)
 
 bool Character::isMoveable()
 {
-    if(c_TurnTime.asSeconds() >= 0.125)
+    if(c_TurnTime.asSeconds() >= 0.1)
         return Living::isMoveable();
     return false;
 }
