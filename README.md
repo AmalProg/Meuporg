@@ -16,5 +16,5 @@ I have to add icons for items.
 On this second screenshot we can see the inventory menu :
 <img src="https://github.com/AmalProg/Meuporg/blob/master/previewMenu.png" width="802" height="630">
 
-I don't have a todolist cause i just had things when i think it could be great.
+I don't have a todolist cause i just add things when i think it could be great.
 It's more a sandbox programming than a real game actually.
